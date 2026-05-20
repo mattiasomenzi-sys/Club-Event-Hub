@@ -20,13 +20,13 @@ const DEFAULT_MEMBERSHIP_INFO = `Aderiamo alla rete di circoli ASX
 L'accesso al circolo è consentito solo ai soci.
 La quota associativa annua è di 30 euro ed è valida 365gg dal momento dell'emissione.`;
 
-const DEFAULT_MEMBER_QUOTES = `💰 Quote partecipative PROMO FINE MESE
-Coppie – Promo Fine Mese
-Singola – Promo Fine Mese
-Singoli (under 30 anni) 50 euro
-Singoli (over 30) 80 euro
+const DEFAULT_MEMBER_QUOTES = JSON.stringify([
+  { label: "Coppie", price: "Promo Fine Mese", fixed: true },
+  { label: "Singola", price: "Promo Fine Mese", fixed: true },
+  { label: "Singoli", price: "80 euro", fixed: true },
+]);
 
-Per le categorie fa fede il genere indicato sul documento d'identità
+const DEFAULT_MEMBER_NOTES = `Per le categorie fa fede il genere indicato sul documento d'identità
 
 TAVOLI VIP info e prenotazioni al 3758001920
 
@@ -75,6 +75,7 @@ interface EventFormData {
   areaDescription: string;
   membershipInfo: string;
   memberQuotes: string;
+  memberNotes: string;
   isRecurring: boolean;
   recurringPattern: string;
 }
@@ -92,6 +93,7 @@ const emptyForm: EventFormData = {
   areaDescription: DEFAULT_AREA_DESCRIPTION,
   membershipInfo: DEFAULT_MEMBERSHIP_INFO,
   memberQuotes: DEFAULT_MEMBER_QUOTES,
+  memberNotes: DEFAULT_MEMBER_NOTES,
   isRecurring: false,
   recurringPattern: "",
 };
@@ -124,6 +126,81 @@ function PencilField({
           {value || <span className="text-white/20 italic">{placeholder ?? "Non compilato"}</span>}
         </div>
       )}
+    </div>
+  );
+}
+
+interface PricingRow { label: string; price: string; fixed: boolean }
+
+function parsePricing(value: string): PricingRow[] {
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed as PricingRow[];
+  } catch { /* legacy text */ }
+  return [
+    { label: "Coppie", price: "", fixed: true },
+    { label: "Singola", price: "", fixed: true },
+    { label: "Singoli", price: "", fixed: true },
+  ];
+}
+
+function PricingEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [rows, setRows] = useState<PricingRow[]>(() => parsePricing(value));
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-3 py-2 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
+
+  function update(next: PricingRow[]) {
+    setRows(next);
+    onChange(JSON.stringify(next));
+  }
+
+  function setPrice(idx: number, price: string) {
+    update(rows.map((r, i) => i === idx ? { ...r, price } : r));
+  }
+
+  function setLabel(idx: number, label: string) {
+    update(rows.map((r, i) => i === idx ? { ...r, label } : r));
+  }
+
+  function addRow() {
+    update([...rows, { label: "", price: "", fixed: false }]);
+  }
+
+  function removeRow(idx: number) {
+    update(rows.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] tracking-[0.25em] uppercase text-white/40">Quote soci</span>
+        <button type="button" onClick={addRow}
+          className="flex items-center gap-1 text-[10px] text-[#FF006E] hover:text-white border border-[#FF006E]/30 hover:border-white/20 px-2 py-1 transition-colors">
+          + Aggiungi voce
+        </button>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {rows.map((row, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            {row.fixed ? (
+              <div className="bg-white/5 border border-white/10 text-white/60 text-sm px-3 py-2 w-28 flex-shrink-0 font-medium">
+                {row.label}
+              </div>
+            ) : (
+              <input className={`${inputClass} w-28 flex-shrink-0`} placeholder="Categoria"
+                value={row.label} onChange={(e) => setLabel(idx, e.target.value)} />
+            )}
+            <span className="text-white/20 text-xs flex-shrink-0">–</span>
+            <input className={inputClass} placeholder="es. 50 euro / Promo Fine Mese"
+              value={row.price} onChange={(e) => setPrice(idx, e.target.value)} />
+            {!row.fixed && (
+              <button type="button" onClick={() => removeRow(idx)}
+                className="text-white/20 hover:text-[#FF006E] transition-colors flex-shrink-0">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -393,6 +470,7 @@ function EventForm({
       body.areaDescription = form.areaDescription;
       body.membershipInfo = form.membershipInfo;
       body.memberQuotes = form.memberQuotes;
+      body.memberNotes = form.memberNotes;
       body.isRecurring = form.isRecurring;
       if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
 
@@ -507,12 +585,18 @@ function EventForm({
       />
 
       {/* Quote soci */}
-      <PencilField
-        label="Quote soci"
+      <PricingEditor
         value={form.memberQuotes}
         onChange={(v) => set("memberQuotes", v)}
-        rows={8}
-        placeholder="Quote partecipative, tavoli VIP…"
+      />
+
+      {/* Note */}
+      <PencilField
+        label="Note"
+        value={form.memberNotes}
+        onChange={(v) => set("memberNotes", v)}
+        rows={6}
+        placeholder="Info VIP, disclaimer categorie, contatti prenotazioni…"
       />
 
       {/* Evento ricorrente */}
@@ -643,6 +727,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       areaDescription: e.areaDescription ?? DEFAULT_AREA_DESCRIPTION,
       membershipInfo: e.membershipInfo ?? DEFAULT_MEMBERSHIP_INFO,
       memberQuotes: e.memberQuotes ?? DEFAULT_MEMBER_QUOTES,
+      memberNotes: e.memberNotes ?? DEFAULT_MEMBER_NOTES,
       isRecurring: e.isRecurring ?? false,
       recurringPattern: e.recurringPattern ?? "",
     };

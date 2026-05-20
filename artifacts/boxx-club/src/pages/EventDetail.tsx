@@ -3,6 +3,17 @@ import { useParams, useLocation } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
 import { ArrowLeft, Instagram } from "lucide-react";
 
+interface PricingRow { label: string; price: string; fixed: boolean }
+
+function parsePricing(value: string | null | undefined): PricingRow[] | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed as PricingRow[];
+  } catch { /* plain text fallback */ }
+  return null;
+}
+
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
 
@@ -228,6 +239,62 @@ export default function EventDetail() {
             </div>
           </div>
         </div>
+
+        {/* Info sections — full width below two-column layout */}
+        {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.memberNotes) && (
+          <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10 flex flex-col gap-8">
+            <div className="border-t border-white/10 pt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+              {/* Area */}
+              {event.areaDescription && (
+                <div>
+                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Aree</p>
+                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.areaDescription}</p>
+                </div>
+              )}
+
+              {/* Tessera */}
+              {event.membershipInfo && (
+                <div>
+                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Tesseramento</p>
+                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.membershipInfo}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Quote soci */}
+            {event.memberQuotes && (() => {
+              const rows = parsePricing(event.memberQuotes);
+              return (
+                <div>
+                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Quote soci</p>
+                  {rows ? (
+                    <table className="w-full max-w-sm border-collapse">
+                      <tbody>
+                        {rows.map((row, i) => (
+                          <tr key={i} className="border-b border-white/5">
+                            <td className="text-sm text-white/70 font-medium py-2 pr-6">{row.label}</td>
+                            <td className="text-sm text-white/50 py-2">{row.price || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.memberQuotes}</p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Note */}
+            {event.memberNotes && (
+              <div>
+                <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Note</p>
+                <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.memberNotes}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Footer strip */}
         <div className="border-t border-white/5 px-6 md:px-12 py-5 flex items-center justify-between">

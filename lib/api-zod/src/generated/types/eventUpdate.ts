@@ -20,6 +20,7 @@ export interface EventUpdate {
   areaDescription?: string;
   membershipInfo?: string;
   memberQuotes?: string;
+  memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
 }

@@ -33,6 +33,8 @@ export interface Event {
   membershipInfo?: string | null;
   /** @nullable */
   memberQuotes?: string | null;
+  /** @nullable */
+  memberNotes?: string | null;
   isRecurring: boolean;
   /** @nullable */
   recurringPattern?: string | null;
@@ -56,6 +58,7 @@ export interface EventInput {
   areaDescription?: string;
   membershipInfo?: string;
   memberQuotes?: string;
+  memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
 }
@@ -74,6 +77,7 @@ export interface EventUpdate {
   areaDescription?: string;
   membershipInfo?: string;
   memberQuotes?: string;
+  memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
 }

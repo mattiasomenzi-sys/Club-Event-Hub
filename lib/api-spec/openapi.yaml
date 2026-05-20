@@ -264,6 +264,8 @@ components:
           type: ["string", "null"]
         memberQuotes:
           type: ["string", "null"]
+        memberNotes:
+          type: ["string", "null"]
         isRecurring:
           type: boolean
         recurringPattern:
@@ -304,6 +306,8 @@ components:
           type: string
         memberQuotes:
           type: string
+        memberNotes:
+          type: string
         isRecurring:
           type: boolean
         recurringPattern:
@@ -336,6 +340,8 @@ components:
         membershipInfo:
           type: string
         memberQuotes:
+          type: string
+        memberNotes:
           type: string
         isRecurring:
           type: boolean
