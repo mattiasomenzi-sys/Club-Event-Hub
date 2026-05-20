@@ -25,6 +25,8 @@ import type {
   EventInput,
   EventUpdate,
   HealthStatus,
+  ParticipationInput,
+  ParticipationResponse,
   UploadUrlRequest,
   UploadUrlResponse
 } from './api.schemas';
@@ -486,6 +488,155 @@ export const useDeleteEvent = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getDeleteEventMutationOptions(options));
     }
+
+export const getParticipateInEventUrl = (id: number,) => {
+
+
+
+
+  return `/api/events/${id}/participate`
+}
+
+/**
+ * @summary Register interest in an event
+ */
+export const participateInEvent = async (id: number,
+    participationInput: ParticipationInput, options?: RequestInit): Promise<ParticipationResponse> => {
+
+  return customFetch<ParticipationResponse>(getParticipateInEventUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      participationInput,)
+  }
+);}
+
+
+
+
+export const getParticipateInEventMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof participateInEvent>>, TError,{id: number;data: BodyType<ParticipationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof participateInEvent>>, TError,{id: number;data: BodyType<ParticipationInput>}, TContext> => {
+
+const mutationKey = ['participateInEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof participateInEvent>>, {id: number;data: BodyType<ParticipationInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  participateInEvent(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ParticipateInEventMutationResult = NonNullable<Awaited<ReturnType<typeof participateInEvent>>>
+    export type ParticipateInEventMutationBody = BodyType<ParticipationInput>
+    export type ParticipateInEventMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Register interest in an event
+ */
+export const useParticipateInEvent = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof participateInEvent>>, TError,{id: number;data: BodyType<ParticipationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof participateInEvent>>,
+        TError,
+        {id: number;data: BodyType<ParticipationInput>},
+        TContext
+      > => {
+      return useMutation(getParticipateInEventMutationOptions(options));
+    }
+
+export const getListParticipationsUrl = (id: number,) => {
+
+
+
+
+  return `/api/events/${id}/participations`
+}
+
+/**
+ * @summary List participations for an event (admin)
+ */
+export const listParticipations = async (id: number, options?: RequestInit): Promise<ParticipationResponse[]> => {
+
+  return customFetch<ParticipationResponse[]>(getListParticipationsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListParticipationsQueryKey = (id: number,) => {
+    return [
+    `/api/events/${id}/participations`
+    ] as const;
+    }
+
+
+export const getListParticipationsQueryOptions = <TData = Awaited<ReturnType<typeof listParticipations>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listParticipations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListParticipationsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listParticipations>>> = ({ signal }) => listParticipations(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listParticipations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListParticipationsQueryResult = NonNullable<Awaited<ReturnType<typeof listParticipations>>>
+export type ListParticipationsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List participations for an event (admin)
+ */
+
+export function useListParticipations<TData = Awaited<ReturnType<typeof listParticipations>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listParticipations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListParticipationsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getRequestUploadUrlUrl = () => {
 

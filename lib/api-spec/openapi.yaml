@@ -165,6 +165,70 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /events/{id}/participate:
+    post:
+      operationId: participateInEvent
+      tags: [events]
+      summary: Register interest in an event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParticipationInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParticipationResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /events/{id}/participations:
+    get:
+      operationId: listParticipations
+      tags: [events]
+      summary: List participations for an event (admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of participations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParticipationResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /storage/uploads/request-url:
     post:
       tags: [Storage]
@@ -346,6 +410,32 @@ components:
         isRecurring:
           type: boolean
         recurringPattern:
+          type: string
+
+    ParticipationInput:
+      type: object
+      required: [name, contact]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        contact:
+          type: string
+          minLength: 1
+
+    ParticipationResponse:
+      type: object
+      required: [id, eventId, name, contact, createdAt]
+      properties:
+        id:
+          type: integer
+        eventId:
+          type: integer
+        name:
+          type: string
+        contact:
+          type: string
+        createdAt:
           type: string
 
     UploadUrlRequest:

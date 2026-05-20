@@ -11,5 +11,7 @@ export * from './event';
 export * from './eventInput';
 export * from './eventUpdate';
 export * from './healthStatus';
+export * from './participationInput';
+export * from './participationResponse';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';

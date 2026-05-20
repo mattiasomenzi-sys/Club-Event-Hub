@@ -157,6 +157,40 @@ export const DeleteEventParams = zod.object({
 
 
 /**
+ * @summary Register interest in an event
+ */
+export const ParticipateInEventParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const ParticipateInEventBody = zod.object({
+  "name": zod.string().min(1),
+  "contact": zod.string().min(1)
+})
+
+
+/**
+ * @summary List participations for an event (admin)
+ */
+export const ListParticipationsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListParticipationsResponseItem = zod.object({
+  "id": zod.number(),
+  "eventId": zod.number(),
+  "name": zod.string(),
+  "contact": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListParticipationsResponse = zod.array(ListParticipationsResponseItem)
+
+
+/**
  * @summary Request a presigned URL for file upload
  */
 

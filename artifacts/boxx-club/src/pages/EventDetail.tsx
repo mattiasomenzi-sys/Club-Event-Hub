@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
 import { ArrowLeft, Instagram } from "lucide-react";
@@ -53,6 +53,99 @@ function getImageSrc(imageUrl: string | null): string {
   if (!imageUrl) return clubPhoto;
   if (imageUrl.startsWith("/objects/")) return `/api/storage${imageUrl}`;
   return imageUrl;
+}
+
+function ParticipateForm({ eventId }: { eventId: number }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-3 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/participate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), contact: contact.trim() }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? "Errore. Riprova.");
+        setLoading(false);
+        return;
+      }
+      setDone(true);
+    } catch {
+      setError("Errore di connessione.");
+    }
+    setLoading(false);
+  }
+
+  if (done) {
+    return (
+      <div className="border border-[#FF006E]/30 px-6 py-5 self-start w-full lg:w-auto">
+        <p className="text-[#FF006E] text-xs font-bold tracking-[0.3em] uppercase mb-1">Iscrizione ricevuta</p>
+        <p className="text-white/50 text-xs">Ti contatteremo per i dettagli. Ci vediamo presto.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full lg:w-auto">
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center justify-center border border-white/20 text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:border-[#FF006E] hover:text-[#FF006E] transition-colors duration-200 self-start w-full lg:w-auto"
+        >
+          PARTECIPA →
+        </button>
+      ) : (
+        <div className="border border-white/10 p-6 flex flex-col gap-4 max-w-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/60">Mettiti in lista</p>
+            <button onClick={() => setOpen(false)} className="text-white/20 hover:text-white text-xs transition-colors">✕</button>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <div>
+              <label className="text-[10px] tracking-[0.25em] uppercase text-white/30 block mb-1">Nome o Nick</label>
+              <input
+                className={inputClass}
+                placeholder="Come ti chiami?"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[10px] tracking-[0.25em] uppercase text-white/30 block mb-1">Telefono o Email</label>
+              <input
+                className={inputClass}
+                placeholder="Per essere ricontattato/a"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                required
+              />
+            </div>
+            {error && <p className="text-[#FF006E] text-[10px] tracking-widest uppercase">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading || !name.trim() || !contact.trim()}
+              className="bg-[#FF006E] text-white text-xs font-black tracking-[0.35em] uppercase py-4 hover:bg-white hover:text-black transition-colors disabled:opacity-30"
+            >
+              {loading ? "..." : "INVIA →"}
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function EventDetail() {
@@ -236,6 +329,9 @@ export default function EventDetail() {
                   </p>
                 </>
               )}
+
+              {/* Partecipa */}
+              <ParticipateForm eventId={event.id} />
             </div>
           </div>
         </div>

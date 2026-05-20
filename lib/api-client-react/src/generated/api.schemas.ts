@@ -82,6 +82,21 @@ export interface EventUpdate {
   recurringPattern?: string;
 }
 
+export interface ParticipationInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  contact: string;
+}
+
+export interface ParticipationResponse {
+  id: number;
+  eventId: number;
+  name: string;
+  contact: string;
+  createdAt: string;
+}
+
 export interface UploadUrlRequest {
   /** @minLength 1 */
   name: string;

@@ -840,6 +840,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
               </div>
 
               <div className="flex gap-3 items-center flex-shrink-0">
+                <ParticipationsButton eventId={event.id} adminKey={adminKey} />
                 <button
                   onClick={() => { setEditingEvent(event); setShowForm(false); }}
                   className="text-[10px] tracking-[0.25em] uppercase text-white/30 hover:text-white border-b border-transparent hover:border-white/30 transition-colors pb-0.5"
@@ -928,6 +929,57 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
                 {loading ? "..." : "AGGIORNA CHIAVE"}
               </button>
             </form>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ParticipationEntry { id: number; name: string; contact: string; createdAt: string }
+
+function ParticipationsButton({ eventId, adminKey }: { eventId: number; adminKey: string }) {
+  const [open, setOpen] = useState(false);
+  const [list, setList] = useState<ParticipationEntry[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    if (list !== null) { setOpen(!open); return; }
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/participations`, {
+        headers: { "X-Admin-Key": adminKey },
+      });
+      if (res.ok) setList(await res.json());
+    } catch { /* ignore */ }
+    setLoading(false);
+    setOpen(true);
+  }
+
+  return (
+    <div className="relative">
+      <button onClick={load}
+        className="text-[10px] tracking-[0.25em] uppercase text-white/30 hover:text-white border-b border-transparent hover:border-white/30 transition-colors pb-0.5">
+        {loading ? "..." : `ISCRITTI${list ? ` (${list.length})` : ""}`}
+      </button>
+      {open && list !== null && (
+        <div className="absolute right-0 top-6 z-50 bg-black border border-white/20 p-4 w-72 shadow-2xl">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#FF006E]">Lista iscritti</p>
+            <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white text-xs">✕</button>
+          </div>
+          {list.length === 0 ? (
+            <p className="text-white/30 text-xs">Nessuna iscrizione</p>
+          ) : (
+            <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+              {list.map((p) => (
+                <div key={p.id} className="border-b border-white/5 pb-2">
+                  <p className="text-sm text-white font-medium">{p.name}</p>
+                  <p className="text-[11px] text-white/40 font-mono">{p.contact}</p>
+                  <p className="text-[9px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

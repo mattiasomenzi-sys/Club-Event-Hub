@@ -113,6 +113,15 @@ function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEve
   return (
     <div className={`px-6 md:px-12 py-10 border-b border-white/10 hover:bg-white/[0.02] transition-colors group ${past ? "opacity-50 hover:opacity-70" : ""}`}>
       <div className="flex gap-6 items-start">
+        {event.imageUrl && (
+          <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
+            <img
+              src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
+              alt={event.title}
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+            />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           {event.category && (
             <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
@@ -154,16 +163,6 @@ function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEve
             </a>
           )}
         </div>
-
-        {event.imageUrl && (
-          <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
-            <img
-              src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
-              alt={event.title}
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-            />
-          </div>
-        )}
       </div>
     </div>
   );
