@@ -31,7 +31,7 @@ export default function ChiSiamo() {
         <Link href="/">
           <div className="flex items-center gap-3 cursor-pointer group">
             <img src={boxxLogo} alt="Boxx Club" className="w-8 h-8 object-cover border border-white/10" />
-            <span className="text-xs font-bold tracking-[0.3em] uppercase text-white/60 group-hover:text-white transition-colors">
+            <span className="text-sm font-bold tracking-[0.3em] uppercase text-white/60 group-hover:text-white transition-colors">
               ← Torna agli eventi
             </span>
           </div>
@@ -42,7 +42,7 @@ export default function ChiSiamo() {
       <div className="relative z-10 pt-24 pb-24 px-6 md:px-16 lg:px-24 max-w-3xl mx-auto">
 
         {/* Label */}
-        <p className="text-[10px] font-bold tracking-[0.5em] uppercase text-[#FF006E] mb-8">
+        <p className="text-[12px] font-bold tracking-[0.5em] uppercase text-[#FF006E] mb-8">
           Chi siamo
         </p>
 
@@ -76,7 +76,7 @@ export default function ChiSiamo() {
         {/* Contacts + Address in two columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
           <div>
-            <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-4">Contatti</p>
+            <p className="text-[12px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-4">Contatti</p>
             <div className="space-y-2">
               <a
                 href="tel:+393758001920"
@@ -93,7 +93,7 @@ export default function ChiSiamo() {
             </div>
           </div>
           <div>
-            <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-4">Indirizzo</p>
+            <p className="text-[12px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-4">Indirizzo</p>
             <div className="space-y-1">
               <p className="text-sm text-white/60">Via Molini 69</p>
               <p className="text-sm text-white/60">Lonato del Garda 25017</p>
@@ -104,7 +104,7 @@ export default function ChiSiamo() {
 
         {/* Legal */}
         <div className="border-t border-white/10 pt-8">
-          <p className="text-[9px] tracking-[0.3em] uppercase text-white/20 leading-relaxed">
+          <p className="text-[13px] tracking-[0.3em] uppercase text-white/20 leading-relaxed">
             Xpositive APS — C.F. 94025390173 — xpositive@pec.it
           </p>
         </div>

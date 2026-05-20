@@ -91,8 +91,8 @@ function ParticipateForm({ eventId }: { eventId: number }) {
   if (done) {
     return (
       <div className="border border-[#FF006E]/30 px-6 py-5 self-start w-full lg:w-auto">
-        <p className="text-[#FF006E] text-xs font-bold tracking-[0.3em] uppercase mb-1">Iscrizione ricevuta</p>
-        <p className="text-white/50 text-xs">Ti contatteremo per i dettagli. Ci vediamo presto.</p>
+        <p className="text-[#FF006E] text-sm font-bold tracking-[0.3em] uppercase mb-1">Iscrizione ricevuta</p>
+        <p className="text-white/50 text-sm">Ti contatteremo per i dettagli. Ci vediamo presto.</p>
       </div>
     );
   }
@@ -109,12 +109,12 @@ function ParticipateForm({ eventId }: { eventId: number }) {
       ) : (
         <div className="border border-white/10 p-6 flex flex-col gap-4 max-w-sm">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-white/60">Mettiti in lista</p>
-            <button onClick={() => setOpen(false)} className="text-white/20 hover:text-white text-xs transition-colors">✕</button>
+            <p className="text-[12px] font-bold tracking-[0.35em] uppercase text-white/60">Mettiti in lista</p>
+            <button onClick={() => setOpen(false)} className="text-white/20 hover:text-white text-sm transition-colors">✕</button>
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div>
-              <label className="text-[10px] tracking-[0.25em] uppercase text-white/30 block mb-1">Nome o Nick</label>
+              <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">Nome o Nick</label>
               <input
                 className={inputClass}
                 placeholder="Come ti chiami?"
@@ -124,7 +124,7 @@ function ParticipateForm({ eventId }: { eventId: number }) {
               />
             </div>
             <div>
-              <label className="text-[10px] tracking-[0.25em] uppercase text-white/30 block mb-1">Telefono o Email</label>
+              <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">Telefono o Email</label>
               <input
                 className={inputClass}
                 placeholder="Per essere ricontattato/a"
@@ -133,11 +133,11 @@ function ParticipateForm({ eventId }: { eventId: number }) {
                 required
               />
             </div>
-            {error && <p className="text-[#FF006E] text-[10px] tracking-widest uppercase">{error}</p>}
+            {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
             <button
               type="submit"
               disabled={loading || !name.trim() || !contact.trim()}
-              className="bg-[#FF006E] text-white text-xs font-black tracking-[0.35em] uppercase py-4 hover:bg-white hover:text-black transition-colors disabled:opacity-30"
+              className="bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-4 hover:bg-white hover:text-black transition-colors disabled:opacity-30"
             >
               {loading ? "..." : "INVIA →"}
             </button>
@@ -157,7 +157,7 @@ export default function EventDetail() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center"
         style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-        <p className="text-white/30 text-xs tracking-[0.35em] uppercase">Caricamento...</p>
+        <p className="text-white/30 text-sm tracking-[0.35em] uppercase">Caricamento...</p>
       </div>
     );
   }
@@ -168,7 +168,7 @@ export default function EventDetail() {
         style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
         <p className="text-white/40 text-sm tracking-widest uppercase">Evento non trovato</p>
         <button onClick={() => navigate("/")}
-          className="text-xs tracking-[0.3em] uppercase text-[#FF006E] hover:text-white transition-colors">
+          className="text-sm tracking-[0.3em] uppercase text-[#FF006E] hover:text-white transition-colors">
           ← Torna alla home
         </button>
       </div>
@@ -212,7 +212,7 @@ export default function EventDetail() {
             className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[10px] tracking-[0.3em] uppercase">Tutti gli eventi</span>
+            <span className="text-[12px] tracking-[0.3em] uppercase">Tutti gli eventi</span>
           </button>
           <img src={boxxLogo} alt="Boxx Club" className="w-8 h-8 object-cover border border-white/10" />
         </div>
@@ -242,13 +242,13 @@ export default function EventDetail() {
                       />
                       <div className="absolute inset-0 flex flex-col justify-end p-5">
                         {event.category && (
-                          <p className="text-[9px] tracking-[0.4em] uppercase text-[#FF006E] mb-2">{event.category}</p>
+                          <p className="text-[13px] tracking-[0.4em] uppercase text-[#FF006E] mb-2">{event.category}</p>
                         )}
                         <p className="text-2xl font-black uppercase leading-none tracking-tighter text-white mb-1"
                           style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
                           {event.title}
                         </p>
-                        <p className="text-xs text-white/60 font-mono">{day} {month} {year}</p>
+                        <p className="text-sm text-white/60 font-mono">{day} {month} {year}</p>
                       </div>
                     </>
                   )}
@@ -264,14 +264,14 @@ export default function EventDetail() {
           <div className="lg:order-1 flex-1 flex flex-col justify-between px-6 md:px-10 lg:px-16 pt-8 pb-0">
             <div>
               {event.category && (
-                <p className="text-[10px] font-bold tracking-[0.5em] uppercase text-[#FF006E] mb-5">
+                <p className="text-[12px] font-bold tracking-[0.5em] uppercase text-[#FF006E] mb-5">
                   {event.category}
                 </p>
               )}
 
               {/* Date block */}
               <div className="mb-8 border-l-2 border-[#FF006E] pl-5">
-                <p className="text-[11px] tracking-[0.4em] uppercase text-white/50 mb-1">{weekday}</p>
+                <p className="text-[13px] tracking-[0.4em] uppercase text-white/50 mb-1">{weekday}</p>
                 <p className="text-5xl md:text-7xl font-black leading-none text-white tabular-nums">
                   {day}
                 </p>
@@ -300,7 +300,7 @@ export default function EventDetail() {
               {event.dresscode && (
                 <div className="inline-flex items-center gap-3 border border-white/10 px-4 py-2.5 mb-8">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FF006E] flex-shrink-0" />
-                  <span className="text-[11px] tracking-[0.25em] uppercase text-white/50">
+                  <span className="text-[13px] tracking-[0.25em] uppercase text-white/50">
                     {event.dresscode}
                   </span>
                 </div>
@@ -311,7 +311,7 @@ export default function EventDetail() {
             <div className="flex flex-col gap-4 pb-10 lg:pb-16">
               {event.tickettailorEmbed ? (
                 <div className="w-full">
-                  <p className="text-[10px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
+                  <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
                   <div className="tickettailor-embed" dangerouslySetInnerHTML={{ __html: event.tickettailorEmbed }} />
                 </div>
               ) : (
@@ -324,7 +324,7 @@ export default function EventDetail() {
                   >
                     PRE-TESSERAMENTO →
                   </a>
-                  <p className="text-[10px] tracking-[0.25em] uppercase text-white/25">
+                  <p className="text-[12px] tracking-[0.25em] uppercase text-white/25">
                     L'ingresso è riservato esclusivamente ai soci tesserati
                   </p>
                 </>
@@ -344,7 +344,7 @@ export default function EventDetail() {
               {/* Area */}
               {event.areaDescription && (
                 <div>
-                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Aree</p>
+                  <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Aree</p>
                   <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.areaDescription}</p>
                 </div>
               )}
@@ -352,7 +352,7 @@ export default function EventDetail() {
               {/* Tessera */}
               {event.membershipInfo && (
                 <div>
-                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Tesseramento</p>
+                  <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Tesseramento</p>
                   <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.membershipInfo}</p>
                 </div>
               )}
@@ -363,7 +363,7 @@ export default function EventDetail() {
               const rows = parsePricing(event.memberQuotes);
               return (
                 <div>
-                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Quote soci</p>
+                  <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Quote soci</p>
                   {rows ? (
                     <table className="w-full max-w-sm border-collapse">
                       <tbody>
@@ -385,7 +385,7 @@ export default function EventDetail() {
             {/* Note */}
             {event.memberNotes && (
               <div>
-                <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Note</p>
+                <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Note</p>
                 <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.memberNotes}</p>
               </div>
             )}
@@ -394,7 +394,7 @@ export default function EventDetail() {
 
         {/* Footer strip */}
         <div className="border-t border-white/5 px-6 md:px-12 py-5 flex items-center justify-between">
-          <p className="text-[9px] tracking-[0.35em] uppercase text-white/20">
+          <p className="text-[13px] tracking-[0.35em] uppercase text-white/20">
             BOXX CLUB PRIVATO — LAGO DI GARDA
           </p>
           <div className="flex gap-4">

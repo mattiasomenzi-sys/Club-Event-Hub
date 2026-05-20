@@ -37,7 +37,7 @@ export default function RecuperaAdmin() {
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-4 mb-10">
           <img src={boxxLogo} alt="Boxx" className="w-10 h-10 border border-white/10 object-cover" />
-          <span className="text-xs tracking-[0.35em] uppercase text-white/40">Recupero accesso</span>
+          <span className="text-sm tracking-[0.35em] uppercase text-white/40">Recupero accesso</span>
         </div>
 
         {success ? (
@@ -48,13 +48,13 @@ export default function RecuperaAdmin() {
         ) : (
           <>
             <h1 className="text-2xl font-black uppercase tracking-tighter text-white mb-3">Recupera accesso</h1>
-            <p className="text-xs text-white/30 leading-relaxed mb-8">
+            <p className="text-sm text-white/30 leading-relaxed mb-8">
               Inserisci il <strong className="text-white/50">codice di recupero</strong> (visibile nelle impostazioni Replit → Secrets → RECOVERY_KEY) e scegli una nuova chiave admin.
             </p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="text-[10px] tracking-[0.25em] uppercase text-white/40 block mb-1">Codice di recupero</label>
+                <label className="text-[12px] tracking-[0.25em] uppercase text-white/40 block mb-1">Codice di recupero</label>
                 <input
                   type="password"
                   value={recoveryKey}
@@ -65,7 +65,7 @@ export default function RecuperaAdmin() {
                 />
               </div>
               <div>
-                <label className="text-[10px] tracking-[0.25em] uppercase text-white/40 block mb-1">Nuova chiave admin</label>
+                <label className="text-[12px] tracking-[0.25em] uppercase text-white/40 block mb-1">Nuova chiave admin</label>
                 <input
                   type="password"
                   value={newKey}
@@ -77,7 +77,7 @@ export default function RecuperaAdmin() {
                 />
               </div>
               <div>
-                <label className="text-[10px] tracking-[0.25em] uppercase text-white/40 block mb-1">Conferma nuova chiave</label>
+                <label className="text-[12px] tracking-[0.25em] uppercase text-white/40 block mb-1">Conferma nuova chiave</label>
                 <input
                   type="password"
                   value={confirm}
@@ -87,15 +87,15 @@ export default function RecuperaAdmin() {
                   placeholder="Ripeti la nuova chiave"
                 />
               </div>
-              {error && <p className="text-[#FF006E] text-xs tracking-widest uppercase">{error}</p>}
+              {error && <p className="text-[#FF006E] text-sm tracking-widest uppercase">{error}</p>}
               <button type="submit" disabled={loading || !recoveryKey || !newKey || !confirm}
-                className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-40">
+                className="bg-[#FF006E] text-white text-sm font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-40">
                 {loading ? "..." : "IMPOSTA NUOVA CHIAVE"}
               </button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-white/10">
-              <Link href="/admin" className="text-[10px] tracking-[0.25em] uppercase text-white/25 hover:text-white transition-colors">
+              <Link href="/admin" className="text-[12px] tracking-[0.25em] uppercase text-white/25 hover:text-white transition-colors">
                 ← Torna al login
               </Link>
             </div>

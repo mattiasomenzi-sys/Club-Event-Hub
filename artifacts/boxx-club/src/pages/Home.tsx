@@ -124,11 +124,11 @@ function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEve
         )}
         <div className="flex-1 min-w-0">
           {event.category && (
-            <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
+            <p className="text-[12px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
               {event.category}
             </p>
           )}
-          <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 mb-1">{day}</p>
+          <p className="text-[12px] tracking-[0.2em] uppercase text-white/40 mb-1">{day}</p>
           <p className="text-sm font-mono text-white/60 mb-4">{date} &nbsp; {event.time}</p>
 
           {usingRealEvents ? (
@@ -147,18 +147,18 @@ function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEve
             <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-3">{event.description}</p>
           )}
           {event.dresscode && (
-            <p className="text-[11px] tracking-[0.15em] uppercase text-white/30 mb-5">{event.dresscode}</p>
+            <p className="text-[13px] tracking-[0.15em] uppercase text-white/30 mb-5">{event.dresscode}</p>
           )}
 
           {usingRealEvents ? (
             <Link href={`/eventi/${event.id}`}
-              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
+              className="inline-block text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
               {past ? "VEDI DETTAGLI →" : "ACCEDI ALL'EVENTO →"}
             </Link>
           ) : (
             <a href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
               target="_blank" rel="noopener noreferrer"
-              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
+              className="inline-block text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
               ACCEDI ALL'EVENTO →
             </a>
           )}
@@ -236,11 +236,11 @@ export default function Home() {
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3 md:hidden border-b border-white/10 bg-black/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <img src={boxxLogo} alt="Boxx Club" className="w-8 h-8 object-cover" />
-          <span className="text-xs font-bold tracking-[0.3em] uppercase text-white">BOXX</span>
+          <span className="text-sm font-bold tracking-[0.3em] uppercase text-white">BOXX</span>
         </div>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="text-white/60 hover:text-white text-xs tracking-widest uppercase transition-colors"
+          className="text-white/60 hover:text-white text-sm tracking-widest uppercase transition-colors"
         >
           {menuOpen ? "CHIUDI" : "MENU"}
         </button>
@@ -291,7 +291,7 @@ export default function Home() {
           {/* Logo + brand */}
           <div className="mb-10">
             <img src={boxxLogo} alt="Boxx Club" className="w-14 h-14 object-cover mb-4 border border-white/10" />
-            <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/40 leading-relaxed">
+            <p className="text-[12px] font-bold tracking-[0.4em] uppercase text-white/40 leading-relaxed">
               CLUB PRIVATO<br />LAGO DI GARDA
             </p>
           </div>
@@ -317,18 +317,18 @@ export default function Home() {
         <div className="flex flex-col gap-4">
           <a
             href="tel:+393758001920"
-            className="text-[11px] font-black tracking-[0.2em] text-white/70 hover:text-[#FF006E] transition-colors"
+            className="text-[13px] font-black tracking-[0.2em] text-white/70 hover:text-[#FF006E] transition-colors"
           >
             +39 375 800 1920
           </a>
-          <Link href="/chi-siamo" className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
+          <Link href="/chi-siamo" className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
             CHI SIAMO
           </Link>
           <a
             href="https://registrosociasx.it/registrazione?Locale=XP1"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
+            className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
           >
             PRE-TESSERAMENTO
           </a>
@@ -345,12 +345,12 @@ export default function Home() {
               href="https://t.me/boxxclub"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-bold tracking-widest uppercase text-white/30 hover:text-[#FF006E] transition-colors leading-none mt-0.5"
+              className="text-[12px] font-bold tracking-widest uppercase text-white/30 hover:text-[#FF006E] transition-colors leading-none mt-0.5"
             >
               TG
             </a>
           </div>
-          <p className="text-[9px] text-white/20 tracking-widest">
+          <p className="text-[13px] text-white/20 tracking-widest">
             &copy; {new Date().getFullYear()} BOXX CLUB
           </p>
         </div>
@@ -370,7 +370,7 @@ export default function Home() {
             >
               BOXX
             </h1>
-            <p className="text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-white/40 mt-2 leading-relaxed">
+            <p className="text-[13px] sm:text-[12px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-white/40 mt-2 leading-relaxed">
               uno spazio contemporaneo<br className="sm:hidden" /> per una comunità libera<br className="sm:hidden" /> di essere se stessa — Lago di Garda
             </p>
           </div>
@@ -386,7 +386,7 @@ export default function Home() {
               <div className="md:hidden px-6 pt-5 pb-3">
                 <a
                   href="tel:+393758001920"
-                  className="text-[11px] tracking-[0.25em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
+                  className="text-[13px] tracking-[0.25em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
                 >
                   Per info → <span className="text-white/70 font-bold">375 800 1920</span>
                 </a>
@@ -394,7 +394,7 @@ export default function Home() {
 
               {/* Upcoming events */}
               {events.length === 0 && !isLoading && (
-                <div className="px-6 md:px-12 py-20 text-white/20 text-xs tracking-[0.35em] uppercase">
+                <div className="px-6 md:px-12 py-20 text-white/20 text-sm tracking-[0.35em] uppercase">
                   Nessun evento in programma
                 </div>
               )}
@@ -409,7 +409,7 @@ export default function Home() {
                   >
                     {/* Month label */}
                     <div className="px-6 md:px-12 py-3 border-b border-white/5 sticky top-[0px] md:top-0 z-20 bg-black/60 backdrop-blur-sm mt-14 md:mt-0">
-                      <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-[#FF006E]">
+                      <span className="text-[12px] font-bold tracking-[0.4em] uppercase text-[#FF006E]">
                         {m.label}
                       </span>
                     </div>
@@ -428,10 +428,10 @@ export default function Home() {
                     onClick={() => setArchiveOpen(!archiveOpen)}
                     className="w-full px-6 md:px-12 py-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors group"
                   >
-                    <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/20 group-hover:text-white/40 transition-colors">
+                    <span className="text-[12px] font-bold tracking-[0.4em] uppercase text-white/20 group-hover:text-white/40 transition-colors">
                       ARCHIVIO ({pastEvents.length} {pastEvents.length === 1 ? "evento" : "eventi"})
                     </span>
-                    <span className="text-white/20 group-hover:text-white/40 transition-colors text-xs">
+                    <span className="text-white/20 group-hover:text-white/40 transition-colors text-sm">
                       {archiveOpen ? "▲" : "▼"}
                     </span>
                   </button>
@@ -447,7 +447,7 @@ export default function Home() {
           <div className="border-t border-white/10">
             {/* CTA row */}
             <div className="px-6 md:px-12 py-16">
-              <p className="text-[10px] tracking-[0.35em] uppercase text-white/30 mb-4">
+              <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-4">
                 ACCESSO RISERVATO AI SOCI
               </p>
               <a
@@ -463,17 +463,17 @@ export default function Home() {
             {/* Contacts + Address */}
             <div className="px-6 md:px-12 py-10 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               <div>
-                <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Contatti</p>
-                <a href="tel:+393758001920" className="block text-xs text-white/50 hover:text-white transition-colors mb-1">
+                <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Contatti</p>
+                <a href="tel:+393758001920" className="block text-sm text-white/50 hover:text-white transition-colors mb-1">
                   +39 375 800 1920
                 </a>
-                <a href="mailto:info@xpositive.it" className="block text-xs text-white/50 hover:text-white transition-colors">
+                <a href="mailto:info@xpositive.it" className="block text-sm text-white/50 hover:text-white transition-colors">
                   info@xpositive.it
                 </a>
               </div>
               <div>
-                <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Indirizzo</p>
-                <p className="text-xs text-white/50 leading-relaxed">
+                <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Indirizzo</p>
+                <p className="text-sm text-white/50 leading-relaxed">
                   Via Molini 69<br />
                   Lonato del Garda 25017<br />
                   Scala A
@@ -481,12 +481,12 @@ export default function Home() {
               </div>
               <div className="flex flex-col justify-between gap-4">
                 <div>
-                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Seguici</p>
+                  <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Seguici</p>
                   <a
                     href="https://www.instagram.com/boxxclub"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-xs text-white/50 hover:text-white transition-colors mb-1"
+                    className="block text-sm text-white/50 hover:text-white transition-colors mb-1"
                   >
                     Instagram
                   </a>
@@ -494,7 +494,7 @@ export default function Home() {
                     href="https://t.me/boxxclub"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-xs text-white/50 hover:text-white transition-colors"
+                    className="block text-sm text-white/50 hover:text-white transition-colors"
                   >
                     Telegram
                   </a>
@@ -513,7 +513,7 @@ export default function Home() {
                       src="https://www.annunci69.it/clubprive/imgs/logo-white.png"
                       alt="Powered by Annunci69"
                     />
-                    <span className="text-[9px] text-white/30 tracking-widest">Siamo su Annunci69.it</span>
+                    <span className="text-[13px] text-white/30 tracking-widest">Siamo su Annunci69.it</span>
                   </a>
                 </div>
               </div>
@@ -521,10 +521,10 @@ export default function Home() {
 
             {/* Legal */}
             <div className="px-6 md:px-12 py-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <p className="text-[9px] text-white/20 tracking-[0.2em] uppercase">
+              <p className="text-[13px] text-white/20 tracking-[0.2em] uppercase">
                 Xpositive APS — C.F. 94025390173 — xpositive@pec.it
               </p>
-              <p className="text-[9px] text-white/20 tracking-widest">
+              <p className="text-[13px] text-white/20 tracking-widest">
                 &copy; {new Date().getFullYear()} BOXX CLUB
               </p>
             </div>
