@@ -156,19 +156,31 @@ export default function EventDetail() {
             )}
           </div>
 
-          {/* CTA */}
+          {/* Tickettailor embed or CTA */}
           <div className="flex flex-col gap-4 mt-4">
-            <a
-              href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start"
-            >
-              PRE-TESSERAMENTO →
-            </a>
-            <p className="text-[10px] tracking-[0.25em] uppercase text-white/25">
-              L'ingresso è riservato esclusivamente ai soci tesserati
-            </p>
+            {event.tickettailorEmbed ? (
+              <div className="w-full">
+                <p className="text-[10px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
+                <div
+                  className="tickettailor-embed"
+                  dangerouslySetInnerHTML={{ __html: event.tickettailorEmbed }}
+                />
+              </div>
+            ) : (
+              <>
+                <a
+                  href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start"
+                >
+                  PRE-TESSERAMENTO →
+                </a>
+                <p className="text-[10px] tracking-[0.25em] uppercase text-white/25">
+                  L'ingresso è riservato esclusivamente ai soci tesserati
+                </p>
+              </>
+            )}
           </div>
         </div>
 

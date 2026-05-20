@@ -11,3 +11,5 @@ export * from './event';
 export * from './eventInput';
 export * from './eventUpdate';
 export * from './healthStatus';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';

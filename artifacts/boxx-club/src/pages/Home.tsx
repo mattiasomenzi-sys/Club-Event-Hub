@@ -68,6 +68,9 @@ const PLACEHOLDER_EVENTS: Event[] = [
     category: "SERATA",
     imageUrl: null,
     registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
+    tickettailorEmbed: null,
+    isRecurring: false,
+    recurringPattern: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -81,6 +84,9 @@ const PLACEHOLDER_EVENTS: Event[] = [
     category: "SPECIAL",
     imageUrl: null,
     registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
+    tickettailorEmbed: null,
+    isRecurring: false,
+    recurringPattern: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -94,6 +100,9 @@ const PLACEHOLDER_EVENTS: Event[] = [
     category: "SERATA",
     imageUrl: null,
     registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
+    tickettailorEmbed: null,
+    isRecurring: false,
+    recurringPattern: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -298,52 +307,68 @@ export default function Home() {
                           key={event.id}
                           className="px-6 md:px-12 py-10 border-b border-white/10 hover:bg-white/[0.02] transition-colors group"
                         >
-                          {event.category && (
-                            <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
-                              {event.category}
-                            </p>
-                          )}
+                          <div className="flex gap-6 items-start">
+                            {/* Text content */}
+                            <div className="flex-1 min-w-0">
+                              {event.category && (
+                                <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
+                                  {event.category}
+                                </p>
+                              )}
 
-                          <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 mb-1">
-                            {day}
-                          </p>
-                          <p className="text-sm font-mono text-white/60 mb-4">
-                            {date} &nbsp; {event.time}
-                          </p>
+                              <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 mb-1">
+                                {day}
+                              </p>
+                              <p className="text-sm font-mono text-white/60 mb-4">
+                                {date} &nbsp; {event.time}
+                              </p>
 
-                          <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300">
-                            {event.title}
-                          </h2>
+                              <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300">
+                                {event.title}
+                              </h2>
 
-                          {event.description && (
-                            <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-3">
-                              {event.description}
-                            </p>
-                          )}
+                              {event.description && (
+                                <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-3">
+                                  {event.description}
+                                </p>
+                              )}
 
-                          {event.dresscode && (
-                            <p className="text-[11px] tracking-[0.15em] uppercase text-white/30 mb-5">
-                              {event.dresscode}
-                            </p>
-                          )}
+                              {event.dresscode && (
+                                <p className="text-[11px] tracking-[0.15em] uppercase text-white/30 mb-5">
+                                  {event.dresscode}
+                                </p>
+                              )}
 
-                          {usingRealEvents ? (
-                            <Link
-                              href={`/eventi/${event.id}`}
-                              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
-                            >
-                              ACCEDI ALL'EVENTO →
-                            </Link>
-                          ) : (
-                            <a
-                              href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
-                            >
-                              ACCEDI ALL'EVENTO →
-                            </a>
-                          )}
+                              {usingRealEvents ? (
+                                <Link
+                                  href={`/eventi/${event.id}`}
+                                  className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
+                                >
+                                  ACCEDI ALL'EVENTO →
+                                </Link>
+                              ) : (
+                                <a
+                                  href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
+                                >
+                                  ACCEDI ALL'EVENTO →
+                                </a>
+                              )}
+                            </div>
+
+                            {/* Locandina thumbnail */}
+                            {event.imageUrl && (
+                              <div className="hidden md:block flex-shrink-0 w-28 h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
+                                <img
+                                  src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
+                                  alt={event.title}
+                                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })}

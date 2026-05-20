@@ -25,6 +25,11 @@ export interface Event {
   imageUrl?: string | null;
   /** @nullable */
   registrationUrl?: string | null;
+  /** @nullable */
+  tickettailorEmbed?: string | null;
+  isRecurring: boolean;
+  /** @nullable */
+  recurringPattern?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,6 +46,9 @@ export interface EventInput {
   category?: string;
   imageUrl?: string;
   registrationUrl?: string;
+  tickettailorEmbed?: string;
+  isRecurring?: boolean;
+  recurringPattern?: string;
 }
 
 export interface EventUpdate {
@@ -53,6 +61,23 @@ export interface EventUpdate {
   category?: string;
   imageUrl?: string;
   registrationUrl?: string;
+  tickettailorEmbed?: string;
+  isRecurring?: boolean;
+  recurringPattern?: string;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
 }
 
 export interface ErrorResponse {

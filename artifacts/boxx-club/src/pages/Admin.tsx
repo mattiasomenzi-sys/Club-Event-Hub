@@ -1,12 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useListEvents } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListEventsQueryKey } from "@workspace/api-client-react";
+import { Upload, X, Loader2, RefreshCw } from "lucide-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
 
 const API_BASE = "/api";
+
+const RECURRING_PATTERNS = [
+  { value: "primo-sabato", label: "Primo sabato del mese" },
+  { value: "secondo-sabato", label: "Secondo sabato del mese" },
+  { value: "terzo-sabato", label: "Terzo sabato del mese" },
+  { value: "quarto-sabato", label: "Quarto sabato del mese" },
+  { value: "tutti-i-venerdi", label: "Tutti i venerdì" },
+  { value: "tutti-i-sabati", label: "Tutti i sabati" },
+  { value: "tutti-i-mercoledi", label: "Tutti i mercoledì" },
+  { value: "personalizzato", label: "Schema personalizzato" },
+];
 
 interface EventFormData {
   title: string;
@@ -16,6 +28,10 @@ interface EventFormData {
   dresscode: string;
   category: string;
   registrationUrl: string;
+  imageUrl: string;
+  tickettailorEmbed: string;
+  isRecurring: boolean;
+  recurringPattern: string;
 }
 
 const emptyForm: EventFormData = {
@@ -26,7 +42,17 @@ const emptyForm: EventFormData = {
   dresscode: "",
   category: "SERATA",
   registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
+  imageUrl: "",
+  tickettailorEmbed: "",
+  isRecurring: false,
+  recurringPattern: "",
 };
+
+function getImageSrc(imageUrl: string): string {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith("/objects/")) return `/api/storage${imageUrl}`;
+  return imageUrl;
+}
 
 function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
   const [key, setKey] = useState("");
@@ -40,28 +66,16 @@ function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
     try {
       const res = await fetch(`${API_BASE}/events`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Admin-Key": key,
-        },
+        headers: { "Content-Type": "application/json", "X-Admin-Key": key },
         body: JSON.stringify({ title: "__test__", date: "2099-01-01", time: "00:00" }),
       });
-      if (res.status === 401) {
-        setError("Chiave non valida.");
-        setLoading(false);
-        return;
-      }
+      if (res.status === 401) { setError("Chiave non valida."); setLoading(false); return; }
       if (res.ok) {
         const created = await res.json();
-        await fetch(`${API_BASE}/events/${created.id}`, {
-          method: "DELETE",
-          headers: { "X-Admin-Key": key },
-        });
+        await fetch(`${API_BASE}/events/${created.id}`, { method: "DELETE", headers: { "X-Admin-Key": key } });
       }
       onLogin(key);
-    } catch {
-      setError("Errore di connessione.");
-    }
+    } catch { setError("Errore di connessione."); }
     setLoading(false);
   }
 
@@ -73,9 +87,7 @@ function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
           <img src={boxxLogo} alt="Boxx" className="w-10 h-10 border border-white/10 object-cover" />
           <span className="text-xs tracking-[0.35em] uppercase text-white/40">Admin</span>
         </div>
-        <h1 className="text-2xl font-black uppercase tracking-tighter text-white mb-8">
-          Accesso Admin
-        </h1>
+        <h1 className="text-2xl font-black uppercase tracking-tighter text-white mb-8">Accesso Admin</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="password"
@@ -85,15 +97,97 @@ function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
             className="bg-white/5 border border-white/10 text-white text-sm px-4 py-3 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 tracking-wider"
           />
           {error && <p className="text-[#FF006E] text-xs tracking-widest uppercase">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading || !key}
-            className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-40"
-          >
+          <button type="submit" disabled={loading || !key}
+            className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-40">
             {loading ? "..." : "ACCEDI"}
           </button>
         </form>
       </div>
+    </div>
+  );
+}
+
+function ImageUploader({
+  adminKey,
+  currentImageUrl,
+  onUploaded,
+}: {
+  adminKey: string;
+  currentImageUrl: string;
+  onUploaded: (objectPath: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [preview, setPreview] = useState<string>(currentImageUrl ? getImageSrc(currentImageUrl) : "");
+
+  async function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) { setError("Seleziona un'immagine."); return; }
+    setUploading(true);
+    setError("");
+    try {
+      const urlRes = await fetch(`${API_BASE}/storage/uploads/request-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+      });
+      if (!urlRes.ok) { setError("Errore nel richiedere l'URL di upload."); setUploading(false); return; }
+      const { uploadURL, objectPath } = await urlRes.json();
+
+      const putRes = await fetch(uploadURL, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!putRes.ok) { setError("Errore durante l'upload del file."); setUploading(false); return; }
+
+      const localPreview = URL.createObjectURL(file);
+      setPreview(localPreview);
+      onUploaded(objectPath);
+    } catch { setError("Errore di connessione."); }
+    setUploading(false);
+  }
+
+  return (
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+      />
+      <div
+        className="relative border border-white/10 hover:border-[#FF006E]/50 transition-colors cursor-pointer group"
+        style={{ minHeight: 120 }}
+        onClick={() => inputRef.current?.click()}
+      >
+        {preview ? (
+          <div className="relative">
+            <img src={preview} alt="Locandina" className="w-full max-h-48 object-contain bg-black/40" />
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="text-xs tracking-[0.25em] uppercase text-white">Cambia immagine</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 py-8 text-white/30 group-hover:text-white/60 transition-colors">
+            {uploading ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <>
+                <Upload className="w-6 h-6" />
+                <span className="text-[10px] tracking-[0.25em] uppercase">Carica locandina</span>
+              </>
+            )}
+          </div>
+        )}
+        {uploading && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-[#FF006E]" />
+          </div>
+        )}
+      </div>
+      {error && <p className="text-[#FF006E] text-[10px] tracking-widest uppercase mt-1">{error}</p>}
     </div>
   );
 }
@@ -114,8 +208,18 @@ function EventForm({
   const [form, setForm] = useState<EventFormData>(initial);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [customPattern, setCustomPattern] = useState(
+    initial.recurringPattern && !RECURRING_PATTERNS.find(p => p.value === initial.recurringPattern && p.value !== "personalizzato")
+      ? initial.recurringPattern
+      : ""
+  );
+  const [selectedPattern, setSelectedPattern] = useState(
+    initial.recurringPattern
+      ? (RECURRING_PATTERNS.find(p => p.value === initial.recurringPattern) ? initial.recurringPattern : "personalizzato")
+      : ""
+  );
 
-  function set(field: keyof EventFormData, value: string) {
+  function set<K extends keyof EventFormData>(field: K, value: EventFormData[K]) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
@@ -123,10 +227,13 @@ function EventForm({
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    const finalPattern = selectedPattern === "personalizzato" ? customPattern : selectedPattern;
+
     try {
       const url = eventId ? `${API_BASE}/events/${eventId}` : `${API_BASE}/events`;
       const method = eventId ? "PATCH" : "POST";
-      const body: Record<string, string> = {};
+      const body: Record<string, unknown> = {};
       if (form.title) body.title = form.title;
       if (form.description) body.description = form.description;
       if (form.date) body.date = form.date;
@@ -134,13 +241,14 @@ function EventForm({
       if (form.dresscode) body.dresscode = form.dresscode;
       if (form.category) body.category = form.category;
       if (form.registrationUrl) body.registrationUrl = form.registrationUrl;
+      if (form.imageUrl) body.imageUrl = form.imageUrl;
+      if (form.tickettailorEmbed) body.tickettailorEmbed = form.tickettailorEmbed;
+      body.isRecurring = form.isRecurring;
+      if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
 
       const res = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Admin-Key": adminKey,
-        },
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
         body: JSON.stringify(body),
       });
 
@@ -152,34 +260,51 @@ function EventForm({
       }
 
       onSave();
-    } catch {
-      setError("Errore di connessione.");
-    }
+    } catch { setError("Errore di connessione."); }
     setLoading(false);
   }
 
-  const inputClass =
-    "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
   const labelClass = "text-[10px] tracking-[0.25em] uppercase text-white/40 mb-1 block";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {/* Locandina */}
+      <div>
+        <label className={labelClass}>Locandina</label>
+        <ImageUploader
+          adminKey={adminKey}
+          currentImageUrl={form.imageUrl}
+          onUploaded={(objectPath) => set("imageUrl", objectPath)}
+        />
+        {form.imageUrl && (
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[10px] text-white/30 font-mono truncate flex-1">{form.imageUrl}</span>
+            <button type="button" onClick={() => set("imageUrl", "")}
+              className="text-white/30 hover:text-[#FF006E] transition-colors">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Titolo */}
       <div>
         <label className={labelClass}>Titolo *</label>
         <input required className={inputClass} value={form.title} onChange={(e) => set("title", e.target.value)} />
       </div>
+
+      {/* Descrizione */}
       <div>
         <label className={labelClass}>Descrizione</label>
-        <textarea
-          className={`${inputClass} resize-none`}
-          rows={3}
-          value={form.description}
-          onChange={(e) => set("description", e.target.value)}
-        />
+        <textarea className={`${inputClass} resize-none`} rows={4}
+          value={form.description} onChange={(e) => set("description", e.target.value)} />
       </div>
+
+      {/* Data & Orario */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className={labelClass}>Data * (YYYY-MM-DD)</label>
+          <label className={labelClass}>Data *</label>
           <input required type="date" className={inputClass} value={form.date} onChange={(e) => set("date", e.target.value)} />
         </div>
         <div>
@@ -187,36 +312,106 @@ function EventForm({
           <input required className={inputClass} placeholder="22:00" value={form.time} onChange={(e) => set("time", e.target.value)} />
         </div>
       </div>
+
+      {/* Categoria & Dress Code */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className={labelClass}>Categoria</label>
-          <input className={inputClass} placeholder="SERATA / SPECIAL" value={form.category} onChange={(e) => set("category", e.target.value)} />
+          <input className={inputClass} placeholder="SERATA / SPECIAL" value={form.category}
+            onChange={(e) => set("category", e.target.value)} />
         </div>
         <div>
           <label className={labelClass}>Dress Code</label>
           <input className={inputClass} value={form.dresscode} onChange={(e) => set("dresscode", e.target.value)} />
         </div>
       </div>
+
+      {/* Evento ricorrente */}
+      <div className="border border-white/10 p-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div
+            onClick={() => set("isRecurring", !form.isRecurring)}
+            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 cursor-pointer ${form.isRecurring ? "bg-[#FF006E]" : "bg-white/10"}`}
+          >
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.isRecurring ? "translate-x-5" : "translate-x-0.5"}`} />
+          </div>
+          <div>
+            <span className="text-sm text-white font-medium flex items-center gap-2">
+              <RefreshCw className="w-3.5 h-3.5 text-white/40" />
+              Evento ricorrente
+            </span>
+            <span className="text-[10px] text-white/30 tracking-wider">
+              La data inserita sopra è la prossima occorrenza
+            </span>
+          </div>
+        </label>
+
+        {form.isRecurring && (
+          <div className="mt-4 flex flex-col gap-3">
+            <div>
+              <label className={labelClass}>Schema di ricorrenza</label>
+              <select
+                className={`${inputClass} appearance-none`}
+                value={selectedPattern}
+                onChange={(e) => setSelectedPattern(e.target.value)}
+              >
+                <option value="">— Seleziona —</option>
+                {RECURRING_PATTERNS.map(p => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+            {selectedPattern === "personalizzato" && (
+              <div>
+                <label className={labelClass}>Schema personalizzato</label>
+                <input
+                  className={inputClass}
+                  placeholder="es. ogni primo e terzo sabato del mese"
+                  value={customPattern}
+                  onChange={(e) => setCustomPattern(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Link registrazione */}
       <div>
         <label className={labelClass}>Link registrazione</label>
-        <input className={inputClass} value={form.registrationUrl} onChange={(e) => set("registrationUrl", e.target.value)} />
+        <input className={inputClass} value={form.registrationUrl}
+          onChange={(e) => set("registrationUrl", e.target.value)} />
+      </div>
+
+      {/* Tickettailor embed */}
+      <div>
+        <label className={labelClass}>
+          Embed Tickettailor
+          <span className="ml-2 text-white/20 normal-case tracking-normal">
+            (HTML o shortcode WordPress)
+          </span>
+        </label>
+        <textarea
+          className={`${inputClass} resize-none font-mono text-xs`}
+          rows={5}
+          placeholder={`<iframe src="https://www.tickettailor.com/..." />`}
+          value={form.tickettailorEmbed}
+          onChange={(e) => set("tickettailorEmbed", e.target.value)}
+        />
+        <p className="text-[10px] text-white/25 mt-1 tracking-wide">
+          Incolla qui il codice embed HTML o shortcode di Tickettailor. Verrà mostrato nella pagina evento.
+        </p>
       </div>
 
       {error && <p className="text-[#FF006E] text-xs tracking-widest uppercase">{error}</p>}
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-2.5 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-40"
-        >
+        <button type="submit" disabled={loading}
+          className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-2.5 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-40">
           {loading ? "..." : eventId ? "SALVA MODIFICHE" : "CREA EVENTO"}
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-xs font-bold tracking-[0.3em] uppercase py-2.5 px-6 border border-white/10 text-white/40 hover:text-white hover:border-white/30 transition-colors"
-        >
+        <button type="button" onClick={onCancel}
+          className="text-xs font-bold tracking-[0.3em] uppercase py-2.5 px-6 border border-white/10 text-white/40 hover:text-white hover:border-white/30 transition-colors">
           ANNULLA
         </button>
       </div>
@@ -234,10 +429,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
   async function handleDelete(id: number) {
     if (!confirm("Eliminare questo evento?")) return;
     setDeletingId(id);
-    await fetch(`${API_BASE}/events/${id}`, {
-      method: "DELETE",
-      headers: { "X-Admin-Key": adminKey },
-    });
+    await fetch(`${API_BASE}/events/${id}`, { method: "DELETE", headers: { "X-Admin-Key": adminKey } });
     await queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
     setDeletingId(null);
   }
@@ -257,14 +449,16 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       dresscode: e.dresscode ?? "",
       category: e.category ?? "",
       registrationUrl: e.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1",
+      imageUrl: e.imageUrl ?? "",
+      tickettailorEmbed: e.tickettailorEmbed ?? "",
+      isRecurring: e.isRecurring ?? false,
+      recurringPattern: e.recurringPattern ?? "",
     };
   }
 
   return (
-    <div
-      className="min-h-screen bg-black text-white px-6 md:px-12 py-10"
-      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-    >
+    <div className="min-h-screen bg-black text-white px-6 md:px-12 py-10"
+      style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-6">
         <div className="flex items-center gap-4">
@@ -275,13 +469,9 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
           </div>
         </div>
         <div className="flex gap-4 items-center">
-          <a href="/" className="text-[10px] tracking-[0.25em] uppercase text-white/30 hover:text-white transition-colors">
-            VEDI SITO
-          </a>
-          <button
-            onClick={onLogout}
-            className="text-[10px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] transition-colors"
-          >
+          <a href="/" className="text-[10px] tracking-[0.25em] uppercase text-white/30 hover:text-white transition-colors">VEDI SITO</a>
+          <button onClick={onLogout}
+            className="text-[10px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] transition-colors">
             ESCI
           </button>
         </div>
@@ -290,10 +480,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {/* Add event button */}
       {!showForm && !editingEvent && (
         <div className="mb-10">
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-3 px-8 hover:bg-white hover:text-black transition-colors"
-          >
+          <button onClick={() => setShowForm(true)}
+            className="bg-[#FF006E] text-white text-xs font-bold tracking-[0.3em] uppercase py-3 px-8 hover:bg-white hover:text-black transition-colors">
             + AGGIUNGI EVENTO
           </button>
         </div>
@@ -303,12 +491,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {showForm && !editingEvent && (
         <div className="mb-12 border border-white/10 p-6 md:p-8">
           <h2 className="text-sm font-bold tracking-[0.3em] uppercase text-white mb-6">Nuovo Evento</h2>
-          <EventForm
-            initial={emptyForm}
-            adminKey={adminKey}
-            onSave={handleSave}
-            onCancel={() => setShowForm(false)}
-          />
+          <EventForm initial={emptyForm} adminKey={adminKey} onSave={handleSave} onCancel={() => setShowForm(false)} />
         </div>
       )}
 
@@ -318,13 +501,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
           <h2 className="text-sm font-bold tracking-[0.3em] uppercase text-[#FF006E] mb-6">
             Modifica: {editingEvent.title}
           </h2>
-          <EventForm
-            initial={toFormData(editingEvent)}
-            adminKey={adminKey}
-            eventId={editingEvent.id}
-            onSave={handleSave}
-            onCancel={() => setEditingEvent(null)}
-          />
+          <EventForm initial={toFormData(editingEvent)} adminKey={adminKey} eventId={editingEvent.id}
+            onSave={handleSave} onCancel={() => setEditingEvent(null)} />
         </div>
       )}
 
@@ -334,34 +512,56 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
           EVENTI ({events.length})
         </h2>
 
-        {isLoading && (
-          <p className="text-white/30 text-xs tracking-widest uppercase">Caricamento...</p>
-        )}
-
+        {isLoading && <p className="text-white/30 text-xs tracking-widest uppercase">Caricamento...</p>}
         {!isLoading && events.length === 0 && (
           <p className="text-white/20 text-sm">Nessun evento. Aggiungine uno.</p>
         )}
 
         <div className="flex flex-col divide-y divide-white/5">
           {events.map((event) => (
-            <div key={event.id} className="py-5 flex flex-col md:flex-row md:items-start gap-4 md:gap-8">
+            <div key={event.id} className="py-5 flex gap-4 md:gap-6 items-start">
+              {/* Thumbnail */}
+              {event.imageUrl && (
+                <div className="flex-shrink-0 w-16 h-20 overflow-hidden border border-white/10">
+                  <img
+                    src={getImageSrc(event.imageUrl)}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
               <div className="flex-1 min-w-0">
-                {event.category && (
-                  <p className="text-[10px] tracking-[0.3em] uppercase text-[#FF006E] mb-1">{event.category}</p>
-                )}
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  {event.category && (
+                    <span className="text-[10px] tracking-[0.3em] uppercase text-[#FF006E]">{event.category}</span>
+                  )}
+                  {event.isRecurring && (
+                    <span className="inline-flex items-center gap-1 text-[9px] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5">
+                      <RefreshCw className="w-2.5 h-2.5" /> Ricorrente
+                    </span>
+                  )}
+                </div>
                 <p className="font-black text-lg uppercase tracking-tight text-white leading-tight mb-1">
                   {event.title}
                 </p>
-                <p className="text-xs text-white/40 font-mono mb-1">
-                  {event.date} — {event.time}
-                </p>
+                <p className="text-xs text-white/40 font-mono mb-1">{event.date} — {event.time}</p>
+                {event.isRecurring && event.recurringPattern && (
+                  <p className="text-[10px] text-white/25 tracking-wider mb-1">
+                    {RECURRING_PATTERNS.find(p => p.value === event.recurringPattern)?.label ?? event.recurringPattern}
+                  </p>
+                )}
                 {event.dresscode && (
                   <p className="text-[11px] text-white/30 uppercase tracking-wider">{event.dresscode}</p>
                 )}
                 {event.description && (
                   <p className="text-xs text-white/40 mt-1 line-clamp-2">{event.description}</p>
                 )}
+                {event.tickettailorEmbed && (
+                  <p className="text-[10px] text-[#FF006E]/50 tracking-wider mt-1">↳ Tickettailor embed presente</p>
+                )}
               </div>
+
               <div className="flex gap-3 items-center flex-shrink-0">
                 <button
                   onClick={() => { setEditingEvent(event); setShowForm(false); }}
@@ -400,9 +600,6 @@ export default function Admin() {
     setAdminKey(null);
   }
 
-  if (!adminKey) {
-    return <AdminLogin onLogin={handleLogin} />;
-  }
-
+  if (!adminKey) return <AdminLogin onLogin={handleLogin} />;
   return <AdminDashboard adminKey={adminKey} onLogout={handleLogout} />;
 }

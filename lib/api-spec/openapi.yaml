@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: events
     description: Events operations
+  - name: Storage
+    description: Object storage upload and serving endpoints.
 paths:
   /healthz:
     get:
@@ -163,6 +165,63 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Object content streamed.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Object not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     HealthStatus:
@@ -175,7 +234,7 @@ components:
 
     Event:
       type: object
-      required: [id, title, description, date, time, createdAt, updatedAt]
+      required: [id, title, description, date, time, isRecurring, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -196,6 +255,12 @@ components:
         imageUrl:
           type: ["string", "null"]
         registrationUrl:
+          type: ["string", "null"]
+        tickettailorEmbed:
+          type: ["string", "null"]
+        isRecurring:
+          type: boolean
+        recurringPattern:
           type: ["string", "null"]
         createdAt:
           type: string
@@ -225,6 +290,12 @@ components:
           type: string
         registrationUrl:
           type: string
+        tickettailorEmbed:
+          type: string
+        isRecurring:
+          type: boolean
+        recurringPattern:
+          type: string
 
     EventUpdate:
       type: object
@@ -245,6 +316,36 @@ components:
         imageUrl:
           type: string
         registrationUrl:
+          type: string
+        tickettailorEmbed:
+          type: string
+        isRecurring:
+          type: boolean
+        recurringPattern:
+          type: string
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
           type: string
 
     ErrorResponse:

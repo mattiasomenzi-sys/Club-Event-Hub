@@ -22,6 +22,11 @@ export interface Event {
   imageUrl?: string | null;
   /** @nullable */
   registrationUrl?: string | null;
+  /** @nullable */
+  tickettailorEmbed?: string | null;
+  isRecurring: boolean;
+  /** @nullable */
+  recurringPattern?: string | null;
   createdAt: string;
   updatedAt: string;
 }

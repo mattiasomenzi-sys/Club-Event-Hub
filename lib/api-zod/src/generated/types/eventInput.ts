@@ -18,4 +18,7 @@ export interface EventInput {
   category?: string;
   imageUrl?: string;
   registrationUrl?: string;
+  tickettailorEmbed?: string;
+  isRecurring?: boolean;
+  recurringPattern?: string;
 }

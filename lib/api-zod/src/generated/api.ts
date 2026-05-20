@@ -31,6 +31,9 @@ export const ListEventsResponseItem = zod.object({
   "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
   "registrationUrl": zod.string().nullish(),
+  "tickettailorEmbed": zod.string().nullish(),
+  "isRecurring": zod.boolean(),
+  "recurringPattern": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -51,7 +54,10 @@ export const CreateEventBody = zod.object({
   "dresscode": zod.string().optional(),
   "category": zod.string().optional(),
   "imageUrl": zod.string().optional(),
-  "registrationUrl": zod.string().optional()
+  "registrationUrl": zod.string().optional(),
+  "tickettailorEmbed": zod.string().optional(),
+  "isRecurring": zod.boolean().optional(),
+  "recurringPattern": zod.string().optional()
 })
 
 
@@ -72,6 +78,9 @@ export const GetEventResponse = zod.object({
   "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
   "registrationUrl": zod.string().nullish(),
+  "tickettailorEmbed": zod.string().nullish(),
+  "isRecurring": zod.boolean(),
+  "recurringPattern": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -95,7 +104,10 @@ export const UpdateEventBody = zod.object({
   "dresscode": zod.string().optional(),
   "category": zod.string().optional(),
   "imageUrl": zod.string().optional(),
-  "registrationUrl": zod.string().optional()
+  "registrationUrl": zod.string().optional(),
+  "tickettailorEmbed": zod.string().optional(),
+  "isRecurring": zod.boolean().optional(),
+  "recurringPattern": zod.string().optional()
 })
 
 export const UpdateEventResponse = zod.object({
@@ -108,6 +120,9 @@ export const UpdateEventResponse = zod.object({
   "category": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
   "registrationUrl": zod.string().nullish(),
+  "tickettailorEmbed": zod.string().nullish(),
+  "isRecurring": zod.boolean(),
+  "recurringPattern": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -118,6 +133,34 @@ export const UpdateEventResponse = zod.object({
  */
 export const DeleteEventParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string()
+})
+
+
+/**
+ * @summary Serve an uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
 })
 
 
