@@ -108,12 +108,89 @@ const PLACEHOLDER_EVENTS: Event[] = [
   },
 ];
 
+function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEvents: boolean; past?: boolean }) {
+  const { day, date } = formatDate(event.date);
+  return (
+    <div className={`px-6 md:px-12 py-10 border-b border-white/10 hover:bg-white/[0.02] transition-colors group ${past ? "opacity-50 hover:opacity-70" : ""}`}>
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 min-w-0">
+          {event.category && (
+            <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
+              {event.category}
+            </p>
+          )}
+          <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 mb-1">{day}</p>
+          <p className="text-sm font-mono text-white/60 mb-4">{date} &nbsp; {event.time}</p>
+
+          {usingRealEvents ? (
+            <Link href={`/eventi/${event.id}`}>
+              <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300 cursor-pointer">
+                {event.title}
+              </h2>
+            </Link>
+          ) : (
+            <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300">
+              {event.title}
+            </h2>
+          )}
+
+          {event.description && (
+            <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-3">{event.description}</p>
+          )}
+          {event.dresscode && (
+            <p className="text-[11px] tracking-[0.15em] uppercase text-white/30 mb-5">{event.dresscode}</p>
+          )}
+
+          {usingRealEvents ? (
+            <Link href={`/eventi/${event.id}`}
+              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
+              {past ? "VEDI DETTAGLI →" : "ACCEDI ALL'EVENTO →"}
+            </Link>
+          ) : (
+            <a href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
+              target="_blank" rel="noopener noreferrer"
+              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
+              ACCEDI ALL'EVENTO →
+            </a>
+          )}
+        </div>
+
+        {event.imageUrl && (
+          <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
+            <img
+              src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
+              alt={event.title}
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function todayString(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
 export default function Home() {
   const { data: apiEvents, isLoading } = useListEvents();
   const usingRealEvents = !!(apiEvents && apiEvents.length > 0);
-  const events: Event[] = usingRealEvents ? apiEvents! : PLACEHOLDER_EVENTS;
+  const allEvents: Event[] = usingRealEvents ? apiEvents! : PLACEHOLDER_EVENTS;
+
+  const today = todayString();
+  // Upcoming: today or future, ascending (API already sorts asc)
+  const events = allEvents.filter((e) => e.date >= today);
+  // Past: before today, most-recent first
+  const pastEvents = allEvents.filter((e) => e.date < today).reverse();
+
   const [activeMonth, setActiveMonth] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const uniqueMonths = Array.from(
@@ -315,6 +392,13 @@ export default function Home() {
                   Per info → <span className="text-white/70 font-bold">375 800 1920</span>
                 </a>
               </div>
+
+              {/* Upcoming events */}
+              {events.length === 0 && !isLoading && (
+                <div className="px-6 md:px-12 py-20 text-white/20 text-xs tracking-[0.35em] uppercase">
+                  Nessun evento in programma
+                </div>
+              )}
               {uniqueMonths.map((m) => {
                 const monthEvents = events.filter(
                   (e) => getMonthYear(e.date) === m.key
@@ -331,89 +415,32 @@ export default function Home() {
                       </span>
                     </div>
 
-                    {monthEvents.map((event) => {
-                      const { day, date } = formatDate(event.date);
-                      return (
-                        <div
-                          key={event.id}
-                          className="px-6 md:px-12 py-10 border-b border-white/10 hover:bg-white/[0.02] transition-colors group"
-                        >
-                          <div className="flex gap-6 items-start">
-                            {/* Text content */}
-                            <div className="flex-1 min-w-0">
-                              {event.category && (
-                                <p className="text-[10px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
-                                  {event.category}
-                                </p>
-                              )}
-
-                              <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 mb-1">
-                                {day}
-                              </p>
-                              <p className="text-sm font-mono text-white/60 mb-4">
-                                {date} &nbsp; {event.time}
-                              </p>
-
-                              {usingRealEvents ? (
-                                <Link href={`/eventi/${event.id}`}>
-                                  <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300 cursor-pointer">
-                                    {event.title}
-                                  </h2>
-                                </Link>
-                              ) : (
-                                <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300">
-                                  {event.title}
-                                </h2>
-                              )}
-
-                              {event.description && (
-                                <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-3">
-                                  {event.description}
-                                </p>
-                              )}
-
-                              {event.dresscode && (
-                                <p className="text-[11px] tracking-[0.15em] uppercase text-white/30 mb-5">
-                                  {event.dresscode}
-                                </p>
-                              )}
-
-                              {usingRealEvents ? (
-                                <Link
-                                  href={`/eventi/${event.id}`}
-                                  className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
-                                >
-                                  ACCEDI ALL'EVENTO →
-                                </Link>
-                              ) : (
-                                <a
-                                  href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
-                                >
-                                  ACCEDI ALL'EVENTO →
-                                </a>
-                              )}
-                            </div>
-
-                            {/* Locandina thumbnail */}
-                            {event.imageUrl && (
-                              <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
-                                <img
-                                  src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
-                                  alt={event.title}
-                                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {monthEvents.map((event) => (
+                      <EventRow key={event.id} event={event} usingRealEvents={usingRealEvents} />
+                    ))}
                   </div>
                 );
               })}
+
+              {/* Archive */}
+              {pastEvents.length > 0 && (
+                <div className="border-t border-white/10">
+                  <button
+                    onClick={() => setArchiveOpen(!archiveOpen)}
+                    className="w-full px-6 md:px-12 py-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors group"
+                  >
+                    <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/20 group-hover:text-white/40 transition-colors">
+                      ARCHIVIO ({pastEvents.length} {pastEvents.length === 1 ? "evento" : "eventi"})
+                    </span>
+                    <span className="text-white/20 group-hover:text-white/40 transition-colors text-xs">
+                      {archiveOpen ? "▲" : "▼"}
+                    </span>
+                  </button>
+                  {archiveOpen && pastEvents.map((event) => (
+                    <EventRow key={event.id} event={event} usingRealEvents={usingRealEvents} past />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
