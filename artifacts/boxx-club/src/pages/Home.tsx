@@ -4,7 +4,7 @@ import { useListEvents } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
-import gallery1 from "@/assets/gallery-1.png";
+import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
 
 const ITALIAN_DAYS: Record<string, string> = {
   Monday: "LUNEDI",
@@ -133,13 +133,16 @@ export default function Home() {
       <div
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: `url(${gallery1})`,
+          backgroundImage: `url(${clubPhoto})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
+          filter: "saturate(1.6) hue-rotate(50deg) brightness(0.45)",
         }}
       />
-      <div className="fixed inset-0 z-0 bg-black/70" />
+      {/* Pink color grade overlay — adds warm magenta glow */}
+      <div className="fixed inset-0 z-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(255,0,110,0.35) 0%, rgba(180,0,80,0.15) 45%, rgba(0,0,0,0) 80%)" }} />
+      <div className="fixed inset-0 z-0 bg-black/50" />
 
       {/* Mobile top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3 md:hidden border-b border-white/10 bg-black/80 backdrop-blur-sm">
