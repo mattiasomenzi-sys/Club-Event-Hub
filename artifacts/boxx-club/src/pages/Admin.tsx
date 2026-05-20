@@ -75,6 +75,7 @@ interface EventFormData {
   areaDescription: string;
   membershipInfo: string;
   memberQuotes: string;
+  promo: string;
   memberNotes: string;
   isRecurring: boolean;
   recurringPattern: string;
@@ -93,6 +94,7 @@ const emptyForm: EventFormData = {
   areaDescription: DEFAULT_AREA_DESCRIPTION,
   membershipInfo: DEFAULT_MEMBERSHIP_INFO,
   memberQuotes: DEFAULT_MEMBER_QUOTES,
+  promo: "Promo Under 35\nAvete entrambi meno 35 anni? Il Sabato sera le coppie giovani sono nostre ospiti!\nUn invito speciale per chi ha voglia di esplorare\nLa promo non esclude dalla sangria offerta.",
   memberNotes: DEFAULT_MEMBER_NOTES,
   isRecurring: false,
   recurringPattern: "",
@@ -470,6 +472,7 @@ function EventForm({
       body.areaDescription = form.areaDescription;
       body.membershipInfo = form.membershipInfo;
       body.memberQuotes = form.memberQuotes;
+      body.promo = form.promo;
       body.memberNotes = form.memberNotes;
       body.isRecurring = form.isRecurring;
       if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
@@ -588,6 +591,15 @@ function EventForm({
       <PricingEditor
         value={form.memberQuotes}
         onChange={(v) => set("memberQuotes", v)}
+      />
+
+      {/* Promo */}
+      <PencilField
+        label="Promo"
+        value={form.promo}
+        onChange={(v) => set("promo", v)}
+        rows={5}
+        placeholder="Es. Promo Under 35 — se vuoto non compare sul sito"
       />
 
       {/* Note */}
@@ -727,6 +739,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       areaDescription: e.areaDescription ?? DEFAULT_AREA_DESCRIPTION,
       membershipInfo: e.membershipInfo ?? DEFAULT_MEMBERSHIP_INFO,
       memberQuotes: e.memberQuotes ?? DEFAULT_MEMBER_QUOTES,
+      promo: e.promo ?? "",
       memberNotes: e.memberNotes ?? DEFAULT_MEMBER_NOTES,
       isRecurring: e.isRecurring ?? false,
       recurringPattern: e.recurringPattern ?? "",

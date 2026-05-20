@@ -31,6 +31,8 @@ export interface Event {
   /** @nullable */
   memberQuotes?: string | null;
   /** @nullable */
+  promo?: string | null;
+  /** @nullable */
   memberNotes?: string | null;
   isRecurring: boolean;
   /** @nullable */

@@ -328,6 +328,8 @@ components:
           type: ["string", "null"]
         memberQuotes:
           type: ["string", "null"]
+        promo:
+          type: ["string", "null"]
         memberNotes:
           type: ["string", "null"]
         isRecurring:
@@ -370,6 +372,8 @@ components:
           type: string
         memberQuotes:
           type: string
+        promo:
+          type: string
         memberNotes:
           type: string
         isRecurring:
@@ -404,6 +408,8 @@ components:
         membershipInfo:
           type: string
         memberQuotes:
+          type: string
+        promo:
           type: string
         memberNotes:
           type: string

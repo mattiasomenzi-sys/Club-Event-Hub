@@ -337,7 +337,7 @@ export default function EventDetail() {
         </div>
 
         {/* Info sections — full width below two-column layout */}
-        {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.memberNotes) && (
+        {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes) && (
           <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10 flex flex-col gap-8">
             <div className="border-t border-white/10 pt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -381,6 +381,14 @@ export default function EventDetail() {
                 </div>
               );
             })()}
+
+            {/* Promo */}
+            {event.promo && (
+              <div className="border border-[#FF006E]/20 bg-[#FF006E]/5 p-6">
+                <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Promo</p>
+                <p className="text-sm text-white/70 leading-relaxed whitespace-pre-line">{event.promo}</p>
+              </div>
+            )}
 
             {/* Note */}
             {event.memberNotes && (

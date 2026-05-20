@@ -22,6 +22,7 @@ export interface EventInput {
   areaDescription?: string;
   membershipInfo?: string;
   memberQuotes?: string;
+  promo?: string;
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;

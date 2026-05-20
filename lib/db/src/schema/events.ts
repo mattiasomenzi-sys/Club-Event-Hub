@@ -16,6 +16,7 @@ export const eventsTable = pgTable("events", {
   areaDescription: text("area_description"),
   membershipInfo: text("membership_info"),
   memberQuotes: text("member_quotes"),
+  promo: text("promo"),
   memberNotes: text("member_notes"),
   isRecurring: boolean("is_recurring").notNull().default(false),
   recurringPattern: text("recurring_pattern"),
