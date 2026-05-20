@@ -306,6 +306,15 @@ export default function Home() {
             </div>
           ) : (
             <div>
+              {/* Phone — mobile only, above the first month */}
+              <div className="md:hidden px-6 pt-5 pb-3">
+                <a
+                  href="tel:+393758001920"
+                  className="text-[11px] tracking-[0.25em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
+                >
+                  Per info → <span className="text-white/70 font-bold">375 800 1920</span>
+                </a>
+              </div>
               {uniqueMonths.map((m) => {
                 const monthEvents = events.filter(
                   (e) => getMonthYear(e.date) === m.key
