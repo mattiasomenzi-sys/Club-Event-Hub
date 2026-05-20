@@ -137,12 +137,13 @@ export default function Home() {
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          filter: "saturate(1.6) hue-rotate(50deg) brightness(0.45)",
+          filter: "saturate(1.3) hue-rotate(40deg) brightness(0.65)",
         }}
       />
-      {/* Pink color grade overlay — adds warm magenta glow */}
-      <div className="fixed inset-0 z-0" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(255,0,110,0.35) 0%, rgba(180,0,80,0.15) 45%, rgba(0,0,0,0) 80%)" }} />
-      <div className="fixed inset-0 z-0 bg-black/50" />
+      {/* Subtle pink glow — bottom-right where lights are */}
+      <div className="fixed inset-0 z-0" style={{ background: "radial-gradient(ellipse at 70% 60%, rgba(255,0,110,0.18) 0%, rgba(0,0,0,0) 60%)" }} />
+      {/* Dark vignette to help text readability without killing the photo */}
+      <div className="fixed inset-0 z-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.15) 100%)" }} />
 
       {/* Mobile top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3 md:hidden border-b border-white/10 bg-black/80 backdrop-blur-sm">
