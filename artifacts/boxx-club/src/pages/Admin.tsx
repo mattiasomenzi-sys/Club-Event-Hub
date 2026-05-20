@@ -9,6 +9,37 @@ import boxxLogo from "@assets/boxx-logo.jpeg";
 
 const API_BASE = "/api";
 
+const DESCRIPTION_TEMPLATE = `[descrizione serata]
+
+🎵 Disco e tavoli
+Drink & Beverage by Ste
+tavoli vip su prenotazione info in pvt
+
+💞 Privè / Darkroom tematizzate
+
+Dress Code – come as u are
+Nessun obbligo di dress specifico, no giacca e cravatta.
+Si può essere swag anche in tuta.
+No sciatteria.
+
+🪪 Info soci
+Aderiamo alla rete di circoli ASX
+L'accesso al circolo è consentito solo ai soci.
+La quota associativa annua è di 30 euro ed è valida 365gg dal momento dell'emissione.
+
+💰 Quote partecipative PROMO FINE MESE
+Coppie – Promo Fine Mese
+Singola – Promo Fine Mese
+Singoli (under 30 anni) 50 euro
+Singoli (over 30) 80 euro
+
+Per le categorie fa fede il genere indicato sul documento d'identità
+
+TAVOLI VIP info e prenotazioni al 3758001920
+
+Pink 1 fino a 4 persone, inclusi ingressi, priority check, bottiglia al tavolo, tavolo e stanza riservati.
+Pink 2 fino a 6 persone, inclusi ingressi, priority check, bottiglia al tavolo, tavolo e stanza riservati.`;
+
 const RECURRING_PATTERNS = [
   { value: "primo-sabato", label: "Primo sabato del mese" },
   { value: "secondo-sabato", label: "Secondo sabato del mese" },
@@ -296,9 +327,20 @@ function EventForm({
 
       {/* Descrizione */}
       <div>
-        <label className={labelClass}>Descrizione</label>
-        <textarea className={`${inputClass} resize-none`} rows={4}
+        <div className="flex items-center justify-between mb-1">
+          <label className={labelClass} style={{ marginBottom: 0 }}>Descrizione</label>
+          <button
+            type="button"
+            onClick={() => set("description", DESCRIPTION_TEMPLATE)}
+            className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#FF006E] hover:text-white border border-[#FF006E]/40 hover:border-white/40 px-2 py-1 transition-colors"
+          >
+            Usa template
+          </button>
+        </div>
+        <textarea className={`${inputClass} resize-y`} rows={10}
+          placeholder="Scrivi la descrizione o clicca 'Usa template' per caricare il testo standard..."
           value={form.description} onChange={(e) => set("description", e.target.value)} />
+        <p className="text-[10px] text-white/30 mt-1">Il template contiene già tutte le info standard. Modifica solo la parte in cima.</p>
       </div>
 
       {/* Data & Orario */}
