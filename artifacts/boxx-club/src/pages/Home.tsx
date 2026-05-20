@@ -183,6 +183,13 @@ export default function Home() {
             </button>
           ))}
           <div className="border-t border-white/10 pt-6 flex flex-col items-center gap-4 w-full">
+            <Link
+              href="/chi-siamo"
+              onClick={() => setMenuOpen(false)}
+              className="text-sm tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors"
+            >
+              Chi Siamo
+            </Link>
             <a
               href="https://registrosociasx.it/registrazione?Locale=XP1"
               target="_blank"
@@ -226,6 +233,9 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col gap-4">
+          <Link href="/chi-siamo" className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
+            CHI SIAMO
+          </Link>
           <a
             href="https://registrosociasx.it/registrazione?Locale=XP1"
             target="_blank"
@@ -386,19 +396,91 @@ export default function Home() {
             </div>
           )}
 
-          {/* CTA footer area */}
-          <div className="px-6 md:px-12 py-20 border-t border-white/10">
-            <p className="text-[10px] tracking-[0.35em] uppercase text-white/30 mb-4">
-              ACCESSO RISERVATO AI SOCI
-            </p>
-            <a
-              href="https://registrosociasx.it/registrazione?Locale=XP1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block text-lg md:text-2xl font-black uppercase tracking-tighter text-white hover:text-[#FF006E] transition-colors border-b-2 border-white/20 hover:border-[#FF006E] pb-1"
-            >
-              Richiedi il Pre-Tesseramento →
-            </a>
+          {/* CTA + Footer */}
+          <div className="border-t border-white/10">
+            {/* CTA row */}
+            <div className="px-6 md:px-12 py-16">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-white/30 mb-4">
+                ACCESSO RISERVATO AI SOCI
+              </p>
+              <a
+                href="https://registrosociasx.it/registrazione?Locale=XP1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-lg md:text-2xl font-black uppercase tracking-tighter text-white hover:text-[#FF006E] transition-colors border-b-2 border-white/20 hover:border-[#FF006E] pb-1"
+              >
+                Richiedi il Pre-Tesseramento →
+              </a>
+            </div>
+
+            {/* Contacts + Address */}
+            <div className="px-6 md:px-12 py-10 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Contatti</p>
+                <a href="tel:+393758001920" className="block text-xs text-white/50 hover:text-white transition-colors mb-1">
+                  +39 375 800 1920
+                </a>
+                <a href="mailto:info@xpositive.it" className="block text-xs text-white/50 hover:text-white transition-colors">
+                  info@xpositive.it
+                </a>
+              </div>
+              <div>
+                <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Indirizzo</p>
+                <p className="text-xs text-white/50 leading-relaxed">
+                  Via Molini 69<br />
+                  Lonato del Garda 25017<br />
+                  Scala A
+                </p>
+              </div>
+              <div className="flex flex-col justify-between gap-4">
+                <div>
+                  <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Seguici</p>
+                  <a
+                    href="https://www.instagram.com/boxxclub"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xs text-white/50 hover:text-white transition-colors mb-1"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href="https://t.me/boxxclub"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-xs text-white/50 hover:text-white transition-colors"
+                  >
+                    Telegram
+                  </a>
+                </div>
+                {/* Annunci69 badge */}
+                <div className="a69_icon" style={{ textDecoration: "none" }} data-rel="@A69_cFx1042">
+                  <a
+                    style={{ textDecoration: "none" }}
+                    href="https://www.annunci69.it/clubprive/brescia/Boxx-Club/1042/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-start gap-1"
+                  >
+                    <img
+                      style={{ width: "90px", height: "auto" }}
+                      src="https://www.annunci69.it/clubprive/imgs/logo-white.png"
+                      alt="Powered by Annunci69"
+                    />
+                    <span className="text-[9px] text-white/30 tracking-widest">Siamo su Annunci69.it</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div className="px-6 md:px-12 py-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-[9px] text-white/20 tracking-[0.2em] uppercase">
+                Xpositive APS — C.F. 94025390173 — xpositive@pec.it
+              </p>
+              <p className="text-[9px] text-white/20 tracking-widest">
+                &copy; {new Date().getFullYear()} BOXX CLUB
+              </p>
+            </div>
           </div>
         </div>
       </main>
