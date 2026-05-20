@@ -360,7 +360,7 @@ export default function Home() {
 
                             {/* Locandina thumbnail */}
                             {event.imageUrl && (
-                              <div className="hidden md:block flex-shrink-0 w-28 h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
+                              <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
                                 <img
                                   src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
                                   alt={event.title}
