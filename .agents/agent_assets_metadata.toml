@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "hkFmFDsNWByaGTDXLFUTu"
+uri = "file://artifacts/boxx-club/src/assets/gallery-1.png"
+type = "image"
+title = "concrete walls with pink neon"
+
+[[generated]]
+id = "C3s4eeEVbBFmM6GCb4vuv"
+uri = "file://artifacts/boxx-club/src/assets/gallery-2.png"
+type = "image"
+title = "dark club interior pink lighting"
+
+[[generated]]
+id = "JTo_Y5WkXdBxczHmNxE0-"
+uri = "file://artifacts/boxx-club/src/assets/gallery-3.png"
+type = "image"
+title = "industrial steel pink lighting"
+
+[[generated]]
+id = "tLje-Nc-SauqSQtFxxuav"
+uri = "file://artifacts/boxx-club/src/assets/gallery-4.png"
+type = "image"
+title = "brutalist neon pink corridor"
