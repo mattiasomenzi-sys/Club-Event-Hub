@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Instagram } from "lucide-react";
+import { Link } from "wouter";
 import { useListEvents } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 
@@ -100,7 +101,8 @@ const PLACEHOLDER_EVENTS: Event[] = [
 
 export default function Home() {
   const { data: apiEvents, isLoading } = useListEvents();
-  const events: Event[] = (apiEvents && apiEvents.length > 0) ? apiEvents : PLACEHOLDER_EVENTS;
+  const usingRealEvents = !!(apiEvents && apiEvents.length > 0);
+  const events: Event[] = usingRealEvents ? apiEvents! : PLACEHOLDER_EVENTS;
   const [activeMonth, setActiveMonth] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -325,14 +327,23 @@ export default function Home() {
                             </p>
                           )}
 
-                          <a
-                            href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
-                          >
-                            ACCEDI ALL'EVENTO →
-                          </a>
+                          {usingRealEvents ? (
+                            <Link
+                              href={`/eventi/${event.id}`}
+                              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
+                            >
+                              ACCEDI ALL'EVENTO →
+                            </Link>
+                          ) : (
+                            <a
+                              href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
+                            >
+                              ACCEDI ALL'EVENTO →
+                            </a>
+                          )}
                         </div>
                       );
                     })}

@@ -14,6 +14,14 @@ import {
 
 const router: IRouter = Router();
 
+function serializeEvent(event: Record<string, unknown>) {
+  return {
+    ...event,
+    createdAt: event.createdAt instanceof Date ? event.createdAt.toISOString() : event.createdAt,
+    updatedAt: event.updatedAt instanceof Date ? event.updatedAt.toISOString() : event.updatedAt,
+  };
+}
+
 function requireAdminKey(req: Parameters<Parameters<IRouter["use"]>[0]>[0], res: Parameters<Parameters<IRouter["use"]>[0]>[1], next: Parameters<Parameters<IRouter["use"]>[0]>[2]): void {
   const adminKey = process.env.ADMIN_KEY ?? "boxx-admin-2025";
   const provided = req.headers["x-admin-key"];
@@ -29,7 +37,7 @@ router.get("/events", async (req, res): Promise<void> => {
     .select()
     .from(eventsTable)
     .orderBy(asc(eventsTable.date));
-  res.json(ListEventsResponse.parse(events));
+  res.json(ListEventsResponse.parse(events.map(serializeEvent)));
 });
 
 router.get("/events/:id", async (req, res): Promise<void> => {
@@ -49,7 +57,7 @@ router.get("/events/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetEventResponse.parse(event));
+  res.json(GetEventResponse.parse(serializeEvent(event)));
 });
 
 router.post("/events", requireAdminKey, async (req, res): Promise<void> => {
@@ -67,7 +75,7 @@ router.post("/events", requireAdminKey, async (req, res): Promise<void> => {
     })
     .returning();
 
-  res.status(201).json(GetEventResponse.parse(event));
+  res.status(201).json(GetEventResponse.parse(serializeEvent(event)));
 });
 
 router.patch("/events/:id", requireAdminKey, async (req, res): Promise<void> => {
@@ -94,7 +102,7 @@ router.patch("/events/:id", requireAdminKey, async (req, res): Promise<void> => 
     return;
   }
 
-  res.json(UpdateEventResponse.parse(event));
+  res.json(UpdateEventResponse.parse(serializeEvent(event)));
 });
 
 router.delete("/events/:id", requireAdminKey, async (req, res): Promise<void> => {
