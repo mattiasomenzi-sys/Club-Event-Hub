@@ -183,6 +183,12 @@ export default function Home() {
             </button>
           ))}
           <div className="border-t border-white/10 pt-6 flex flex-col items-center gap-4 w-full">
+            <a
+              href="tel:+393758001920"
+              className="text-xl font-black tracking-wide text-white hover:text-[#FF006E] transition-colors"
+            >
+              +39 375 800 1920
+            </a>
             <Link
               href="/chi-siamo"
               onClick={() => setMenuOpen(false)}
@@ -233,6 +239,12 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col gap-4">
+          <a
+            href="tel:+393758001920"
+            className="text-[11px] font-black tracking-[0.2em] text-white/70 hover:text-[#FF006E] transition-colors"
+          >
+            +39 375 800 1920
+          </a>
           <Link href="/chi-siamo" className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
             CHI SIAMO
           </Link>
