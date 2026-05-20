@@ -25,7 +25,7 @@ const emptyForm: EventFormData = {
   time: "22:00",
   dresscode: "",
   category: "SERATA",
-  registrationUrl: "https://www.boxxclub.it/pretesseramento",
+  registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
 };
 
 function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
@@ -256,7 +256,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       time: e.time,
       dresscode: e.dresscode ?? "",
       category: e.category ?? "",
-      registrationUrl: e.registrationUrl ?? "https://www.boxxclub.it/pretesseramento",
+      registrationUrl: e.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1",
     };
   }
 

@@ -66,7 +66,7 @@ const PLACEHOLDER_EVENTS: Event[] = [
     dresscode: "Dress code: fetish, latex, pelle",
     category: "SERATA",
     imageUrl: null,
-    registrationUrl: "https://www.boxxclub.it/pretesseramento",
+    registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -79,7 +79,7 @@ const PLACEHOLDER_EVENTS: Event[] = [
     dresscode: "Dress code: fetish obbligatorio",
     category: "SPECIAL",
     imageUrl: null,
-    registrationUrl: "https://www.boxxclub.it/pretesseramento",
+    registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -92,7 +92,7 @@ const PLACEHOLDER_EVENTS: Event[] = [
     dresscode: "Dress code: nero assoluto",
     category: "SERATA",
     imageUrl: null,
-    registrationUrl: "https://www.boxxclub.it/pretesseramento",
+    registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -173,7 +173,7 @@ export default function Home() {
           ))}
           <div className="border-t border-white/10 pt-6 flex flex-col items-center gap-4 w-full">
             <a
-              href="https://www.boxxclub.it/pretesseramento"
+              href="https://registrosociasx.it/registrazione?Locale=XP1"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm tracking-[0.2em] uppercase text-[#FF006E] hover:text-white transition-colors"
@@ -216,7 +216,7 @@ export default function Home() {
 
         <div className="flex flex-col gap-4">
           <a
-            href="https://www.boxxclub.it/pretesseramento"
+            href="https://registrosociasx.it/registrazione?Locale=XP1"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
@@ -326,7 +326,7 @@ export default function Home() {
                           )}
 
                           <a
-                            href={event.registrationUrl ?? "https://www.boxxclub.it/pretesseramento"}
+                            href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors"
@@ -348,7 +348,7 @@ export default function Home() {
               ACCESSO RISERVATO AI SOCI
             </p>
             <a
-              href="https://www.boxxclub.it/pretesseramento"
+              href="https://registrosociasx.it/registrazione?Locale=XP1"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block text-lg md:text-2xl font-black uppercase tracking-tighter text-white hover:text-[#FF006E] transition-colors border-b-2 border-white/20 hover:border-[#FF006E] pb-1"
