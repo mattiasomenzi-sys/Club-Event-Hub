@@ -243,6 +243,14 @@ function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
             {loading ? "..." : "ACCEDI"}
           </button>
         </form>
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <a
+            href="mailto:info@xpositive.it?subject=Recupero%20chiave%20admin%20Boxx%20Club&body=Ciao%2C%20ho%20dimenticato%20la%20chiave%20di%20accesso%20al%20pannello%20admin%20di%20Boxx%20Club.%20Puoi%20inviarmela%3F"
+            className="text-[10px] tracking-[0.25em] uppercase text-white/25 hover:text-[#FF006E] transition-colors"
+          >
+            Hai dimenticato la chiave? → info@xpositive.it
+          </a>
+        </div>
       </div>
     </div>
   );
