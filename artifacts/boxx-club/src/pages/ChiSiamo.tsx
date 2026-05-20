@@ -53,7 +53,7 @@ export default function ChiSiamo() {
           </p>
           <div className="space-y-4 text-base md:text-lg text-white/60 font-light leading-relaxed border-l-2 border-[#FF006E] pl-6">
             <p>Niente velluti. Niente finzioni.</p>
-            <p>Musica forte, energia reale, persone vere.</p>
+            <p>Musica, energia e persone vere.</p>
             <p>Nessun clima formale e nessun ruolo da interpretare.</p>
             <p>Lasciate perdere giacche, etichette e giudizi.</p>
             <p className="text-white font-medium">Siate liberi di essere voi stessi.</p>
