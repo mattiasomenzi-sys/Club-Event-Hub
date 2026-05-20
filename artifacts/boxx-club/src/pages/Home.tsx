@@ -262,7 +262,7 @@ export default function Home() {
               BOXX
             </h1>
             <p className="text-xs tracking-[0.3em] uppercase text-white/40 mt-2">
-              uno spazio industrial per una comunità sexpositive — Lago di Garda
+              uno spazio industrial per una comunità libera di essere se stessa — Lago di Garda
             </p>
           </div>
 
