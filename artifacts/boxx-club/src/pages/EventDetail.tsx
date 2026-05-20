@@ -72,7 +72,7 @@ export default function EventDetail() {
   }
 
   const { weekday, day, month, year } = formatFullDate(event.date);
-  const posterSrc = getImageSrc(event.imageUrl);
+  const posterSrc = getImageSrc(event.imageUrl ?? null);
   const hasCustomPoster = !!event.imageUrl;
 
   return (

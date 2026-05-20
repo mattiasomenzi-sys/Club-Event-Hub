@@ -17,6 +17,9 @@ export interface EventUpdate {
   imageUrl?: string;
   registrationUrl?: string;
   tickettailorEmbed?: string;
+  areaDescription?: string;
+  membershipInfo?: string;
+  memberQuotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
 }

@@ -3,31 +3,23 @@ import { useListEvents } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListEventsQueryKey } from "@workspace/api-client-react";
-import { Upload, X, Loader2, RefreshCw } from "lucide-react";
+import { Upload, X, Loader2, RefreshCw, Pencil, Check } from "lucide-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
 
 const API_BASE = "/api";
 
-const DESCRIPTION_TEMPLATE = `[descrizione serata]
-
-🎵 Disco e tavoli
+const DEFAULT_AREA_DESCRIPTION = `🎵 Disco e tavoli
 Drink & Beverage by Ste
-tavoli vip su prenotazione info in pvt
+Tavoli VIP su prenotazione, info in pvt
 
-💞 Privè / Darkroom tematizzate
+💞 Privè / Darkroom tematizzate`;
 
-Dress Code – come as u are
-Nessun obbligo di dress specifico, no giacca e cravatta.
-Si può essere swag anche in tuta.
-No sciatteria.
-
-🪪 Info soci
-Aderiamo alla rete di circoli ASX
+const DEFAULT_MEMBERSHIP_INFO = `Aderiamo alla rete di circoli ASX
 L'accesso al circolo è consentito solo ai soci.
-La quota associativa annua è di 30 euro ed è valida 365gg dal momento dell'emissione.
+La quota associativa annua è di 30 euro ed è valida 365gg dal momento dell'emissione.`;
 
-💰 Quote partecipative PROMO FINE MESE
+const DEFAULT_MEMBER_QUOTES = `💰 Quote partecipative PROMO FINE MESE
 Coppie – Promo Fine Mese
 Singola – Promo Fine Mese
 Singoli (under 30 anni) 50 euro
@@ -39,6 +31,24 @@ TAVOLI VIP info e prenotazioni al 3758001920
 
 Pink 1 fino a 4 persone, inclusi ingressi, priority check, bottiglia al tavolo, tavolo e stanza riservati.
 Pink 2 fino a 6 persone, inclusi ingressi, priority check, bottiglia al tavolo, tavolo e stanza riservati.`;
+
+const DEFAULT_DRESSCODE_TEMPLATES = [
+  { id: "1", name: "Come as u are", text: "Come as u are – Nessun obbligo di dress specifico, no giacca e cravatta.\nSi può essere swag anche in tuta. No sciatteria." },
+  { id: "2", name: "Fetish / Latex", text: "FETISH, LATEX, PELLE" },
+  { id: "3", name: "Glamour", text: "GLAMOUR, ELEGANTE, PROVOCANTE" },
+];
+
+function loadDresscodeTemplates(): { id: string; name: string; text: string }[] {
+  try {
+    const raw = localStorage.getItem("boxx_dresscode_templates");
+    if (raw) return JSON.parse(raw);
+  } catch { /* empty */ }
+  return DEFAULT_DRESSCODE_TEMPLATES;
+}
+
+function saveDresscodeTemplates(tpls: { id: string; name: string; text: string }[]) {
+  localStorage.setItem("boxx_dresscode_templates", JSON.stringify(tpls));
+}
 
 const RECURRING_PATTERNS = [
   { value: "primo-sabato", label: "Primo sabato del mese" },
@@ -61,6 +71,9 @@ interface EventFormData {
   registrationUrl: string;
   imageUrl: string;
   tickettailorEmbed: string;
+  areaDescription: string;
+  membershipInfo: string;
+  memberQuotes: string;
   isRecurring: boolean;
   recurringPattern: string;
 }
@@ -75,6 +88,9 @@ const emptyForm: EventFormData = {
   registrationUrl: "https://registrosociasx.it/registrazione?Locale=XP1",
   imageUrl: "",
   tickettailorEmbed: "",
+  areaDescription: DEFAULT_AREA_DESCRIPTION,
+  membershipInfo: DEFAULT_MEMBERSHIP_INFO,
+  memberQuotes: DEFAULT_MEMBER_QUOTES,
   isRecurring: false,
   recurringPattern: "",
 };
@@ -83,6 +99,100 @@ function getImageSrc(imageUrl: string): string {
   if (!imageUrl) return "";
   if (imageUrl.startsWith("/objects/")) return `/api/storage${imageUrl}`;
   return imageUrl;
+}
+
+function PencilField({
+  label, value, onChange, rows = 4, placeholder,
+}: { label: string; value: string; onChange: (v: string) => void; rows?: number; placeholder?: string }) {
+  const [editing, setEditing] = useState(false);
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full resize-y";
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] tracking-[0.25em] uppercase text-white/40">{label}</span>
+        <button type="button" onClick={() => setEditing(!editing)}
+          className="flex items-center gap-1 text-[10px] text-white/30 hover:text-[#FF006E] transition-colors border border-white/10 hover:border-[#FF006E]/40 px-2 py-1">
+          {editing ? <><Check className="w-3 h-3" /> Chiudi</> : <><Pencil className="w-3 h-3" /> Modifica</>}
+        </button>
+      </div>
+      {editing ? (
+        <textarea className={inputClass} rows={rows} placeholder={placeholder}
+          value={value} onChange={(e) => onChange(e.target.value)} />
+      ) : (
+        <div className="bg-white/5 border border-white/5 px-4 py-3 text-xs text-white/50 whitespace-pre-wrap leading-relaxed min-h-[3rem]">
+          {value || <span className="text-white/20 italic">{placeholder ?? "Non compilato"}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DresscodeTemplatePicker({
+  value, onChange,
+}: { value: string; onChange: (v: string) => void }) {
+  const [templates, setTemplates] = useState(() => loadDresscodeTemplates());
+  const [newName, setNewName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
+
+  function applyTemplate(text: string) { onChange(text); }
+
+  function saveNew() {
+    if (!newName.trim() || !value.trim()) return;
+    const updated = [...templates, { id: Date.now().toString(), name: newName.trim(), text: value }];
+    saveDresscodeTemplates(updated);
+    setTemplates(updated);
+    setNewName("");
+    setSaving(false);
+  }
+
+  function deleteTemplate(id: string) {
+    const updated = templates.filter(t => t.id !== id);
+    saveDresscodeTemplates(updated);
+    setTemplates(updated);
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] tracking-[0.25em] uppercase text-white/40">Dress Code</span>
+        <button type="button" onClick={() => setSaving(!saving)}
+          className="text-[10px] text-[#FF006E] hover:text-white border border-[#FF006E]/30 hover:border-white/30 px-2 py-1 transition-colors">
+          {saving ? "Annulla" : "+ Salva template"}
+        </button>
+      </div>
+      {/* Template buttons */}
+      <div className="flex flex-wrap gap-2 mb-1">
+        {templates.map(t => (
+          <div key={t.id} className="flex items-center gap-1 group">
+            <button type="button" onClick={() => applyTemplate(t.text)}
+              className="text-[10px] tracking-[0.15em] uppercase px-3 py-1.5 border border-white/10 text-white/50 hover:text-white hover:border-[#FF006E]/50 transition-colors">
+              {t.name}
+            </button>
+            <button type="button" onClick={() => deleteTemplate(t.id)}
+              className="text-white/20 hover:text-[#FF006E] transition-colors opacity-0 group-hover:opacity-100 -ml-0.5">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+      {/* Text input */}
+      <input className={inputClass} placeholder="Scrivi o seleziona un template sopra…"
+        value={value} onChange={(e) => onChange(e.target.value)} />
+      {/* Save new template row */}
+      {saving && (
+        <div className="flex gap-2">
+          <input className={`${inputClass} flex-1`} placeholder="Nome template…"
+            value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <button type="button" onClick={saveNew}
+            className="bg-[#FF006E] text-white text-[10px] font-bold tracking-[0.2em] uppercase px-4 hover:bg-white hover:text-black transition-colors">
+            SALVA
+          </button>
+        </div>
+      )}
+      <p className="text-[10px] text-white/20">Clicca un template per applicarlo, poi modificalo. "Salva template" lo memorizza per il futuro.</p>
+    </div>
+  );
 }
 
 function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
@@ -274,6 +384,9 @@ function EventForm({
       if (form.registrationUrl) body.registrationUrl = form.registrationUrl;
       if (form.imageUrl) body.imageUrl = form.imageUrl;
       if (form.tickettailorEmbed) body.tickettailorEmbed = form.tickettailorEmbed;
+      body.areaDescription = form.areaDescription;
+      body.membershipInfo = form.membershipInfo;
+      body.memberQuotes = form.memberQuotes;
       body.isRecurring = form.isRecurring;
       if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
 
@@ -325,22 +438,12 @@ function EventForm({
         <input required className={inputClass} value={form.title} onChange={(e) => set("title", e.target.value)} />
       </div>
 
-      {/* Descrizione */}
+      {/* Descrizione evento (parte specifica) */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className={labelClass} style={{ marginBottom: 0 }}>Descrizione</label>
-          <button
-            type="button"
-            onClick={() => set("description", DESCRIPTION_TEMPLATE)}
-            className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#FF006E] hover:text-white border border-[#FF006E]/40 hover:border-white/40 px-2 py-1 transition-colors"
-          >
-            Usa template
-          </button>
-        </div>
-        <textarea className={`${inputClass} resize-y`} rows={10}
-          placeholder="Scrivi la descrizione o clicca 'Usa template' per caricare il testo standard..."
+        <label className={labelClass}>Descrizione evento</label>
+        <textarea className={`${inputClass} resize-y`} rows={5}
+          placeholder="Il tema della serata, la musica, il mood specifico di questo evento…"
           value={form.description} onChange={(e) => set("description", e.target.value)} />
-        <p className="text-[10px] text-white/30 mt-1">Il template contiene già tutte le info standard. Modifica solo la parte in cima.</p>
       </div>
 
       {/* Data & Orario */}
@@ -355,18 +458,56 @@ function EventForm({
         </div>
       </div>
 
-      {/* Categoria & Dress Code */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Categoria */}
+      <div>
+        <label className={labelClass}>Categoria</label>
+        <input className={inputClass} placeholder="SERATA / SPECIAL" value={form.category}
+          onChange={(e) => set("category", e.target.value)} />
+      </div>
+
+      {/* Dress Code con template salvabili */}
+      <DresscodeTemplatePicker value={form.dresscode} onChange={(v) => set("dresscode", v)} />
+
+      {/* Divider */}
+      <div className="border-t border-white/10 pt-2">
+        <p className="text-[9px] tracking-[0.4em] uppercase text-white/20 mb-4">Sezioni fisse dell'evento</p>
+      </div>
+
+      {/* Descrizione aree (tavoli, privè…) */}
+      <PencilField
+        label="Descrizione aree"
+        value={form.areaDescription}
+        onChange={(v) => set("areaDescription", v)}
+        rows={5}
+        placeholder="Info su tavoli, privè, darkroom…"
+      />
+
+      {/* Badge statico — non modificabile */}
+      <div className="flex items-center gap-3 border border-white/10 px-4 py-3">
+        <div className="w-2 h-2 rounded-full bg-[#FF006E] flex-shrink-0" />
         <div>
-          <label className={labelClass}>Categoria</label>
-          <input className={inputClass} placeholder="SERATA / SPECIAL" value={form.category}
-            onChange={(e) => set("category", e.target.value)} />
-        </div>
-        <div>
-          <label className={labelClass}>Dress Code</label>
-          <input className={inputClass} value={form.dresscode} onChange={(e) => set("dresscode", e.target.value)} />
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white">Evento riservato ai soci</p>
+          <p className="text-[9px] text-white/30 tracking-wider">Campo fisso — non modificabile</p>
         </div>
       </div>
+
+      {/* Info tesseramento */}
+      <PencilField
+        label="Info tesseramento"
+        value={form.membershipInfo}
+        onChange={(v) => set("membershipInfo", v)}
+        rows={4}
+        placeholder="Info sull'iscrizione ASX…"
+      />
+
+      {/* Quote soci */}
+      <PencilField
+        label="Quote soci"
+        value={form.memberQuotes}
+        onChange={(v) => set("memberQuotes", v)}
+        rows={8}
+        placeholder="Quote partecipative, tavoli VIP…"
+      />
 
       {/* Evento ricorrente */}
       <div className="border border-white/10 p-4">
@@ -493,6 +634,9 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       registrationUrl: e.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1",
       imageUrl: e.imageUrl ?? "",
       tickettailorEmbed: e.tickettailorEmbed ?? "",
+      areaDescription: e.areaDescription ?? DEFAULT_AREA_DESCRIPTION,
+      membershipInfo: e.membershipInfo ?? DEFAULT_MEMBERSHIP_INFO,
+      memberQuotes: e.memberQuotes ?? DEFAULT_MEMBER_QUOTES,
       isRecurring: e.isRecurring ?? false,
       recurringPattern: e.recurringPattern ?? "",
     };

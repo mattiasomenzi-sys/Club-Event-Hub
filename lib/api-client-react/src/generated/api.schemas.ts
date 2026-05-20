@@ -27,6 +27,12 @@ export interface Event {
   registrationUrl?: string | null;
   /** @nullable */
   tickettailorEmbed?: string | null;
+  /** @nullable */
+  areaDescription?: string | null;
+  /** @nullable */
+  membershipInfo?: string | null;
+  /** @nullable */
+  memberQuotes?: string | null;
   isRecurring: boolean;
   /** @nullable */
   recurringPattern?: string | null;
@@ -47,6 +53,9 @@ export interface EventInput {
   imageUrl?: string;
   registrationUrl?: string;
   tickettailorEmbed?: string;
+  areaDescription?: string;
+  membershipInfo?: string;
+  memberQuotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
 }
@@ -62,6 +71,9 @@ export interface EventUpdate {
   imageUrl?: string;
   registrationUrl?: string;
   tickettailorEmbed?: string;
+  areaDescription?: string;
+  membershipInfo?: string;
+  memberQuotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
 }

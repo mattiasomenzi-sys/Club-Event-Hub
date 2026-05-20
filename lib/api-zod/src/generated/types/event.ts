@@ -24,6 +24,12 @@ export interface Event {
   registrationUrl?: string | null;
   /** @nullable */
   tickettailorEmbed?: string | null;
+  /** @nullable */
+  areaDescription?: string | null;
+  /** @nullable */
+  membershipInfo?: string | null;
+  /** @nullable */
+  memberQuotes?: string | null;
   isRecurring: boolean;
   /** @nullable */
   recurringPattern?: string | null;

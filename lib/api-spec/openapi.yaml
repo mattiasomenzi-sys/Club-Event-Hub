@@ -258,6 +258,12 @@ components:
           type: ["string", "null"]
         tickettailorEmbed:
           type: ["string", "null"]
+        areaDescription:
+          type: ["string", "null"]
+        membershipInfo:
+          type: ["string", "null"]
+        memberQuotes:
+          type: ["string", "null"]
         isRecurring:
           type: boolean
         recurringPattern:
@@ -292,6 +298,12 @@ components:
           type: string
         tickettailorEmbed:
           type: string
+        areaDescription:
+          type: string
+        membershipInfo:
+          type: string
+        memberQuotes:
+          type: string
         isRecurring:
           type: boolean
         recurringPattern:
@@ -318,6 +330,12 @@ components:
         registrationUrl:
           type: string
         tickettailorEmbed:
+          type: string
+        areaDescription:
+          type: string
+        membershipInfo:
+          type: string
+        memberQuotes:
           type: string
         isRecurring:
           type: boolean
