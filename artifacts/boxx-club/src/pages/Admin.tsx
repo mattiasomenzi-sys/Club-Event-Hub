@@ -132,17 +132,17 @@ function PencilField({
   );
 }
 
-interface PricingRow { label: string; price: string; fixed: boolean }
+interface PricingRow { label: string; price: string; fixed: boolean; consumazioni?: number }
 
 function parsePricing(value: string): PricingRow[] {
   try {
     const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed as PricingRow[];
+    if (Array.isArray(parsed)) return (parsed as PricingRow[]).map(r => ({ ...r, consumazioni: r.consumazioni ?? 0 }));
   } catch { /* legacy text */ }
   return [
-    { label: "Coppie", price: "", fixed: true },
-    { label: "Singola", price: "", fixed: true },
-    { label: "Singoli", price: "", fixed: true },
+    { label: "Coppie", price: "", fixed: true, consumazioni: 0 },
+    { label: "Singola", price: "", fixed: true, consumazioni: 0 },
+    { label: "Singoli", price: "", fixed: true, consumazioni: 0 },
   ];
 }
 
@@ -163,8 +163,12 @@ function PricingEditor({ value, onChange }: { value: string; onChange: (v: strin
     update(rows.map((r, i) => i === idx ? { ...r, label } : r));
   }
 
+  function setConsumazioni(idx: number, consumazioni: number) {
+    update(rows.map((r, i) => i === idx ? { ...r, consumazioni } : r));
+  }
+
   function addRow() {
-    update([...rows, { label: "", price: "", fixed: false }]);
+    update([...rows, { label: "", price: "", fixed: false, consumazioni: 0 }]);
   }
 
   function removeRow(idx: number) {
@@ -180,26 +184,45 @@ function PricingEditor({ value, onChange }: { value: string; onChange: (v: strin
           + Aggiungi voce
         </button>
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2.5">
         {rows.map((row, idx) => (
-          <div key={idx} className="flex items-center gap-2">
-            {row.fixed ? (
-              <div className="bg-white/5 border border-white/10 text-white/60 text-sm px-3 py-2 w-28 flex-shrink-0 font-medium">
-                {row.label}
-              </div>
-            ) : (
-              <input className={`${inputClass} w-28 flex-shrink-0`} placeholder="Categoria"
-                value={row.label} onChange={(e) => setLabel(idx, e.target.value)} />
-            )}
-            <span className="text-white/20 text-sm flex-shrink-0">–</span>
-            <input className={inputClass} placeholder="es. 50 euro / Promo Fine Mese"
-              value={row.price} onChange={(e) => setPrice(idx, e.target.value)} />
-            {!row.fixed && (
-              <button type="button" onClick={() => removeRow(idx)}
-                className="text-white/20 hover:text-[#FF006E] transition-colors flex-shrink-0">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+          <div key={idx} className="flex flex-col gap-1.5 border border-white/5 p-3">
+            <div className="flex items-center gap-2">
+              {row.fixed ? (
+                <div className="bg-white/5 border border-white/10 text-white/60 text-sm px-3 py-2 w-28 flex-shrink-0 font-medium">
+                  {row.label}
+                </div>
+              ) : (
+                <input className={`${inputClass} w-28 flex-shrink-0`} placeholder="Categoria"
+                  value={row.label} onChange={(e) => setLabel(idx, e.target.value)} />
+              )}
+              <span className="text-white/20 text-sm flex-shrink-0">–</span>
+              <input className={inputClass} placeholder="es. 50 euro / Promo Fine Mese"
+                value={row.price} onChange={(e) => setPrice(idx, e.target.value)} />
+              {!row.fixed && (
+                <button type="button" onClick={() => removeRow(idx)}
+                  className="text-white/20 hover:text-[#FF006E] transition-colors flex-shrink-0">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] text-white/30 tracking-wide w-28 flex-shrink-0">
+                Consumazioni
+                {row.label === "Coppie" && <span className="text-white/20"> (×pers.)</span>}
+              </span>
+              <input
+                type="number"
+                min={0}
+                className={`${inputClass} w-20 flex-shrink-0`}
+                placeholder="0"
+                value={row.consumazioni ?? 0}
+                onChange={(e) => setConsumazioni(idx, parseInt(e.target.value) || 0)}
+              />
+              <span className="text-[12px] text-white/20 tracking-wide">
+                {(row.consumazioni ?? 0) === 0 ? "— non compare" : row.label === "Coppie" ? "a persona" : "incluse"}
+              </span>
+            </div>
           </div>
         ))}
       </div>

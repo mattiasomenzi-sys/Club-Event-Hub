@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
 import { ArrowLeft, Instagram } from "lucide-react";
 
-interface PricingRow { label: string; price: string; fixed: boolean }
+interface PricingRow { label: string; price: string; fixed: boolean; consumazioni?: number }
 
 function parsePricing(value: string | null | undefined): PricingRow[] | null {
   if (!value) return null;
@@ -291,7 +291,7 @@ export default function EventDetail() {
 
               {/* Description */}
               {event.description && (
-                <p className="text-sm md:text-base text-white/60 max-w-lg leading-relaxed mb-6 font-light">
+                <p className="text-sm md:text-base text-white/80 max-w-lg leading-relaxed mb-6 font-light">
                   {event.description}
                 </p>
               )}
@@ -345,7 +345,7 @@ export default function EventDetail() {
               {event.areaDescription && (
                 <div>
                   <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Aree</p>
-                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.areaDescription}</p>
+                  <p className="text-sm text-white/80 leading-relaxed whitespace-pre-line">{event.areaDescription}</p>
                 </div>
               )}
 
@@ -353,7 +353,7 @@ export default function EventDetail() {
               {event.membershipInfo && (
                 <div>
                   <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Tesseramento</p>
-                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.membershipInfo}</p>
+                  <p className="text-sm text-white/80 leading-relaxed whitespace-pre-line">{event.membershipInfo}</p>
                 </div>
               )}
             </div>
@@ -369,14 +369,20 @@ export default function EventDetail() {
                       <tbody>
                         {rows.map((row, i) => (
                           <tr key={i} className="border-b border-white/5">
-                            <td className="text-sm text-white/70 font-medium py-2 pr-6">{row.label}</td>
-                            <td className="text-sm text-white/50 py-2">{row.price || "—"}</td>
+                            <td className="text-sm text-white/85 font-medium py-2 pr-6">{row.label}</td>
+                            <td className="text-sm text-white/75 py-2 pr-4">{row.price || "—"}</td>
+                            {(row.consumazioni ?? 0) > 0 && (
+                              <td className="text-sm text-[#FF006E]/80 py-2 whitespace-nowrap">
+                                {row.consumazioni} cons.
+                                {row.label === "Coppie" ? " a persona" : " incluse"}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   ) : (
-                    <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.memberQuotes}</p>
+                    <p className="text-sm text-white/80 leading-relaxed whitespace-pre-line">{event.memberQuotes}</p>
                   )}
                 </div>
               );
@@ -386,7 +392,7 @@ export default function EventDetail() {
             {event.promo && (
               <div className="border border-[#FF006E]/20 bg-[#FF006E]/5 p-6">
                 <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Promo</p>
-                <p className="text-sm text-white/70 leading-relaxed whitespace-pre-line">{event.promo}</p>
+                <p className="text-sm text-white/85 leading-relaxed whitespace-pre-line">{event.promo}</p>
               </div>
             )}
 
@@ -394,7 +400,7 @@ export default function EventDetail() {
             {event.memberNotes && (
               <div>
                 <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Note</p>
-                <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{event.memberNotes}</p>
+                <p className="text-sm text-white/80 leading-relaxed whitespace-pre-line">{event.memberNotes}</p>
               </div>
             )}
           </div>
