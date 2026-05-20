@@ -113,21 +113,60 @@ export default function EventDetail() {
           <img src={boxxLogo} alt="Boxx Club" className="w-8 h-8 object-cover border border-white/10" />
         </div>
 
-        {/* Main body — two columns on desktop */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-0 px-6 md:px-12 lg:px-16 pt-10 pb-0 max-w-6xl mx-auto w-full">
+        {/* Main body */}
+        <div className="flex-1 flex flex-col lg:flex-row gap-0 max-w-6xl mx-auto w-full">
+
+          {/* MOBILE: poster shown first, full-width */}
+          {/* DESKTOP: right column, sticky */}
+          <div className="lg:order-2 lg:w-80 xl:w-96 flex-shrink-0 px-6 pt-6 pb-0 lg:px-8 lg:py-0">
+            <div className="relative lg:sticky lg:top-8 lg:pt-8">
+              <div className="relative w-full max-w-[260px] mx-auto lg:max-w-full">
+                <div
+                  className="relative overflow-hidden border border-white/10"
+                  style={{ aspectRatio: "2/3" }}
+                >
+                  <img
+                    src={posterSrc}
+                    alt={`Locandina ${event.title}`}
+                    className="w-full h-full object-cover"
+                    style={hasCustomPoster ? {} : { filter: "saturate(1.3) hue-rotate(40deg) brightness(0.6)" }}
+                  />
+                  {!hasCustomPoster && (
+                    <>
+                      <div className="absolute inset-0"
+                        style={{ background: "radial-gradient(ellipse at 60% 40%, rgba(255,0,110,0.35) 0%, rgba(0,0,0,0.2) 70%)" }}
+                      />
+                      <div className="absolute inset-0 flex flex-col justify-end p-5">
+                        {event.category && (
+                          <p className="text-[9px] tracking-[0.4em] uppercase text-[#FF006E] mb-2">{event.category}</p>
+                        )}
+                        <p className="text-2xl font-black uppercase leading-none tracking-tighter text-white mb-1"
+                          style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
+                          {event.title}
+                        </p>
+                        <p className="text-xs text-white/60 font-mono">{day} {month} {year}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="absolute -inset-4 -z-10 opacity-25"
+                  style={{ background: "radial-gradient(ellipse, rgba(255,0,110,0.5) 0%, transparent 70%)" }}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* LEFT — event info */}
-          <div className="flex-1 flex flex-col justify-between py-6 lg:pr-16">
-
+          <div className="lg:order-1 flex-1 flex flex-col justify-between px-6 md:px-10 lg:px-16 pt-8 pb-0">
             <div>
               {event.category && (
-                <p className="text-[10px] font-bold tracking-[0.5em] uppercase text-[#FF006E] mb-6">
+                <p className="text-[10px] font-bold tracking-[0.5em] uppercase text-[#FF006E] mb-5">
                   {event.category}
                 </p>
               )}
 
               {/* Date block */}
-              <div className="mb-10 border-l-2 border-[#FF006E] pl-5">
+              <div className="mb-8 border-l-2 border-[#FF006E] pl-5">
                 <p className="text-[11px] tracking-[0.4em] uppercase text-white/50 mb-1">{weekday}</p>
                 <p className="text-5xl md:text-7xl font-black leading-none text-white tabular-nums">
                   {day}
@@ -141,14 +180,14 @@ export default function EventDetail() {
               </div>
 
               {/* Title */}
-              <h1 className="text-[clamp(2.4rem,7vw,5.5rem)] font-black uppercase leading-[0.9] tracking-tighter text-white mb-8"
+              <h1 className="text-[clamp(2.2rem,7vw,5.5rem)] font-black uppercase leading-[0.9] tracking-tighter text-white mb-6"
                 style={{ textShadow: "0 0 80px rgba(255,0,110,0.3)" }}>
                 {event.title}
               </h1>
 
               {/* Description */}
               {event.description && (
-                <p className="text-base text-white/60 max-w-lg leading-relaxed mb-6 font-light">
+                <p className="text-sm md:text-base text-white/60 max-w-lg leading-relaxed mb-6 font-light">
                   {event.description}
                 </p>
               )}
@@ -169,10 +208,7 @@ export default function EventDetail() {
               {event.tickettailorEmbed ? (
                 <div className="w-full">
                   <p className="text-[10px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
-                  <div
-                    className="tickettailor-embed"
-                    dangerouslySetInnerHTML={{ __html: event.tickettailorEmbed }}
-                  />
+                  <div className="tickettailor-embed" dangerouslySetInnerHTML={{ __html: event.tickettailorEmbed }} />
                 </div>
               ) : (
                 <>
@@ -180,7 +216,7 @@ export default function EventDetail() {
                     href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start"
+                    className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
                   >
                     PRE-TESSERAMENTO →
                   </a>
@@ -189,53 +225,6 @@ export default function EventDetail() {
                   </p>
                 </>
               )}
-            </div>
-          </div>
-
-          {/* RIGHT — locandina poster */}
-          <div className="lg:w-80 xl:w-96 flex-shrink-0 flex flex-col">
-            {/* Mobile: horizontal strip above CTA; Desktop: full-height side panel */}
-            <div className="relative lg:sticky lg:top-0 lg:h-screen flex items-center py-6 lg:py-12">
-              <div className="relative w-full">
-                {/* Poster image */}
-                <div
-                  className="relative overflow-hidden border border-white/10"
-                  style={{ aspectRatio: hasCustomPoster ? "2/3" : "2/3" }}
-                >
-                  <img
-                    src={posterSrc}
-                    alt={`Locandina ${event.title}`}
-                    className="w-full h-full object-cover"
-                    style={
-                      hasCustomPoster
-                        ? {}
-                        : { filter: "saturate(1.3) hue-rotate(40deg) brightness(0.6)" }
-                    }
-                  />
-                  {/* Pink overlay on club photo fallback */}
-                  {!hasCustomPoster && (
-                    <>
-                      <div className="absolute inset-0"
-                        style={{ background: "radial-gradient(ellipse at 60% 40%, rgba(255,0,110,0.35) 0%, rgba(0,0,0,0.2) 70%)" }}
-                      />
-                      {/* Poster text overlay when no custom image */}
-                      <div className="absolute inset-0 flex flex-col justify-end p-6">
-                        <p className="text-[9px] tracking-[0.4em] uppercase text-[#FF006E] mb-2">{event.category}</p>
-                        <p className="text-3xl font-black uppercase leading-none tracking-tighter text-white mb-1"
-                          style={{ textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
-                          {event.title}
-                        </p>
-                        <p className="text-xs text-white/60 font-mono">{day} {month} {year}</p>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Subtle glow behind poster */}
-                <div className="absolute -inset-4 -z-10 opacity-30"
-                  style={{ background: "radial-gradient(ellipse, rgba(255,0,110,0.4) 0%, transparent 70%)" }}
-                />
-              </div>
             </div>
           </div>
         </div>

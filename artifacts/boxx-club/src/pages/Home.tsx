@@ -272,8 +272,8 @@ export default function Home() {
             >
               BOXX
             </h1>
-            <p className="text-xs tracking-[0.3em] uppercase text-white/40 mt-2">
-              uno spazio contemporaneo per una comunità libera di essere se stessa — Lago di Garda
+            <p className="text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-white/40 mt-2 leading-relaxed">
+              uno spazio contemporaneo<br className="sm:hidden" /> per una comunità libera<br className="sm:hidden" /> di essere se stessa — Lago di Garda
             </p>
           </div>
 
