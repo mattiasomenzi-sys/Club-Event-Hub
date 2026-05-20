@@ -11,6 +11,7 @@ import {
   UpdateEventResponse,
   DeleteEventParams,
 } from "@workspace/api-zod";
+import { getAdminKey } from "./admin-auth";
 
 const router: IRouter = Router();
 
@@ -22,14 +23,19 @@ function serializeEvent(event: Record<string, unknown>) {
   };
 }
 
-function requireAdminKey(req: Parameters<Parameters<IRouter["use"]>[0]>[0], res: Parameters<Parameters<IRouter["use"]>[0]>[1], next: Parameters<Parameters<IRouter["use"]>[0]>[2]): void {
-  const adminKey = process.env.ADMIN_KEY ?? "boxx-admin-2025";
-  const provided = req.headers["x-admin-key"];
-  if (provided !== adminKey) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-  next();
+import type { Request, Response, NextFunction } from "express";
+
+function requireAdminKey(req: Request, res: Response, next: NextFunction): void {
+  getAdminKey().then((adminKey) => {
+    const provided = req.headers["x-admin-key"];
+    if (provided !== adminKey) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    next();
+  }).catch(() => {
+    res.status(500).json({ error: "Internal error" });
+  });
 }
 
 router.get("/events", async (req, res): Promise<void> => {

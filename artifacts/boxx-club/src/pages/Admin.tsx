@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { Link } from "wouter";
 import { useListEvents } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -243,13 +244,10 @@ function AdminLogin({ onLogin }: { onLogin: (key: string) => void }) {
             {loading ? "..." : "ACCEDI"}
           </button>
         </form>
-        <div className="mt-6 pt-6 border-t border-white/10">
-          <a
-            href="mailto:info@xpositive.it?subject=Recupero%20chiave%20admin%20Boxx%20Club&body=Ciao%2C%20ho%20dimenticato%20la%20chiave%20di%20accesso%20al%20pannello%20admin%20di%20Boxx%20Club.%20Puoi%20inviarmela%3F"
-            className="text-[10px] tracking-[0.25em] uppercase text-white/25 hover:text-[#FF006E] transition-colors"
-          >
-            Hai dimenticato la chiave? → info@xpositive.it
-          </a>
+        <div className="mt-6 pt-6 border-t border-white/10 flex flex-col gap-2">
+          <Link href="/admin/recupera" className="text-[10px] tracking-[0.25em] uppercase text-white/25 hover:text-[#FF006E] transition-colors">
+            Hai dimenticato la chiave? Recupera accesso →
+          </Link>
         </div>
       </div>
     </div>
@@ -775,6 +773,79 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
           ))}
         </div>
       </div>
+
+      {/* Cambia chiave */}
+      <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
+    </div>
+  );
+}
+
+function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyChanged: (k: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [currentKey, setCurrentKey] = useState("");
+  const [newKey, setNewKey] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (newKey !== confirm) { setError("Le due chiavi non coincidono."); return; }
+    if (newKey.length < 8) { setError("Min. 8 caratteri."); return; }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/change-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ currentKey, newKey }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error ?? "Errore."); setLoading(false); return; }
+      setSuccess(true);
+      setTimeout(() => { onKeyChanged(newKey); }, 1500);
+    } catch { setError("Errore di connessione."); }
+    setLoading(false);
+  }
+
+  return (
+    <div className="mt-16 border-t border-white/10 pt-10">
+      <button onClick={() => setOpen(!open)}
+        className="text-[10px] tracking-[0.3em] uppercase text-white/20 hover:text-white/50 transition-colors">
+        {open ? "— Nascondi" : "⚙ Cambia chiave di accesso"}
+      </button>
+      {open && (
+        <div className="mt-6 max-w-sm">
+          {success ? (
+            <p className="text-[#FF006E] text-sm font-bold tracking-wider uppercase">Chiave aggiornata — ri-login in corso…</p>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="text-[10px] tracking-[0.25em] uppercase text-white/40 block mb-1">Chiave attuale</label>
+                <input type="password" className={inputClass} value={currentKey}
+                  onChange={(e) => setCurrentKey(e.target.value)} required placeholder="Chiave attuale" />
+              </div>
+              <div>
+                <label className="text-[10px] tracking-[0.25em] uppercase text-white/40 block mb-1">Nuova chiave</label>
+                <input type="password" className={inputClass} value={newKey}
+                  onChange={(e) => setNewKey(e.target.value)} required minLength={8} placeholder="Min. 8 caratteri" />
+              </div>
+              <div>
+                <label className="text-[10px] tracking-[0.25em] uppercase text-white/40 block mb-1">Conferma nuova chiave</label>
+                <input type="password" className={inputClass} value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)} required placeholder="Ripeti la nuova chiave" />
+              </div>
+              {error && <p className="text-[#FF006E] text-[10px] tracking-widest uppercase">{error}</p>}
+              <button type="submit" disabled={loading || !currentKey || !newKey || !confirm}
+                className="bg-white/10 text-white text-xs font-bold tracking-[0.3em] uppercase py-2.5 px-6 hover:bg-[#FF006E] transition-colors disabled:opacity-30 self-start">
+                {loading ? "..." : "AGGIORNA CHIAVE"}
+              </button>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 }
