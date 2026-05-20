@@ -102,7 +102,7 @@ function ParticipateForm({ eventId }: { eventId: number }) {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center border border-white/20 text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:border-[#FF006E] hover:text-[#FF006E] transition-colors duration-200 self-start w-full lg:w-auto"
+          className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
         >
           PARTECIPA →
         </button>
@@ -320,7 +320,7 @@ export default function EventDetail() {
                     href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
+                    className="inline-flex items-center justify-center border border-white/20 text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:border-[#FF006E] hover:text-[#FF006E] transition-colors duration-200 self-start w-full lg:w-auto"
                   >
                     PRE-TESSERAMENTO →
                   </a>
