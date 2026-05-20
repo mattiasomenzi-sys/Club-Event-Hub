@@ -418,16 +418,60 @@ function ImageUploader({
   );
 }
 
+function ImportFromEventDropdown({
+  events,
+  currentEventId,
+  onImport,
+}: {
+  events: Event[];
+  currentEventId?: number;
+  onImport: (e: Event) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const candidates = events.filter((e) => e.id !== currentEventId);
+  if (candidates.length === 0) return null;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between border border-dashed border-white/20 hover:border-[#FF006E]/60 px-4 py-3 text-white/40 hover:text-[#FF006E] transition-colors text-sm tracking-[0.2em] uppercase"
+      >
+        <span>↓ Importa testi da un evento esistente</span>
+        <span className="text-xs">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="absolute z-20 top-full left-0 right-0 border border-white/10 bg-black/95 max-h-64 overflow-y-auto">
+          {candidates.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => { onImport(e); setOpen(false); }}
+              className="w-full text-left px-4 py-3 text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors border-b border-white/5 last:border-0"
+            >
+              <span className="font-medium text-white/80">{e.title}</span>
+              <span className="ml-3 text-white/30 text-xs">{e.date}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EventForm({
   initial,
   adminKey,
   eventId,
+  allEvents,
   onSave,
   onCancel,
 }: {
   initial: EventFormData;
   adminKey: string;
   eventId?: number;
+  allEvents: Event[];
   onSave: () => void;
   onCancel: () => void;
 }) {
@@ -447,6 +491,21 @@ function EventForm({
 
   function set<K extends keyof EventFormData>(field: K, value: EventFormData[K]) {
     setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  function importFromEvent(e: Event) {
+    setForm((f) => ({
+      ...f,
+      dresscode: e.dresscode ?? f.dresscode,
+      description: e.description ?? f.description,
+      areaDescription: e.areaDescription ?? f.areaDescription,
+      membershipInfo: e.membershipInfo ?? f.membershipInfo,
+      memberQuotes: e.memberQuotes ?? f.memberQuotes,
+      promo: e.promo ?? f.promo,
+      memberNotes: e.memberNotes ?? f.memberNotes,
+      registrationUrl: e.registrationUrl ?? f.registrationUrl,
+      tickettailorEmbed: e.tickettailorEmbed ?? f.tickettailorEmbed,
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -500,6 +559,13 @@ function EventForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {/* Importa da evento esistente */}
+      <ImportFromEventDropdown
+        events={allEvents}
+        currentEventId={eventId}
+        onImport={importFromEvent}
+      />
+
       {/* Locandina */}
       <div>
         <label className={labelClass}>Locandina</label>
@@ -781,7 +847,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {showForm && !editingEvent && (
         <div className="mb-12 border border-white/10 p-6 md:p-8">
           <h2 className="text-sm font-bold tracking-[0.3em] uppercase text-white mb-6">Nuovo Evento</h2>
-          <EventForm initial={emptyForm} adminKey={adminKey} onSave={handleSave} onCancel={() => setShowForm(false)} />
+          <EventForm initial={emptyForm} adminKey={adminKey} allEvents={events} onSave={handleSave} onCancel={() => setShowForm(false)} />
         </div>
       )}
 
@@ -792,7 +858,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
             Modifica: {editingEvent.title}
           </h2>
           <EventForm initial={toFormData(editingEvent)} adminKey={adminKey} eventId={editingEvent.id}
-            onSave={handleSave} onCancel={() => setEditingEvent(null)} />
+            allEvents={events} onSave={handleSave} onCancel={() => setEditingEvent(null)} />
         </div>
       )}
 
