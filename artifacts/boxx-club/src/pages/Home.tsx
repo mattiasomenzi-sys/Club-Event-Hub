@@ -323,9 +323,17 @@ export default function Home() {
                                 {date} &nbsp; {event.time}
                               </p>
 
-                              <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300">
-                                {event.title}
-                              </h2>
+                              {usingRealEvents ? (
+                                <Link href={`/eventi/${event.id}`}>
+                                  <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300 cursor-pointer">
+                                    {event.title}
+                                  </h2>
+                                </Link>
+                              ) : (
+                                <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300">
+                                  {event.title}
+                                </h2>
+                              )}
 
                               {event.description && (
                                 <p className="text-sm text-white/50 max-w-xl leading-relaxed mb-3">
