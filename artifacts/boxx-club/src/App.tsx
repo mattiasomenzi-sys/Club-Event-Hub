@@ -10,10 +10,13 @@ import EventDetail from "@/pages/EventDetail";
 import ChiSiamo from "@/pages/ChiSiamo";
 import Gallery from "@/pages/Gallery";
 import RecuperaAdmin from "@/pages/RecuperaAdmin";
+import Statistiche from "@/pages/Statistiche";
+import { useTracker } from "@/hooks/useTracker";
 
 const queryClient = new QueryClient();
 
 function Router() {
+  useTracker();
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -21,6 +24,7 @@ function Router() {
       <Route path="/chi-siamo" component={ChiSiamo} />
       <Route path="/gallery" component={Gallery} />
       <Route path="/admin" component={Admin} />
+      <Route path="/admin/statistiche" component={Statistiche} />
       <Route path="/admin/recupera" component={RecuperaAdmin} />
       <Route component={NotFound} />
     </Switch>

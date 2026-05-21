@@ -960,6 +960,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
         </div>
         <div className="flex gap-4 items-center">
           <a href="/" className="text-[12px] tracking-[0.25em] uppercase text-white/30 hover:text-white transition-colors">VEDI SITO</a>
+          <a href="/admin/statistiche" className="text-[12px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] transition-colors">STATISTICHE</a>
           <button onClick={onLogout}
             className="text-[12px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] transition-colors">
             ESCI
