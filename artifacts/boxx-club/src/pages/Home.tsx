@@ -374,15 +374,24 @@ export default function Home() {
           {/* Hero header */}
           <div className="px-6 md:px-12 pt-16 md:pt-20 pb-8 border-b border-white/10">
             <h1
-              className="text-[clamp(3rem,9vw,7rem)] uppercase leading-none text-[#FF1493]"
+              className="uppercase leading-none text-[#FF1493] flex items-end"
               style={{
                 fontFamily: "'Archivo Black', sans-serif",
                 letterSpacing: "0.02em",
-                textShadow:
-                  "0 0 8px #FF006E, 0 0 20px rgba(255,0,110,0.85), 0 0 40px rgba(255,0,110,0.55), 0 0 80px rgba(255,0,110,0.35)",
               }}
             >
-              BOXX
+              <span className="text-[clamp(2.2rem,6.5vw,5rem)]">B</span>
+              <span className="text-[clamp(2.2rem,6.5vw,5rem)]">O</span>
+              <span
+                className="text-[clamp(3.5rem,11vw,9rem)]"
+                style={{
+                  textShadow:
+                    "0 0 10px #FF006E, 0 0 24px rgba(255,0,110,0.9), 0 0 50px rgba(255,0,110,0.6), 0 0 90px rgba(255,0,110,0.4)",
+                }}
+              >
+                X
+              </span>
+              <span className="text-[clamp(2.2rem,6.5vw,5rem)]">X</span>
             </h1>
             <p className="text-[13px] sm:text-[12px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-white/40 mt-2 leading-relaxed">
               uno spazio contemporaneo<br className="sm:hidden" /> per una comunità libera<br className="sm:hidden" /> di essere se stessa — Lago di Garda
