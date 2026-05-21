@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
 import { ArrowLeft } from "lucide-react";
@@ -55,6 +55,26 @@ function getImageSrc(imageUrl: string | null): string {
   if (!imageUrl) return clubPhoto;
   if (imageUrl.startsWith("/objects/")) return `/api/storage${imageUrl}`;
   return imageUrl;
+}
+
+function HtmlEmbed({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
+    container.innerHTML = html;
+    // Re-create script tags so the browser actually executes them
+    const scripts = Array.from(container.querySelectorAll("script"));
+    for (const oldScript of scripts) {
+      const newScript = document.createElement("script");
+      for (const attr of Array.from(oldScript.attributes)) {
+        newScript.setAttribute(attr.name, attr.value);
+      }
+      if (oldScript.textContent) newScript.textContent = oldScript.textContent;
+      oldScript.parentNode?.replaceChild(newScript, oldScript);
+    }
+  }, [html]);
+  return <div ref={ref} className="tickettailor-embed" />;
 }
 
 function DetailsGate({ children }: { children: React.ReactNode }) {
@@ -374,7 +394,7 @@ export default function EventDetail() {
               {event.tickettailorEmbed ? (
                 <div className="w-full">
                   <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
-                  <div className="tickettailor-embed" dangerouslySetInnerHTML={{ __html: event.tickettailorEmbed }} />
+                  <HtmlEmbed html={event.tickettailorEmbed} />
                 </div>
               ) : (
                 <>
