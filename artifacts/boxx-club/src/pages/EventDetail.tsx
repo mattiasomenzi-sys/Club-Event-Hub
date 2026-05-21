@@ -77,12 +77,20 @@ function HtmlEmbed({ html }: { html: string }) {
   return <div ref={ref} className="tickettailor-embed" />;
 }
 
-function DetailsGate({ eventId, enabled, children, title, message }: { eventId: number; enabled: boolean; children: React.ReactNode; title?: string; message?: string }) {
+function useEventUnlock(eventId: number, enabled: boolean) {
   const STORAGE_KEY = `boxx_event_unlocked_${eventId}`;
   const [unlocked, setUnlocked] = useState<boolean>(() => {
     if (!enabled) return true;
     try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
   });
+  function unlock() {
+    try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
+    setUnlocked(true);
+  }
+  return { unlocked: !enabled || unlocked, unlock };
+}
+
+function UnlockForm({ eventId, onUnlock, title, message }: { eventId: number; onUnlock: () => void; title?: string; message?: string }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -100,20 +108,17 @@ function DetailsGate({ eventId, enabled, children, title, message }: { eventId: 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error ?? "Password non corretta."); setLoading(false); return; }
-      try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
-      setUnlocked(true);
+      onUnlock();
     } catch { setError("Errore di connessione."); }
     setLoading(false);
   }
 
-  if (!enabled || unlocked) return <>{children}</>;
-
   return (
     <div className="border border-[#FF006E]/30 bg-[#FF006E]/5 p-6 md:p-8 flex flex-col gap-5 max-w-md">
       <div>
-        <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-2">{title ?? "Area riservata"}</p>
+        <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-2">{title ?? "La prenotazione è riservata ai soci"}</p>
         <p className="text-sm text-white/70 leading-relaxed">
-          {message ?? "I dettagli di questo evento (Aree, Tesseramento, Quote soci, Promo, Note) sono riservati ai soci. Inserisci la password per visualizzarli."}
+          {message ?? "Utilizzare il codice comunicato nell'invito."}
         </p>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -121,7 +126,7 @@ function DetailsGate({ eventId, enabled, children, title, message }: { eventId: 
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
+          placeholder="Codice"
           autoComplete="off"
           className="bg-white/5 border border-white/15 text-white text-sm px-4 py-3 outline-none focus:border-[#FF006E] transition-colors placeholder-white/30"
         />
@@ -261,6 +266,9 @@ export default function EventDetail() {
   const { weekday, day, month, year } = formatFullDate(event.date);
   const posterSrc = getImageSrc(event.imageUrl ?? null);
   const hasCustomPoster = !!event.imageUrl;
+  const isProtected = event.isPasswordProtected ?? false;
+  const { unlocked, unlock } = useEventUnlock(event.id, isProtected);
+  const hasDetailsContent = !!(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes);
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden"
@@ -391,14 +399,11 @@ export default function EventDetail() {
               {event.tickettailorEmbed ? (
                 <div className="w-full">
                   <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
-                  <DetailsGate
-                    eventId={event.id}
-                    enabled={event.isPasswordProtected ?? false}
-                    title="La prenotazione è riservata ai soci"
-                    message="Utilizzare il codice comunicato nell'invito."
-                  >
+                  {unlocked ? (
                     <HtmlEmbed html={event.tickettailorEmbed} />
-                  </DetailsGate>
+                  ) : (
+                    <UnlockForm eventId={event.id} onUnlock={unlock} />
+                  )}
                 </div>
               ) : (
                 <>
@@ -422,11 +427,17 @@ export default function EventDetail() {
           </div>
         </div>
 
-        {/* Info sections — full width below two-column layout (password-gated) */}
-        {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes) && (
+        {/* Info sections — full width below two-column layout. Hidden entirely when event is locked (gate above the widget handles unlock). When no ticket widget exists but event is still protected, show the gate here instead. */}
+        {hasDetailsContent && !unlocked && !event.tickettailorEmbed && (
           <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10">
             <div className="border-t border-white/10 pt-10">
-            <DetailsGate eventId={event.id} enabled={event.isPasswordProtected ?? false}>
+              <UnlockForm eventId={event.id} onUnlock={unlock} />
+            </div>
+          </div>
+        )}
+        {hasDetailsContent && unlocked && (
+          <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10">
+            <div className="border-t border-white/10 pt-10">
             <div className="flex flex-col gap-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -498,7 +509,6 @@ export default function EventDetail() {
               </div>
             )}
             </div>
-            </DetailsGate>
             </div>
           </div>
         )}
