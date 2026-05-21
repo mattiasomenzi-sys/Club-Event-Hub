@@ -240,6 +240,8 @@ export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { data: event, isLoading, isError } = useGetEvent(Number(id));
+  const isProtected = event?.isPasswordProtected ?? false;
+  const { unlocked, unlock } = useEventUnlock(Number(id), isProtected);
 
   if (isLoading) {
     return (
@@ -266,8 +268,6 @@ export default function EventDetail() {
   const { weekday, day, month, year } = formatFullDate(event.date);
   const posterSrc = getImageSrc(event.imageUrl ?? null);
   const hasCustomPoster = !!event.imageUrl;
-  const isProtected = event.isPasswordProtected ?? false;
-  const { unlocked, unlock } = useEventUnlock(event.id, isProtected);
   const hasDetailsContent = !!(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes);
 
   return (
