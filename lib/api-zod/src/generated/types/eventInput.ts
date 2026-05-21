@@ -28,4 +28,6 @@ export interface EventInput {
   recurringPattern?: string;
   recurringUntil?: string;
   isGenderless?: boolean;
+  isPasswordProtected?: boolean;
+  password?: string;
 }

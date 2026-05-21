@@ -16,8 +16,11 @@ import { getAdminKey } from "./admin-auth";
 const router: IRouter = Router();
 
 function serializeEvent(event: Record<string, unknown>) {
+  // Never expose the per-event password publicly
+  const { password: _omit, ...rest } = event as { password?: unknown } & Record<string, unknown>;
+  void _omit;
   return {
-    ...event,
+    ...rest,
     createdAt: event.createdAt instanceof Date ? event.createdAt.toISOString() : event.createdAt,
     updatedAt: event.updatedAt instanceof Date ? event.updatedAt.toISOString() : event.updatedAt,
   };
@@ -109,6 +112,34 @@ router.patch("/events/:id", requireAdminKey, async (req, res): Promise<void> => 
   }
 
   res.json(UpdateEventResponse.parse(serializeEvent(event)));
+});
+
+router.post("/events/:id/verify-password", async (req, res): Promise<void> => {
+  const idNum = Number(req.params.id);
+  if (!Number.isInteger(idNum) || idNum <= 0) {
+    res.status(400).json({ ok: false, error: "ID non valido." });
+    return;
+  }
+  const { password } = req.body as { password?: string };
+  if (!password) {
+    res.status(400).json({ ok: false, error: "Password mancante." });
+    return;
+  }
+  const [event] = await db.select().from(eventsTable).where(eq(eventsTable.id, idNum));
+  if (!event) {
+    res.status(404).json({ ok: false, error: "Evento non trovato." });
+    return;
+  }
+  if (!event.isPasswordProtected || !event.password) {
+    // Not actually protected — allow through
+    res.json({ ok: true });
+    return;
+  }
+  if (password !== event.password) {
+    res.status(401).json({ ok: false, error: "Password non corretta." });
+    return;
+  }
+  res.json({ ok: true });
 });
 
 router.delete("/events/:id", requireAdminKey, async (req, res): Promise<void> => {

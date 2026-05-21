@@ -43,6 +43,7 @@ export interface Event {
      */
   recurringUntil?: string | null;
   isGenderless: boolean;
+  isPasswordProtected?: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -408,6 +408,8 @@ components:
           description: ISO date string (YYYY-MM-DD) — recurrence ends after this date
         isGenderless:
           type: boolean
+        isPasswordProtected:
+          type: boolean
         createdAt:
           type: string
         updatedAt:
@@ -456,6 +458,10 @@ components:
           type: string
         isGenderless:
           type: boolean
+        isPasswordProtected:
+          type: boolean
+        password:
+          type: string
 
     EventUpdate:
       type: object
@@ -497,6 +503,10 @@ components:
           type: string
         isGenderless:
           type: boolean
+        isPasswordProtected:
+          type: boolean
+        password:
+          type: string
 
     ParticipationInput:
       type: object

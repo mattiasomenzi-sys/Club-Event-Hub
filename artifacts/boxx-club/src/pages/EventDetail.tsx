@@ -77,9 +77,10 @@ function HtmlEmbed({ html }: { html: string }) {
   return <div ref={ref} className="tickettailor-embed" />;
 }
 
-function DetailsGate({ children, title, message }: { children: React.ReactNode; title?: string; message?: string }) {
-  const STORAGE_KEY = "boxx_details_unlocked";
+function DetailsGate({ eventId, enabled, children, title, message }: { eventId: number; enabled: boolean; children: React.ReactNode; title?: string; message?: string }) {
+  const STORAGE_KEY = `boxx_event_unlocked_${eventId}`;
   const [unlocked, setUnlocked] = useState<boolean>(() => {
+    if (!enabled) return true;
     try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
   });
   const [password, setPassword] = useState("");
@@ -92,7 +93,7 @@ function DetailsGate({ children, title, message }: { children: React.ReactNode; 
     if (!password) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/events/verify-details-password", {
+      const res = await fetch(`/api/events/${eventId}/verify-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
@@ -105,7 +106,7 @@ function DetailsGate({ children, title, message }: { children: React.ReactNode; 
     setLoading(false);
   }
 
-  if (unlocked) return <>{children}</>;
+  if (!enabled || unlocked) return <>{children}</>;
 
   return (
     <div className="border border-[#FF006E]/30 bg-[#FF006E]/5 p-6 md:p-8 flex flex-col gap-5 max-w-md">
@@ -391,6 +392,8 @@ export default function EventDetail() {
                 <div className="w-full">
                   <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
                   <DetailsGate
+                    eventId={event.id}
+                    enabled={event.isPasswordProtected ?? false}
                     title="Biglietti riservati ai soci"
                     message="L'acquisto dei biglietti è riservato ai soci. Inserisci la password per accedere al widget."
                   >
@@ -423,7 +426,7 @@ export default function EventDetail() {
         {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes) && (
           <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10">
             <div className="border-t border-white/10 pt-10">
-            <DetailsGate>
+            <DetailsGate eventId={event.id} enabled={event.isPasswordProtected ?? false}>
             <div className="flex flex-col gap-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 

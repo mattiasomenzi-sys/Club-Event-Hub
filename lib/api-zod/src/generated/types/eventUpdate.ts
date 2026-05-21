@@ -26,4 +26,6 @@ export interface EventUpdate {
   recurringPattern?: string;
   recurringUntil?: string;
   isGenderless?: boolean;
+  isPasswordProtected?: boolean;
+  password?: string;
 }

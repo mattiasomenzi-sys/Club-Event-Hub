@@ -81,6 +81,8 @@ interface EventFormData {
   recurringPattern: string;
   recurringUntil: string;
   isGenderless: boolean;
+  isPasswordProtected: boolean;
+  password: string;
 }
 
 const emptyForm: EventFormData = {
@@ -102,6 +104,8 @@ const emptyForm: EventFormData = {
   recurringPattern: "",
   recurringUntil: "",
   isGenderless: false,
+  isPasswordProtected: false,
+  password: "",
 };
 
 function getImageSrc(imageUrl: string): string {
@@ -564,6 +568,8 @@ function EventForm({
       if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
       if (form.isRecurring && form.recurringUntil) body.recurringUntil = form.recurringUntil;
       body.isGenderless = form.isGenderless;
+      body.isPasswordProtected = form.isPasswordProtected;
+      if (form.isPasswordProtected && form.password) body.password = form.password;
 
       const res = await fetch(url, {
         method,
@@ -802,6 +808,43 @@ function EventForm({
           onChange={(e) => set("registrationUrl", e.target.value)} />
       </div>
 
+      {/* Password protezione evento */}
+      <div className="border border-[#FF006E]/20 bg-[#FF006E]/5 p-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div
+            onClick={() => set("isPasswordProtected", !form.isPasswordProtected)}
+            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 cursor-pointer ${form.isPasswordProtected ? "bg-[#FF006E]" : "bg-white/10"}`}
+          >
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.isPasswordProtected ? "translate-x-5" : "translate-x-0.5"}`} />
+          </div>
+          <div>
+            <span className="text-sm text-white font-medium">Protetto da password</span>
+            <span className="text-[12px] text-white/40 tracking-wider block">
+              Nasconde dettagli + biglietti finché non viene inserita la password
+            </span>
+          </div>
+        </label>
+        {form.isPasswordProtected && (
+          <div className="mt-4">
+            <label className={labelClass}>
+              Password evento
+              {eventId && <span className="ml-2 text-white/30 normal-case tracking-normal">(lascia vuoto per non modificare)</span>}
+            </label>
+            <input
+              type="text"
+              className={inputClass}
+              value={form.password}
+              onChange={(e) => set("password", e.target.value)}
+              placeholder={eventId ? "Nuova password (opzionale)" : "Es. boxx2026"}
+              autoComplete="off"
+            />
+            <p className="text-[12px] text-white/30 mt-1 tracking-wide">
+              I soci dovranno inserire questa password per vedere i dettagli e accedere all'acquisto biglietto.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Tickettailor embed */}
       <div>
         <label className={labelClass}>
@@ -898,6 +941,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       recurringPattern: e.recurringPattern ?? "",
       recurringUntil: e.recurringUntil ?? "",
       isGenderless: e.isGenderless ?? false,
+      isPasswordProtected: e.isPasswordProtected ?? false,
+      password: "",
     };
   }
 
@@ -1045,8 +1090,6 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {/* Gallery management */}
       <GalleryManager adminKey={adminKey} />
 
-      <DetailsPasswordSection adminKey={adminKey} />
-
       {/* Cambia chiave */}
       <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
     </div>
@@ -1155,92 +1198,6 @@ function GalleryManager({ adminKey }: { adminKey: string }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function DetailsPasswordSection({ adminKey }: { adminKey: string }) {
-  const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [reveal, setReveal] = useState(false);
-  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
-
-  async function loadCurrent() {
-    try {
-      const res = await fetch("/api/admin/details-password", { headers: { "X-Admin-Key": adminKey } });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) setCurrent(data.password ?? "");
-    } catch { /* ignore */ }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    if (newPassword.length < 4) { setError("Min. 4 caratteri."); return; }
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/details-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
-        body: JSON.stringify({ newPassword }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setError(data.error ?? "Errore."); setLoading(false); return; }
-      setSuccess(true);
-      setCurrent(newPassword);
-      setNewPassword("");
-      setTimeout(() => setSuccess(false), 2500);
-    } catch { setError("Errore di connessione."); }
-    setLoading(false);
-  }
-
-  return (
-    <div className="mt-16 border-t border-white/10 pt-10">
-      <button
-        onClick={() => { const next = !open; setOpen(next); if (next && current === null) loadCurrent(); }}
-        className="text-[12px] tracking-[0.3em] uppercase text-white/30 hover:text-white/60 transition-colors">
-        {open ? "— Nascondi" : "🔒 Password dettagli evento"}
-      </button>
-      {open && (
-        <div className="mt-6 max-w-md flex flex-col gap-6">
-          <p className="text-[12px] text-white/40 tracking-wider leading-relaxed">
-            Questa password sblocca le sezioni di dettaglio sotto la descrizione di ogni evento (Aree, Tesseramento, Quote soci, Promo, Note).
-          </p>
-
-          <div className="border border-white/10 p-4 flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1">Password attuale</p>
-              <p className="text-base font-mono text-white truncate">
-                {current === null ? "..." : (reveal ? current : "••••••••")}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setReveal((v) => !v)}
-              className="text-[12px] tracking-[0.25em] uppercase text-white/40 hover:text-[#FF006E] flex-shrink-0">
-              {reveal ? "Nascondi" : "Mostra"}
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label className="text-[12px] tracking-[0.25em] uppercase text-white/40 block mb-1">Nuova password</label>
-              <input type="text" className={inputClass} value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 4 caratteri" />
-            </div>
-            {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
-            {success && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">Password aggiornata.</p>}
-            <button type="submit" disabled={loading || !newPassword}
-              className="bg-white/10 text-white text-sm font-bold tracking-[0.3em] uppercase py-2.5 px-6 hover:bg-[#FF006E] transition-colors disabled:opacity-30 self-start">
-              {loading ? "..." : "AGGIORNA PASSWORD"}
-            </button>
-          </form>
-        </div>
-      )}
     </div>
   );
 }

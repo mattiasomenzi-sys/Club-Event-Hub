@@ -22,6 +22,8 @@ export const eventsTable = pgTable("events", {
   recurringPattern: text("recurring_pattern"),
   recurringUntil: date("recurring_until", { mode: "string" }),
   isGenderless: boolean("is_genderless").notNull().default(false),
+  isPasswordProtected: boolean("is_password_protected").notNull().default(false),
+  password: text("password"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
