@@ -380,10 +380,10 @@ export default function Home() {
                 letterSpacing: "0.02em",
               }}
             >
-              <span className="text-[clamp(2.2rem,6.5vw,5rem)]">B</span>
-              <span className="text-[clamp(2.2rem,6.5vw,5rem)]">O</span>
+              <span className="text-[clamp(2.5rem,7vw,5rem)]">B</span>
+              <span className="text-[clamp(2.5rem,7vw,5rem)]">O</span>
               <span
-                className="text-[clamp(3.5rem,11vw,9rem)]"
+                className="text-[clamp(2.9rem,8vw,5.75rem)]"
                 style={{
                   textShadow:
                     "0 0 10px #FF006E, 0 0 24px rgba(255,0,110,0.9), 0 0 50px rgba(255,0,110,0.6), 0 0 90px rgba(255,0,110,0.4)",
@@ -391,7 +391,7 @@ export default function Home() {
               >
                 X
               </span>
-              <span className="text-[clamp(2.2rem,6.5vw,5rem)]">X</span>
+              <span className="text-[clamp(2.5rem,7vw,5rem)]">X</span>
             </h1>
             <p className="text-[13px] sm:text-[12px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-white/40 mt-2 leading-relaxed">
               uno spazio contemporaneo<br className="sm:hidden" /> per una comunità libera<br className="sm:hidden" /> di essere se stessa — Lago di Garda
