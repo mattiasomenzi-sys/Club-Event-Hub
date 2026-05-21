@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "hkFmFDsNWByaGTDXLFUTu"
@@ -24,3 +23,15 @@ id = "tLje-Nc-SauqSQtFxxuav"
 uri = "file://artifacts/boxx-club/src/assets/gallery-4.png"
 type = "image"
 title = "brutalist neon pink corridor"
+
+[[generated]]
+id = "-m4RLVKxalcrhayoB2j86"
+uri = "file://attached_assets/generated_images/boxx_banner.png"
+type = "image"
+title = "boxx club banner"
+
+[[outputs]]
+id = "p71kfiBs4rrTn-DE7-gaW"
+uri = "file://attached_assets/generated_images/boxx_banner.png"
+type = "image"
+title = "Boxx Club banner"
