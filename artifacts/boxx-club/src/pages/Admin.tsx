@@ -966,7 +966,11 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
               <div className="flex gap-3 items-center flex-shrink-0">
                 <ParticipationsButton eventId={event.id} adminKey={adminKey} />
                 <button
-                  onClick={() => { setEditingEvent(event); setShowForm(false); }}
+                  onClick={() => {
+                    setEditingEvent(event);
+                    setShowForm(false);
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+                  }}
                   className="text-[12px] tracking-[0.25em] uppercase text-white/30 hover:text-white border-b border-transparent hover:border-white/30 transition-colors pb-0.5"
                 >
                   MODIFICA
