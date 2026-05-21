@@ -365,7 +365,7 @@ components:
 
     Event:
       type: object
-      required: [id, title, description, date, time, isRecurring, createdAt, updatedAt]
+      required: [id, title, description, date, time, isRecurring, isGenderless, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -403,6 +403,8 @@ components:
           type: boolean
         recurringPattern:
           type: ["string", "null"]
+        isGenderless:
+          type: boolean
         createdAt:
           type: string
         updatedAt:
@@ -447,6 +449,8 @@ components:
           type: boolean
         recurringPattern:
           type: string
+        isGenderless:
+          type: boolean
 
     EventUpdate:
       type: object
@@ -484,6 +488,8 @@ components:
           type: boolean
         recurringPattern:
           type: string
+        isGenderless:
+          type: boolean
 
     ParticipationInput:
       type: object

@@ -37,6 +37,7 @@ export interface Event {
   isRecurring: boolean;
   /** @nullable */
   recurringPattern?: string | null;
+  isGenderless: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -357,7 +357,12 @@ export default function EventDetail() {
 
             {/* Quote soci */}
             {event.memberQuotes && (() => {
-              const rows = parsePricing(event.memberQuotes);
+              const allRows = parsePricing(event.memberQuotes);
+              const GENDERED_LABELS = ["coppie", "coppia", "singoli", "singole", "singolo", "singola"];
+              const rows = allRows && event.isGenderless
+                ? allRows.filter((r) => !GENDERED_LABELS.includes((r.label ?? "").trim().toLowerCase()))
+                : allRows;
+              if (rows && rows.length === 0) return null;
               return (
                 <div>
                   <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Quote soci</p>

@@ -40,6 +40,7 @@ export interface Event {
   isRecurring: boolean;
   /** @nullable */
   recurringPattern?: string | null;
+  isGenderless: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -64,6 +65,7 @@ export interface EventInput {
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
+  isGenderless?: boolean;
 }
 
 export interface EventUpdate {
@@ -84,6 +86,7 @@ export interface EventUpdate {
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
+  isGenderless?: boolean;
 }
 
 export interface ParticipationInput {

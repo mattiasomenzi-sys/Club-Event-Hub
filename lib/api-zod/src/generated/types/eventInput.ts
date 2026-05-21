@@ -26,4 +26,5 @@ export interface EventInput {
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
+  isGenderless?: boolean;
 }

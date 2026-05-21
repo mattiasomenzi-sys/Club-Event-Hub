@@ -79,6 +79,7 @@ interface EventFormData {
   memberNotes: string;
   isRecurring: boolean;
   recurringPattern: string;
+  isGenderless: boolean;
 }
 
 const emptyForm: EventFormData = {
@@ -98,6 +99,7 @@ const emptyForm: EventFormData = {
   memberNotes: DEFAULT_MEMBER_NOTES,
   isRecurring: false,
   recurringPattern: "",
+  isGenderless: false,
 };
 
 function getImageSrc(imageUrl: string): string {
@@ -558,6 +560,7 @@ function EventForm({
       body.memberNotes = form.memberNotes;
       body.isRecurring = form.isRecurring;
       if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
+      body.isGenderless = form.isGenderless;
 
       const res = await fetch(url, {
         method,
@@ -700,6 +703,24 @@ function EventForm({
         placeholder="Info VIP, disclaimer categorie, contatti prenotazioni…"
       />
 
+      {/* Evento genderless */}
+      <div className="border border-white/10 p-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div
+            onClick={() => set("isGenderless", !form.isGenderless)}
+            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 cursor-pointer ${form.isGenderless ? "bg-[#FF006E]" : "bg-white/10"}`}
+          >
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.isGenderless ? "translate-x-5" : "translate-x-0.5"}`} />
+          </div>
+          <div>
+            <span className="text-sm text-white font-medium">Evento genderless</span>
+            <span className="text-[12px] text-white/30 tracking-wider block">
+              Nasconde le quote Coppie / Singoli / Singole nella pagina evento
+            </span>
+          </div>
+        </label>
+      </div>
+
       {/* Evento ricorrente */}
       <div className="border border-white/10 p-4">
         <label className="flex items-center gap-3 cursor-pointer">
@@ -832,6 +853,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       memberNotes: e.memberNotes ?? DEFAULT_MEMBER_NOTES,
       isRecurring: e.isRecurring ?? false,
       recurringPattern: e.recurringPattern ?? "",
+      isGenderless: e.isGenderless ?? false,
     };
   }
 

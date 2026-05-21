@@ -24,4 +24,5 @@ export interface EventUpdate {
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
+  isGenderless?: boolean;
 }

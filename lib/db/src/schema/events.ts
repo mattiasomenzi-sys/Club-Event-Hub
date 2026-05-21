@@ -20,6 +20,7 @@ export const eventsTable = pgTable("events", {
   memberNotes: text("member_notes"),
   isRecurring: boolean("is_recurring").notNull().default(false),
   recurringPattern: text("recurring_pattern"),
+  isGenderless: boolean("is_genderless").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
