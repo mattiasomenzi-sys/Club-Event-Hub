@@ -80,7 +80,6 @@ function HtmlEmbed({ html }: { html: string }) {
 function useEventUnlock(eventId: number, enabled: boolean) {
   const STORAGE_KEY = `boxx_event_unlocked_${eventId}`;
   const [unlocked, setUnlocked] = useState<boolean>(() => {
-    if (!enabled) return true;
     try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
   });
   function unlock() {
