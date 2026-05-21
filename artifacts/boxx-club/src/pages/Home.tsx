@@ -374,7 +374,7 @@ export default function Home() {
           {/* Hero header */}
           <div className="px-6 md:px-12 pt-16 md:pt-20 pb-8 border-b border-white/10">
             <h1
-              className="uppercase leading-none text-[#FF1493] flex items-end"
+              className="uppercase leading-none text-[#FF1493] flex items-center"
               style={{
                 fontFamily: "'Archivo Black', sans-serif",
                 letterSpacing: "0.02em",
