@@ -77,7 +77,7 @@ function HtmlEmbed({ html }: { html: string }) {
   return <div ref={ref} className="tickettailor-embed" />;
 }
 
-function DetailsGate({ children }: { children: React.ReactNode }) {
+function DetailsGate({ children, title, message }: { children: React.ReactNode; title?: string; message?: string }) {
   const STORAGE_KEY = "boxx_details_unlocked";
   const [unlocked, setUnlocked] = useState<boolean>(() => {
     try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
@@ -108,35 +108,31 @@ function DetailsGate({ children }: { children: React.ReactNode }) {
   if (unlocked) return <>{children}</>;
 
   return (
-    <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10">
-      <div className="border-t border-white/10 pt-10">
-        <div className="border border-[#FF006E]/30 bg-[#FF006E]/5 p-8 md:p-10 flex flex-col gap-6 max-w-md">
-          <div>
-            <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-2">Area riservata</p>
-            <p className="text-sm text-white/70 leading-relaxed">
-              I dettagli di questo evento (Aree, Tesseramento, Quote soci, Promo, Note) sono riservati ai soci. Inserisci la password per visualizzarli.
-            </p>
-          </div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              autoComplete="off"
-              className="bg-white/5 border border-white/15 text-white text-sm px-4 py-3 outline-none focus:border-[#FF006E] transition-colors placeholder-white/30"
-            />
-            {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading || !password}
-              className="bg-[#FF006E] text-white text-sm font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-30 self-start"
-            >
-              {loading ? "..." : "SBLOCCA"}
-            </button>
-          </form>
-        </div>
+    <div className="border border-[#FF006E]/30 bg-[#FF006E]/5 p-6 md:p-8 flex flex-col gap-5 max-w-md">
+      <div>
+        <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-2">{title ?? "Area riservata"}</p>
+        <p className="text-sm text-white/70 leading-relaxed">
+          {message ?? "I dettagli di questo evento (Aree, Tesseramento, Quote soci, Promo, Note) sono riservati ai soci. Inserisci la password per visualizzarli."}
+        </p>
       </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          autoComplete="off"
+          className="bg-white/5 border border-white/15 text-white text-sm px-4 py-3 outline-none focus:border-[#FF006E] transition-colors placeholder-white/30"
+        />
+        {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading || !password}
+          className="bg-[#FF006E] text-white text-sm font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-30 self-start"
+        >
+          {loading ? "..." : "SBLOCCA"}
+        </button>
+      </form>
     </div>
   );
 }
@@ -394,7 +390,12 @@ export default function EventDetail() {
               {event.tickettailorEmbed ? (
                 <div className="w-full">
                   <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
-                  <HtmlEmbed html={event.tickettailorEmbed} />
+                  <DetailsGate
+                    title="Biglietti riservati ai soci"
+                    message="L'acquisto dei biglietti è riservato ai soci. Inserisci la password per accedere al widget."
+                  >
+                    <HtmlEmbed html={event.tickettailorEmbed} />
+                  </DetailsGate>
                 </div>
               ) : (
                 <>
@@ -420,9 +421,11 @@ export default function EventDetail() {
 
         {/* Info sections — full width below two-column layout (password-gated) */}
         {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes) && (
-          <DetailsGate>
-          <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10 flex flex-col gap-8">
-            <div className="border-t border-white/10 pt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10">
+            <div className="border-t border-white/10 pt-10">
+            <DetailsGate>
+            <div className="flex flex-col gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
               {/* Area */}
               {event.areaDescription && (
@@ -491,8 +494,10 @@ export default function EventDetail() {
                 <p className="text-sm text-white/80 leading-relaxed whitespace-pre-line">{event.memberNotes}</p>
               </div>
             )}
+            </div>
+            </DetailsGate>
+            </div>
           </div>
-          </DetailsGate>
         )}
 
         {/* Footer strip */}
