@@ -236,7 +236,16 @@ export default function Home() {
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3 md:hidden border-b border-white/10 bg-black/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <img src={boxxLogo} alt="Boxx Club" className="w-8 h-8 object-cover" />
-          <span className="text-sm font-bold tracking-[0.3em] uppercase text-white">BOXX</span>
+          <span
+            className="text-xl uppercase text-[#FF1493]"
+            style={{
+              fontFamily: "'Archivo Black', sans-serif",
+              letterSpacing: "0.05em",
+              textShadow: "0 0 4px #FF006E, 0 0 10px rgba(255,0,110,0.6)",
+            }}
+          >
+            BOXX
+          </span>
         </div>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
@@ -365,8 +374,13 @@ export default function Home() {
           {/* Hero header */}
           <div className="px-6 md:px-12 pt-16 md:pt-20 pb-8 border-b border-white/10">
             <h1
-              className="text-[clamp(2.5rem,8vw,6rem)] font-black uppercase leading-none tracking-tighter text-white"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              className="text-[clamp(3rem,9vw,7rem)] uppercase leading-none text-[#FF1493]"
+              style={{
+                fontFamily: "'Archivo Black', sans-serif",
+                letterSpacing: "0.02em",
+                textShadow:
+                  "0 0 8px #FF006E, 0 0 20px rgba(255,0,110,0.85), 0 0 40px rgba(255,0,110,0.55), 0 0 80px rgba(255,0,110,0.35)",
+              }}
             >
               BOXX
             </h1>
