@@ -838,12 +838,31 @@ function EventForm({
   );
 }
 
+function adminTodayString(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
 function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => void }) {
   const { data: events = [], isLoading } = useListEvents();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showArchive, setShowArchive] = useState(false);
+
+  const today = adminTodayString();
+  // Recurring events are "live" until their recurringUntil cap (or forever if not set)
+  const upcomingEvents = events.filter((e) =>
+    e.isRecurring ? (!e.recurringUntil || e.recurringUntil >= today) : e.date >= today
+  );
+  const pastEvents = events.filter((e) =>
+    e.isRecurring ? (!!e.recurringUntil && e.recurringUntil < today) : e.date < today
+  ).sort((a, b) => b.date.localeCompare(a.date));
+  const visibleEvents = showArchive ? pastEvents : upcomingEvents;
 
   async function handleDelete(id: number) {
     if (!confirm("Eliminare questo evento?")) return;
@@ -934,17 +953,27 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
 
       {/* Events list */}
       <div>
-        <h2 className="text-[12px] font-bold tracking-[0.4em] uppercase text-white/40 mb-6">
-          EVENTI ({events.length})
-        </h2>
+        <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+          <h2 className="text-[12px] font-bold tracking-[0.4em] uppercase text-white/40">
+            {showArchive ? `ARCHIVIO (${pastEvents.length})` : `EVENTI ATTIVI (${upcomingEvents.length})`}
+          </h2>
+          <button
+            onClick={() => setShowArchive((v) => !v)}
+            className="text-[12px] font-bold tracking-[0.3em] uppercase py-2 px-4 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+          >
+            {showArchive ? `← EVENTI ATTIVI (${upcomingEvents.length})` : `ARCHIVIO PASSATI (${pastEvents.length}) →`}
+          </button>
+        </div>
 
         {isLoading && <p className="text-white/30 text-sm tracking-widest uppercase">Caricamento...</p>}
-        {!isLoading && events.length === 0 && (
-          <p className="text-white/20 text-sm">Nessun evento. Aggiungine uno.</p>
+        {!isLoading && visibleEvents.length === 0 && (
+          <p className="text-white/20 text-sm">
+            {showArchive ? "Nessun evento in archivio." : "Nessun evento attivo. Aggiungine uno."}
+          </p>
         )}
 
         <div className="flex flex-col divide-y divide-white/5">
-          {events.map((event) => (
+          {visibleEvents.map((event) => (
             <div key={event.id} className="py-5 flex gap-4 md:gap-6 items-start">
               {/* Thumbnail */}
               {event.imageUrl && (
