@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Instagram } from "lucide-react";
+import TelegramIcon from "@/components/TelegramIcon";
 import { Link } from "wouter";
 import { useListEvents } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
@@ -348,20 +348,13 @@ export default function Home() {
           </a>
           <div className="flex gap-3">
             <a
-              href="https://www.instagram.com/boxxclub"
+              href="https://t.me/boxx_clubb"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/30 hover:text-[#FF006E] transition-colors"
+              className="inline-flex items-center gap-2 bg-[#FF006E]/10 hover:bg-[#FF006E] text-[#FF006E] hover:text-white border border-[#FF006E]/40 hover:border-[#FF006E] transition-colors px-3 py-1.5 text-[12px] font-bold tracking-[0.2em] uppercase"
             >
-              <Instagram className="w-4 h-4" />
-            </a>
-            <a
-              href="https://t.me/boxxclub"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[12px] font-bold tracking-widest uppercase text-white/30 hover:text-[#FF006E] transition-colors leading-none mt-0.5"
-            >
-              TG
+              <TelegramIcon className="w-4 h-4" />
+              <span className="leading-none">Telegram</span>
             </a>
           </div>
           <p className="text-[13px] text-white/20 tracking-widest">
@@ -511,21 +504,17 @@ export default function Home() {
                 <div>
                   <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">Seguici</p>
                   <a
-                    href="https://www.instagram.com/boxxclub"
+                    href="https://t.me/boxx_clubb"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-sm text-white/50 hover:text-white transition-colors mb-1"
+                    className="inline-flex items-center gap-2 bg-[#FF006E]/10 hover:bg-[#FF006E] text-[#FF006E] hover:text-white border border-[#FF006E]/40 hover:border-[#FF006E] transition-colors px-4 py-2 text-[13px] font-bold tracking-[0.2em] uppercase"
                   >
-                    Instagram
+                    <TelegramIcon className="w-4 h-4" />
+                    <span>Telegram</span>
                   </a>
-                  <a
-                    href="https://t.me/boxxclub"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm text-white/50 hover:text-white transition-colors"
-                  >
-                    Telegram
-                  </a>
+                  <p className="text-[12px] text-white/30 tracking-wider mt-2">
+                    Canale ufficiale @boxx_clubb
+                  </p>
                 </div>
                 {/* Annunci69 badge */}
                 <div className="a69_icon" style={{ textDecoration: "none" }} data-rel="@A69_cFx1042">

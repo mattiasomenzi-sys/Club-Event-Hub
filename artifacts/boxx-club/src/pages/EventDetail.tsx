@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
-import { ArrowLeft, Instagram } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import TelegramIcon from "@/components/TelegramIcon";
 
 interface PricingRow { label: string; price: string; fixed: boolean; consumazioni?: number }
 
@@ -414,9 +415,10 @@ export default function EventDetail() {
             BOXX CLUB PRIVATO — LAGO DI GARDA
           </p>
           <div className="flex gap-4">
-            <a href="https://www.instagram.com/boxxclub" target="_blank" rel="noopener noreferrer"
-              className="text-white/20 hover:text-[#FF006E] transition-colors">
-              <Instagram className="w-3.5 h-3.5" />
+            <a href="https://t.me/boxx_clubb" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[#FF006E] hover:text-white transition-colors text-[12px] font-bold tracking-[0.25em] uppercase">
+              <TelegramIcon className="w-4 h-4" />
+              <span>Telegram</span>
             </a>
           </div>
         </div>
