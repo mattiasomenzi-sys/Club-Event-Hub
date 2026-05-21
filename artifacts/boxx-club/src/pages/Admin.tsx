@@ -569,14 +569,21 @@ function EventForm({
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Errore nel salvataggio.");
+        const text = await res.text().catch(() => "");
+        let parsed: { error?: string } = {};
+        try { parsed = JSON.parse(text); } catch { /* not json */ }
+        const detail = parsed.error ?? text.slice(0, 200);
+        console.error("Errore salvataggio evento", { status: res.status, body, detail });
+        setError(`Errore ${res.status}: ${detail || "salvataggio fallito"}`);
         setLoading(false);
         return;
       }
 
       onSave();
-    } catch { setError("Errore di connessione."); }
+    } catch (err) {
+      console.error("Errore di rete salvataggio evento", err);
+      setError(`Errore di connessione: ${err instanceof Error ? err.message : String(err)}`);
+    }
     setLoading(false);
   }
 
