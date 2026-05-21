@@ -40,6 +40,11 @@ export interface Event {
   isRecurring: boolean;
   /** @nullable */
   recurringPattern?: string | null;
+  /**
+     * ISO date string (YYYY-MM-DD) — recurrence ends after this date
+     * @nullable
+     */
+  recurringUntil?: string | null;
   isGenderless: boolean;
   createdAt: string;
   updatedAt: string;
@@ -65,6 +70,7 @@ export interface EventInput {
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
+  recurringUntil?: string;
   isGenderless?: boolean;
 }
 
@@ -86,6 +92,7 @@ export interface EventUpdate {
   memberNotes?: string;
   isRecurring?: boolean;
   recurringPattern?: string;
+  recurringUntil?: string;
   isGenderless?: boolean;
 }
 

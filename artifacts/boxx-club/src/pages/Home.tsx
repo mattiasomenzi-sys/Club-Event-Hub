@@ -169,12 +169,91 @@ function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEve
   );
 }
 
-function todayString(): string {
-  const d = new Date();
+function toISO(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${dd}`;
+}
+
+function todayString(): string {
+  return toISO(new Date());
+}
+
+function endOfNextMonthISO(): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 2);
+  d.setDate(0);
+  return toISO(d);
+}
+
+const WEEKLY_DOW: Record<string, number> = {
+  "tutti-i-mercoledi": 3,
+  "tutti-i-venerdi": 5,
+  "tutti-i-sabati": 6,
+};
+
+const NTH_SAT: Record<string, number> = {
+  "primo-sabato": 1,
+  "secondo-sabato": 2,
+  "terzo-sabato": 3,
+  "quarto-sabato": 4,
+};
+
+function generateOccurrences(event: Event, fromISOStr: string, toISOStr: string): string[] {
+  const from = new Date(fromISOStr + "T00:00:00");
+  const to = new Date(toISOStr + "T00:00:00");
+  if (to < from) return [];
+  const pattern = event.recurringPattern ?? "";
+  const out: string[] = [];
+
+  if (pattern in WEEKLY_DOW) {
+    const dow = WEEKLY_DOW[pattern];
+    const cursor = new Date(from);
+    while (cursor.getDay() !== dow) cursor.setDate(cursor.getDate() + 1);
+    while (cursor <= to) {
+      out.push(toISO(cursor));
+      cursor.setDate(cursor.getDate() + 7);
+    }
+    return out;
+  }
+
+  if (pattern in NTH_SAT) {
+    const n = NTH_SAT[pattern];
+    const monthCursor = new Date(from.getFullYear(), from.getMonth(), 1);
+    while (monthCursor <= to) {
+      const firstDow = monthCursor.getDay();
+      const offset = (6 - firstDow + 7) % 7;
+      const day = 1 + offset + (n - 1) * 7;
+      const cand = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), day);
+      if (cand.getMonth() === monthCursor.getMonth() && cand >= from && cand <= to) {
+        out.push(toISO(cand));
+      }
+      monthCursor.setMonth(monthCursor.getMonth() + 1);
+    }
+    return out;
+  }
+
+  if (event.date >= fromISOStr && event.date <= toISOStr) out.push(event.date);
+  return out;
+}
+
+function expandEvents(allEvents: Event[], todayISO: string, windowEndISO: string): Event[] {
+  const out: Event[] = [];
+  for (const e of allEvents) {
+    if (e.isRecurring) {
+      const cap = e.recurringUntil && e.recurringUntil < windowEndISO ? e.recurringUntil : windowEndISO;
+      if (cap < todayISO) continue;
+      const startFrom = e.date > todayISO ? e.date : todayISO;
+      for (const d of generateOccurrences(e, startFrom, cap)) {
+        out.push({ ...e, date: d });
+      }
+    } else if (e.date >= todayISO && e.date <= windowEndISO) {
+      out.push(e);
+    }
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date));
+  return out;
 }
 
 export default function Home() {
@@ -183,9 +262,10 @@ export default function Home() {
   const allEvents: Event[] = usingRealEvents ? apiEvents! : PLACEHOLDER_EVENTS;
 
   const today = todayString();
-  // Upcoming: today or future, ascending (API already sorts asc)
-  const events = allEvents.filter((e) => e.date >= today);
-  // Past: before today, most-recent first
+  const windowEnd = endOfNextMonthISO();
+  // Upcoming: expand recurring events into occurrences within current + next month window
+  const events = expandEvents(allEvents, today, windowEnd);
+  // Past: before today, most-recent first (no expansion — archive uses original dates)
   const pastEvents = allEvents.filter((e) => e.date < today).reverse();
 
   const [activeMonth, setActiveMonth] = useState<string | null>(null);
@@ -436,7 +516,7 @@ export default function Home() {
                     </div>
 
                     {monthEvents.map((event) => (
-                      <EventRow key={event.id} event={event} usingRealEvents={usingRealEvents} />
+                      <EventRow key={`${event.id}-${event.date}`} event={event} usingRealEvents={usingRealEvents} />
                     ))}
                   </div>
                 );

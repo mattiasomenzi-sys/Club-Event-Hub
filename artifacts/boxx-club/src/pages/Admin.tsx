@@ -79,6 +79,7 @@ interface EventFormData {
   memberNotes: string;
   isRecurring: boolean;
   recurringPattern: string;
+  recurringUntil: string;
   isGenderless: boolean;
 }
 
@@ -99,6 +100,7 @@ const emptyForm: EventFormData = {
   memberNotes: DEFAULT_MEMBER_NOTES,
   isRecurring: false,
   recurringPattern: "",
+  recurringUntil: "",
   isGenderless: false,
 };
 
@@ -560,6 +562,7 @@ function EventForm({
       body.memberNotes = form.memberNotes;
       body.isRecurring = form.isRecurring;
       if (form.isRecurring && finalPattern) body.recurringPattern = finalPattern;
+      if (form.isRecurring && form.recurringUntil) body.recurringUntil = form.recurringUntil;
       body.isGenderless = form.isGenderless;
 
       const res = await fetch(url, {
@@ -774,6 +777,20 @@ function EventForm({
                 />
               </div>
             )}
+            <div>
+              <label className={labelClass}>
+                Fine ricorrenza <span className="text-white/20 normal-case tracking-normal">(opzionale)</span>
+              </label>
+              <input
+                type="date"
+                className={inputClass}
+                value={form.recurringUntil}
+                onChange={(e) => set("recurringUntil", e.target.value)}
+              />
+              <p className="text-[12px] text-white/25 mt-1 tracking-wide">
+                Lascia vuoto per ricorrenza senza fine. Il sito mostra comunque solo le occorrenze del mese corrente e del successivo.
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -860,6 +877,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       memberNotes: e.memberNotes ?? DEFAULT_MEMBER_NOTES,
       isRecurring: e.isRecurring ?? false,
       recurringPattern: e.recurringPattern ?? "",
+      recurringUntil: e.recurringUntil ?? "",
       isGenderless: e.isGenderless ?? false,
     };
   }

@@ -403,6 +403,9 @@ components:
           type: boolean
         recurringPattern:
           type: ["string", "null"]
+        recurringUntil:
+          type: ["string", "null"]
+          description: ISO date string (YYYY-MM-DD) — recurrence ends after this date
         isGenderless:
           type: boolean
         createdAt:
@@ -449,6 +452,8 @@ components:
           type: boolean
         recurringPattern:
           type: string
+        recurringUntil:
+          type: string
         isGenderless:
           type: boolean
 
@@ -487,6 +492,8 @@ components:
         isRecurring:
           type: boolean
         recurringPattern:
+          type: string
+        recurringUntil:
           type: string
         isGenderless:
           type: boolean
