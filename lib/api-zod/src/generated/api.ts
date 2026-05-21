@@ -196,6 +196,39 @@ export const ListParticipationsResponse = zod.array(ListParticipationsResponseIt
 
 
 /**
+ * @summary List all gallery photos
+ */
+export const ListGalleryPhotosResponseItem = zod.object({
+  "id": zod.number(),
+  "imageUrl": zod.string(),
+  "caption": zod.string().nullish(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string()
+})
+export const ListGalleryPhotosResponse = zod.array(ListGalleryPhotosResponseItem)
+
+
+/**
+ * @summary Add a gallery photo (admin)
+ */
+
+
+
+export const CreateGalleryPhotoBody = zod.object({
+  "imageUrl": zod.string().min(1),
+  "caption": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete a gallery photo (admin)
+ */
+export const DeleteGalleryPhotoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Request a presigned URL for file upload
  */
 

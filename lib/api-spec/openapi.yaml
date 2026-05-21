@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: events
     description: Events operations
+  - name: gallery
+    description: Gallery photo operations
   - name: Storage
     description: Object storage upload and serving endpoints.
 paths:
@@ -224,6 +226,71 @@ paths:
                   $ref: "#/components/schemas/ParticipationResponse"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /gallery:
+    get:
+      operationId: listGalleryPhotos
+      tags: [gallery]
+      summary: List all gallery photos
+      responses:
+        "200":
+          description: List of gallery photos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GalleryPhoto"
+    post:
+      operationId: createGalleryPhoto
+      tags: [gallery]
+      summary: Add a gallery photo (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GalleryPhotoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryPhoto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /gallery/{id}:
+    delete:
+      operationId: deleteGalleryPhoto
+      tags: [gallery]
+      summary: Delete a gallery photo (admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
           content:
             application/json:
               schema:
@@ -442,6 +509,31 @@ components:
         contact:
           type: string
         createdAt:
+          type: string
+
+    GalleryPhoto:
+      type: object
+      required: [id, imageUrl, sortOrder, createdAt]
+      properties:
+        id:
+          type: integer
+        imageUrl:
+          type: string
+        caption:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    GalleryPhotoInput:
+      type: object
+      required: [imageUrl]
+      properties:
+        imageUrl:
+          type: string
+          minLength: 1
+        caption:
           type: string
 
     UploadUrlRequest:

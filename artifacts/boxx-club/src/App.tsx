@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import Admin from "@/pages/Admin";
 import EventDetail from "@/pages/EventDetail";
 import ChiSiamo from "@/pages/ChiSiamo";
+import Gallery from "@/pages/Gallery";
 import RecuperaAdmin from "@/pages/RecuperaAdmin";
 
 const queryClient = new QueryClient();
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/eventi/:id" component={EventDetail} />
       <Route path="/chi-siamo" component={ChiSiamo} />
+      <Route path="/gallery" component={Gallery} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/recupera" component={RecuperaAdmin} />
       <Route component={NotFound} />

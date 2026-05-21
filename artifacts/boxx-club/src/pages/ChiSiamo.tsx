@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
+import RotatingBackground from "@/components/RotatingBackground";
 
 export default function ChiSiamo() {
   return (
@@ -8,15 +9,10 @@ export default function ChiSiamo() {
       className="bg-black min-h-screen text-white"
       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
     >
-      {/* Fixed background */}
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(${clubPhoto})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "saturate(1.2) hue-rotate(40deg) brightness(0.35)",
-        }}
+      {/* Fixed background — rotates from gallery */}
+      <RotatingBackground
+        fallback={clubPhoto}
+        filter="saturate(1.2) hue-rotate(40deg) brightness(0.35)"
       />
       <div
         className="fixed inset-0 z-0"

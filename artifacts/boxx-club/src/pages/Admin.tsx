@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import { Link } from "wouter";
-import { useListEvents } from "@workspace/api-client-react";
+import { useListEvents, useListGalleryPhotos } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getListEventsQueryKey } from "@workspace/api-client-react";
+import { getListEventsQueryKey, getListGalleryPhotosQueryKey } from "@workspace/api-client-react";
 import { Upload, X, Loader2, RefreshCw, Pencil, Check } from "lucide-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
@@ -962,8 +962,117 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
         </div>
       </div>
 
+      {/* Gallery management */}
+      <GalleryManager adminKey={adminKey} />
+
       {/* Cambia chiave */}
       <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
+    </div>
+  );
+}
+
+function GalleryManager({ adminKey }: { adminKey: string }) {
+  const qc = useQueryClient();
+  const { data, isLoading } = useListGalleryPhotos();
+  const photos = data ?? [];
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  async function refresh() {
+    await qc.invalidateQueries({ queryKey: getListGalleryPhotosQueryKey() });
+  }
+
+  async function handleFiles(files: FileList) {
+    setError("");
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) continue;
+        const urlRes = await fetch(`${API_BASE}/storage/uploads/request-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+          body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+        });
+        if (!urlRes.ok) { setError("Errore richiesta URL upload"); continue; }
+        const { uploadURL, objectPath } = await urlRes.json();
+        const putRes = await fetch(uploadURL, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+        if (!putRes.ok) { setError("Errore upload"); continue; }
+        const createRes = await fetch(`${API_BASE}/gallery`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+          body: JSON.stringify({ imageUrl: objectPath }),
+        });
+        if (!createRes.ok) { setError("Errore salvataggio"); continue; }
+      }
+      await refresh();
+    } catch { setError("Errore di connessione"); }
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Eliminare questa foto dalla gallery?")) return;
+    setDeletingId(id);
+    try {
+      await fetch(`${API_BASE}/gallery/${id}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Key": adminKey },
+      });
+      await refresh();
+    } catch { /* ignore */ }
+    setDeletingId(null);
+  }
+
+  return (
+    <div className="mt-16 border-t border-white/10 pt-10">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-[12px] font-bold tracking-[0.4em] uppercase text-white/40">
+          GALLERY ({photos.length})
+        </h2>
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="bg-[#FF006E] text-white text-[12px] font-bold tracking-[0.3em] uppercase py-2 px-5 hover:bg-white hover:text-black transition-colors disabled:opacity-50"
+        >
+          {uploading ? "Caricamento..." : "+ AGGIUNGI FOTO"}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files); }}
+        />
+      </div>
+      <p className="text-[12px] text-white/30 mb-4 tracking-wider">
+        Le foto vengono mostrate nella pagina /gallery e fanno da sfondo rotante in tutto il sito (cambia ogni 30 sec).
+      </p>
+      {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase mb-3">{error}</p>}
+      {isLoading && <p className="text-white/30 text-sm tracking-widest uppercase">Caricamento...</p>}
+      {!isLoading && photos.length === 0 && (
+        <p className="text-white/20 text-sm">Nessuna foto. Aggiungine una.</p>
+      )}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+        {photos.map((p) => (
+          <div key={p.id} className="relative group aspect-square overflow-hidden border border-white/10 bg-white/5">
+            <img src={getImageSrc(p.imageUrl)} alt={p.caption ?? ""} className="w-full h-full object-cover" />
+            <button
+              onClick={() => handleDelete(p.id)}
+              disabled={deletingId === p.id}
+              className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[#FF006E] text-[12px] font-bold tracking-[0.3em] uppercase"
+            >
+              {deletingId === p.id ? "..." : "ELIMINA"}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

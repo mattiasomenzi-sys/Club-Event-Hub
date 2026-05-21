@@ -16,6 +16,7 @@ function parsePricing(value: string | null | undefined): PricingRow[] | null {
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
+import RotatingBackground from "@/components/RotatingBackground";
 
 const ITALIAN_DAYS: Record<string, string> = {
   Monday: "LUNEDÌ",
@@ -183,14 +184,10 @@ export default function EventDetail() {
     <div className="min-h-screen bg-black text-white relative overflow-hidden"
       style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
 
-      {/* Background — always the club photo, dimmed */}
-      <div className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(${clubPhoto})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "saturate(1.1) brightness(0.3)",
-        }}
+      {/* Background — rotates from gallery, dimmed */}
+      <RotatingBackground
+        fallback={clubPhoto}
+        filter="saturate(1.1) brightness(0.3)"
       />
       <div className="fixed inset-0 z-0"
         style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(255,0,110,0.15) 0%, rgba(0,0,0,0) 70%)" }}

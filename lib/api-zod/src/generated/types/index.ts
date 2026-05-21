@@ -10,6 +10,8 @@ export * from './errorResponse';
 export * from './event';
 export * from './eventInput';
 export * from './eventUpdate';
+export * from './galleryPhoto';
+export * from './galleryPhotoInput';
 export * from './healthStatus';
 export * from './participationInput';
 export * from './participationResponse';

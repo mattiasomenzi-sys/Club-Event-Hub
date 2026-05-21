@@ -101,6 +101,21 @@ export interface ParticipationResponse {
   createdAt: string;
 }
 
+export interface GalleryPhoto {
+  id: number;
+  imageUrl: string;
+  /** @nullable */
+  caption?: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface GalleryPhotoInput {
+  /** @minLength 1 */
+  imageUrl: string;
+  caption?: string;
+}
+
 export interface UploadUrlRequest {
   /** @minLength 1 */
   name: string;

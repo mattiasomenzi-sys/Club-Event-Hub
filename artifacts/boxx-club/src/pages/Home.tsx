@@ -6,6 +6,7 @@ import type { Event } from "@workspace/api-client-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
+import RotatingBackground from "@/components/RotatingBackground";
 
 const ITALIAN_DAYS: Record<string, string> = {
   Monday: "LUNEDI",
@@ -216,16 +217,10 @@ export default function Home() {
 
   return (
     <div className="bg-black min-h-screen text-white flex" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      {/* Fixed background */}
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(${clubPhoto})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          filter: "saturate(1.3) hue-rotate(40deg) brightness(0.65)",
-        }}
+      {/* Fixed background — rotates from gallery */}
+      <RotatingBackground
+        fallback={clubPhoto}
+        filter="saturate(1.3) hue-rotate(40deg) brightness(0.65)"
       />
       {/* Subtle pink glow — bottom-right where lights are */}
       <div className="fixed inset-0 z-0" style={{ background: "radial-gradient(ellipse at 70% 60%, rgba(255,0,110,0.18) 0%, rgba(0,0,0,0) 60%)" }} />
@@ -281,6 +276,13 @@ export default function Home() {
             >
               Chi Siamo
             </Link>
+            <Link
+              href="/gallery"
+              onClick={() => setMenuOpen(false)}
+              className="text-sm tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors"
+            >
+              Gallery
+            </Link>
             <a
               href="https://registrosociasx.it/registrazione?Locale=XP1"
               target="_blank"
@@ -332,6 +334,9 @@ export default function Home() {
           </a>
           <Link href="/chi-siamo" className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
             CHI SIAMO
+          </Link>
+          <Link href="/gallery" className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
+            GALLERY
           </Link>
           <a
             href="https://registrosociasx.it/registrazione?Locale=XP1"
