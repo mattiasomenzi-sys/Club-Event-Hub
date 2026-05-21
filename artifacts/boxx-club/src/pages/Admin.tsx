@@ -1045,6 +1045,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {/* Gallery management */}
       <GalleryManager adminKey={adminKey} />
 
+      <DetailsPasswordSection adminKey={adminKey} />
+
       {/* Cambia chiave */}
       <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
     </div>
@@ -1153,6 +1155,92 @@ function GalleryManager({ adminKey }: { adminKey: string }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function DetailsPasswordSection({ adminKey }: { adminKey: string }) {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [reveal, setReveal] = useState(false);
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
+
+  async function loadCurrent() {
+    try {
+      const res = await fetch("/api/admin/details-password", { headers: { "X-Admin-Key": adminKey } });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) setCurrent(data.password ?? "");
+    } catch { /* ignore */ }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (newPassword.length < 4) { setError("Min. 4 caratteri."); return; }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/details-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ newPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error ?? "Errore."); setLoading(false); return; }
+      setSuccess(true);
+      setCurrent(newPassword);
+      setNewPassword("");
+      setTimeout(() => setSuccess(false), 2500);
+    } catch { setError("Errore di connessione."); }
+    setLoading(false);
+  }
+
+  return (
+    <div className="mt-16 border-t border-white/10 pt-10">
+      <button
+        onClick={() => { const next = !open; setOpen(next); if (next && current === null) loadCurrent(); }}
+        className="text-[12px] tracking-[0.3em] uppercase text-white/30 hover:text-white/60 transition-colors">
+        {open ? "— Nascondi" : "🔒 Password dettagli evento"}
+      </button>
+      {open && (
+        <div className="mt-6 max-w-md flex flex-col gap-6">
+          <p className="text-[12px] text-white/40 tracking-wider leading-relaxed">
+            Questa password sblocca le sezioni di dettaglio sotto la descrizione di ogni evento (Aree, Tesseramento, Quote soci, Promo, Note).
+          </p>
+
+          <div className="border border-white/10 p-4 flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[12px] tracking-[0.25em] uppercase text-white/40 mb-1">Password attuale</p>
+              <p className="text-base font-mono text-white truncate">
+                {current === null ? "..." : (reveal ? current : "••••••••")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReveal((v) => !v)}
+              className="text-[12px] tracking-[0.25em] uppercase text-white/40 hover:text-[#FF006E] flex-shrink-0">
+              {reveal ? "Nascondi" : "Mostra"}
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="text-[12px] tracking-[0.25em] uppercase text-white/40 block mb-1">Nuova password</label>
+              <input type="text" className={inputClass} value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 4 caratteri" />
+            </div>
+            {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
+            {success && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">Password aggiornata.</p>}
+            <button type="submit" disabled={loading || !newPassword}
+              className="bg-white/10 text-white text-sm font-bold tracking-[0.3em] uppercase py-2.5 px-6 hover:bg-[#FF006E] transition-colors disabled:opacity-30 self-start">
+              {loading ? "..." : "AGGIORNA PASSWORD"}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

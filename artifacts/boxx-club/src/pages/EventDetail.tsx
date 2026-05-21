@@ -57,6 +57,70 @@ function getImageSrc(imageUrl: string | null): string {
   return imageUrl;
 }
 
+function DetailsGate({ children }: { children: React.ReactNode }) {
+  const STORAGE_KEY = "boxx_details_unlocked";
+  const [unlocked, setUnlocked] = useState<boolean>(() => {
+    try { return sessionStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
+  });
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (!password) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/events/verify-details-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(data.error ?? "Password non corretta."); setLoading(false); return; }
+      try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
+      setUnlocked(true);
+    } catch { setError("Errore di connessione."); }
+    setLoading(false);
+  }
+
+  if (unlocked) return <>{children}</>;
+
+  return (
+    <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10">
+      <div className="border-t border-white/10 pt-10">
+        <div className="border border-[#FF006E]/30 bg-[#FF006E]/5 p-8 md:p-10 flex flex-col gap-6 max-w-md">
+          <div>
+            <p className="text-[13px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-2">Area riservata</p>
+            <p className="text-sm text-white/70 leading-relaxed">
+              I dettagli di questo evento (Aree, Tesseramento, Quote soci, Promo, Note) sono riservati ai soci. Inserisci la password per visualizzarli.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              autoComplete="off"
+              className="bg-white/5 border border-white/15 text-white text-sm px-4 py-3 outline-none focus:border-[#FF006E] transition-colors placeholder-white/30"
+            />
+            {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading || !password}
+              className="bg-[#FF006E] text-white text-sm font-bold tracking-[0.3em] uppercase py-3 px-6 hover:bg-white hover:text-black transition-colors disabled:opacity-30 self-start"
+            >
+              {loading ? "..." : "SBLOCCA"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ParticipateForm({ eventId }: { eventId: number }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -334,8 +398,9 @@ export default function EventDetail() {
           </div>
         </div>
 
-        {/* Info sections — full width below two-column layout */}
+        {/* Info sections — full width below two-column layout (password-gated) */}
         {(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes) && (
+          <DetailsGate>
           <div className="max-w-6xl mx-auto w-full px-6 md:px-16 pb-10 flex flex-col gap-8">
             <div className="border-t border-white/10 pt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -407,6 +472,7 @@ export default function EventDetail() {
               </div>
             )}
           </div>
+          </DetailsGate>
         )}
 
         {/* Footer strip */}
