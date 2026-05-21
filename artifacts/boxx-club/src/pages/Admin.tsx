@@ -692,6 +692,24 @@ function EventForm({
         onChange={(v) => set("memberQuotes", v)}
       />
 
+      {/* Evento genderless — collegato alle quote */}
+      <div className="border border-[#FF006E]/20 bg-[#FF006E]/5 p-4 -mt-2">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div
+            onClick={() => set("isGenderless", !form.isGenderless)}
+            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 cursor-pointer ${form.isGenderless ? "bg-[#FF006E]" : "bg-white/10"}`}
+          >
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.isGenderless ? "translate-x-5" : "translate-x-0.5"}`} />
+          </div>
+          <div>
+            <span className="text-sm text-white font-medium">Evento genderless</span>
+            <span className="text-[12px] text-white/40 tracking-wider block">
+              Nasconde le righe Coppie / Singoli / Singole dalle quote qui sopra
+            </span>
+          </div>
+        </label>
+      </div>
+
       {/* Promo */}
       <PencilField
         label="Promo"
@@ -709,24 +727,6 @@ function EventForm({
         rows={6}
         placeholder="Info VIP, disclaimer categorie, contatti prenotazioni…"
       />
-
-      {/* Evento genderless */}
-      <div className="border border-white/10 p-4">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <div
-            onClick={() => set("isGenderless", !form.isGenderless)}
-            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 cursor-pointer ${form.isGenderless ? "bg-[#FF006E]" : "bg-white/10"}`}
-          >
-            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.isGenderless ? "translate-x-5" : "translate-x-0.5"}`} />
-          </div>
-          <div>
-            <span className="text-sm text-white font-medium">Evento genderless</span>
-            <span className="text-[12px] text-white/30 tracking-wider block">
-              Nasconde le quote Coppie / Singoli / Singole nella pagina evento
-            </span>
-          </div>
-        </label>
-      </div>
 
       {/* Evento ricorrente */}
       <div className="border border-white/10 p-4">
