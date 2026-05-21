@@ -394,8 +394,8 @@ export default function EventDetail() {
                   <DetailsGate
                     eventId={event.id}
                     enabled={event.isPasswordProtected ?? false}
-                    title="Biglietti riservati ai soci"
-                    message="L'acquisto dei biglietti è riservato ai soci. Inserisci la password per accedere al widget."
+                    title="La prenotazione è riservata ai soci"
+                    message="Utilizzare il codice comunicato nell'invito."
                   >
                     <HtmlEmbed html={event.tickettailorEmbed} />
                   </DetailsGate>
