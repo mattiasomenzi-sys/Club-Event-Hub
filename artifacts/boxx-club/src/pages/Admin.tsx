@@ -158,7 +158,8 @@ function parsePricing(value: string): PricingRow[] {
 
 function PricingEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [rows, setRows] = useState<PricingRow[]>(() => parsePricing(value));
-  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-3 py-2 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
+  const inputBase = "bg-white/5 border border-white/10 text-white text-sm px-3 py-2 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
+  const inputClass = `${inputBase} w-full`;
 
   function update(next: PricingRow[]) {
     setRows(next);
@@ -203,7 +204,7 @@ function PricingEditor({ value, onChange }: { value: string; onChange: (v: strin
                   {row.label}
                 </div>
               ) : (
-                <input className={`${inputClass} w-28 flex-shrink-0`} placeholder="Categoria"
+                <input className={`${inputBase} w-28 flex-shrink-0`} placeholder="Categoria"
                   value={row.label} onChange={(e) => setLabel(idx, e.target.value)} />
               )}
               <span className="text-white/20 text-sm flex-shrink-0">–</span>
@@ -224,7 +225,7 @@ function PricingEditor({ value, onChange }: { value: string; onChange: (v: strin
               <input
                 type="number"
                 min={0}
-                className={`${inputClass} w-20 flex-shrink-0`}
+                className={`${inputBase} w-20 flex-shrink-0`}
                 placeholder="0"
                 value={row.consumazioni ?? 0}
                 onChange={(e) => setConsumazioni(idx, parseInt(e.target.value) || 0)}
