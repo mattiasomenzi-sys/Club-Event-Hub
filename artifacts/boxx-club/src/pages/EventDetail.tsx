@@ -284,6 +284,7 @@ export default function EventDetail() {
   const { data: event, isLoading, isError } = useGetEvent(Number(id));
   const isProtected = event?.isPasswordProtected ?? false;
   const { unlocked, unlock } = useEventUnlock(Number(id), isProtected);
+  const getEventPoster = useEventPoster();
 
   if (isLoading) {
     return (
@@ -308,7 +309,6 @@ export default function EventDetail() {
   }
 
   const { weekday, day, month, year } = formatFullDate(event.date);
-  const getEventPoster = useEventPoster();
   const posterSrc = getEventPoster({ id: event.id, imageUrl: event.imageUrl });
   const hasCustomPoster = !!event.imageUrl;
   const hasDetailsContent = !!(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes);
