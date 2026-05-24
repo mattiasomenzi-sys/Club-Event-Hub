@@ -33,22 +33,28 @@ TAVOLI VIP info e prenotazioni al 3758001920
 Pink 1 fino a 4 persone, inclusi ingressi, priority check, bottiglia al tavolo, tavolo e stanza riservati.
 Pink 2 fino a 6 persone, inclusi ingressi, priority check, bottiglia al tavolo, tavolo e stanza riservati.`;
 
-const DEFAULT_DRESSCODE_TEMPLATES = [
+type Template = { id: string; name: string; text: string };
+
+const DEFAULT_DRESSCODE_TEMPLATES: Template[] = [
   { id: "1", name: "Come as u are", text: "Come as u are – Nessun obbligo di dress specifico, no giacca e cravatta.\nSi può essere swag anche in tuta. No sciatteria." },
   { id: "2", name: "Fetish / Latex", text: "FETISH, LATEX, PELLE" },
   { id: "3", name: "Glamour", text: "GLAMOUR, ELEGANTE, PROVOCANTE" },
 ];
 
-function loadDresscodeTemplates(): { id: string; name: string; text: string }[] {
+const DEFAULT_AREA_TEMPLATES: Template[] = [
+  { id: "1", name: "Standard", text: DEFAULT_AREA_DESCRIPTION },
+];
+
+function loadTemplates(storageKey: string, defaults: Template[]): Template[] {
   try {
-    const raw = localStorage.getItem("boxx_dresscode_templates");
+    const raw = localStorage.getItem(storageKey);
     if (raw) return JSON.parse(raw);
   } catch { /* empty */ }
-  return DEFAULT_DRESSCODE_TEMPLATES;
+  return defaults;
 }
 
-function saveDresscodeTemplates(tpls: { id: string; name: string; text: string }[]) {
-  localStorage.setItem("boxx_dresscode_templates", JSON.stringify(tpls));
+function persistTemplates(storageKey: string, tpls: Template[]) {
+  localStorage.setItem(storageKey, JSON.stringify(tpls));
 }
 
 const RECURRING_PATTERNS = [
@@ -243,59 +249,55 @@ function PricingEditor({ value, onChange }: { value: string; onChange: (v: strin
   );
 }
 
-function DresscodeTemplatePicker({
-  value, onChange,
-}: { value: string; onChange: (v: string) => void }) {
-  const [templates, setTemplates] = useState(() => loadDresscodeTemplates());
+function TemplateChips({
+  storageKey, defaults, value, onChange,
+}: { storageKey: string; defaults: Template[]; value: string; onChange: (v: string) => void }) {
+  const [templates, setTemplates] = useState<Template[]>(() => loadTemplates(storageKey, defaults));
   const [newName, setNewName] = useState("");
   const [saving, setSaving] = useState(false);
   const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
 
-  function applyTemplate(text: string) { onChange(text); }
-
   function saveNew() {
     if (!newName.trim() || !value.trim()) return;
     const updated = [...templates, { id: Date.now().toString(), name: newName.trim(), text: value }];
-    saveDresscodeTemplates(updated);
+    persistTemplates(storageKey, updated);
     setTemplates(updated);
     setNewName("");
     setSaving(false);
   }
 
-  function deleteTemplate(id: string) {
+  function deleteTemplate(id: string, name: string) {
+    if (!confirm(`Eliminare il template "${name}"?`)) return;
     const updated = templates.filter(t => t.id !== id);
-    saveDresscodeTemplates(updated);
+    persistTemplates(storageKey, updated);
     setTemplates(updated);
   }
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[12px] tracking-[0.25em] uppercase text-white/40">Dress Code</span>
+      <div className="flex items-center justify-end">
         <button type="button" onClick={() => setSaving(!saving)}
           className="text-[12px] text-[#FF006E] hover:text-white border border-[#FF006E]/30 hover:border-white/30 px-2 py-1 transition-colors">
           {saving ? "Annulla" : "+ Salva template"}
         </button>
       </div>
-      {/* Template buttons */}
-      <div className="flex flex-wrap gap-2 mb-1">
-        {templates.map(t => (
-          <div key={t.id} className="flex items-center gap-1 group">
-            <button type="button" onClick={() => applyTemplate(t.text)}
-              className="text-[12px] tracking-[0.15em] uppercase px-3 py-1.5 border border-white/10 text-white/50 hover:text-white hover:border-[#FF006E]/50 transition-colors">
-              {t.name}
-            </button>
-            <button type="button" onClick={() => deleteTemplate(t.id)}
-              className="text-white/20 hover:text-[#FF006E] transition-colors opacity-0 group-hover:opacity-100 -ml-0.5">
-              <X className="w-3 h-3" />
-            </button>
-          </div>
-        ))}
-      </div>
-      {/* Text input */}
-      <input className={inputClass} placeholder="Scrivi o seleziona un template sopra…"
-        value={value} onChange={(e) => onChange(e.target.value)} />
-      {/* Save new template row */}
+      {templates.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {templates.map(t => (
+            <div key={t.id} className="flex items-center gap-1 group">
+              <button type="button" onClick={() => onChange(t.text)}
+                className="text-[12px] tracking-[0.15em] uppercase px-3 py-1.5 border border-white/10 text-white/50 hover:text-white hover:border-[#FF006E]/50 transition-colors">
+                {t.name}
+              </button>
+              <button type="button" onClick={() => deleteTemplate(t.id, t.name)}
+                title="Elimina template"
+                className="text-white/20 hover:text-[#FF006E] transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 -ml-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
       {saving && (
         <div className="flex gap-2">
           <input className={`${inputClass} flex-1`} placeholder="Nome template…"
@@ -306,7 +308,22 @@ function DresscodeTemplatePicker({
           </button>
         </div>
       )}
-      <p className="text-[12px] text-white/20">Clicca un template per applicarlo, poi modificalo. "Salva template" lo memorizza per il futuro.</p>
+      <p className="text-[12px] text-white/20">Clicca un template per applicarlo, poi modificalo. Passa col mouse sul template per eliminarlo.</p>
+    </div>
+  );
+}
+
+function DresscodeTemplatePicker({
+  value, onChange,
+}: { value: string; onChange: (v: string) => void }) {
+  const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-2.5 outline-none focus:border-[#FF006E] transition-colors placeholder-white/20 w-full";
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[12px] tracking-[0.25em] uppercase text-white/40">Dress Code</span>
+      <TemplateChips storageKey="boxx_dresscode_templates" defaults={DEFAULT_DRESSCODE_TEMPLATES}
+        value={value} onChange={onChange} />
+      <input className={inputClass} placeholder="Scrivi o seleziona un template sopra…"
+        value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
@@ -675,14 +692,18 @@ function EventForm({
         <p className="text-[13px] tracking-[0.4em] uppercase text-white/20 mb-4">Sezioni fisse dell'evento</p>
       </div>
 
-      {/* Descrizione aree (tavoli, privè…) */}
-      <PencilField
-        label="Descrizione aree"
-        value={form.areaDescription}
-        onChange={(v) => set("areaDescription", v)}
-        rows={5}
-        placeholder="Info su tavoli, privè, darkroom…"
-      />
+      {/* Descrizione aree (tavoli, privè…) con template */}
+      <div className="flex flex-col gap-2">
+        <TemplateChips storageKey="boxx_area_templates" defaults={DEFAULT_AREA_TEMPLATES}
+          value={form.areaDescription} onChange={(v) => set("areaDescription", v)} />
+        <PencilField
+          label="Descrizione aree"
+          value={form.areaDescription}
+          onChange={(v) => set("areaDescription", v)}
+          rows={5}
+          placeholder="Info su tavoli, privè, darkroom…"
+        />
+      </div>
 
       {/* Badge statico — non modificabile */}
       <div className="flex items-center gap-3 border border-white/10 px-4 py-3">
