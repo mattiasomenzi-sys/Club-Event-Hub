@@ -42,6 +42,7 @@ export const ListEventsResponseItem = zod.object({
   "recurringUntil": zod.string().nullish().describe('ISO date string (YYYY-MM-DD) — recurrence ends after this date'),
   "isGenderless": zod.boolean(),
   "isPasswordProtected": zod.boolean().optional(),
+  "isDraft": zod.boolean().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -74,7 +75,8 @@ export const CreateEventBody = zod.object({
   "recurringUntil": zod.string().optional(),
   "isGenderless": zod.boolean().optional(),
   "isPasswordProtected": zod.boolean().optional(),
-  "password": zod.string().optional()
+  "password": zod.string().optional(),
+  "isDraft": zod.boolean().optional()
 })
 
 
@@ -106,6 +108,7 @@ export const GetEventResponse = zod.object({
   "recurringUntil": zod.string().nullish().describe('ISO date string (YYYY-MM-DD) — recurrence ends after this date'),
   "isGenderless": zod.boolean(),
   "isPasswordProtected": zod.boolean().optional(),
+  "isDraft": zod.boolean().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -141,7 +144,8 @@ export const UpdateEventBody = zod.object({
   "recurringUntil": zod.string().optional(),
   "isGenderless": zod.boolean().optional(),
   "isPasswordProtected": zod.boolean().optional(),
-  "password": zod.string().optional()
+  "password": zod.string().optional(),
+  "isDraft": zod.boolean().optional()
 })
 
 export const UpdateEventResponse = zod.object({
@@ -165,6 +169,7 @@ export const UpdateEventResponse = zod.object({
   "recurringUntil": zod.string().nullish().describe('ISO date string (YYYY-MM-DD) — recurrence ends after this date'),
   "isGenderless": zod.boolean(),
   "isPasswordProtected": zod.boolean().optional(),
+  "isDraft": zod.boolean().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })

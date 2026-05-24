@@ -44,6 +44,7 @@ export interface Event {
   recurringUntil?: string | null;
   isGenderless: boolean;
   isPasswordProtected?: boolean;
+  isDraft?: boolean;
   createdAt: string;
   updatedAt: string;
 }

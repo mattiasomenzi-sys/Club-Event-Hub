@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db, eventsTable } from "@workspace/db";
 import {
   ListEventsResponse,
@@ -41,11 +41,23 @@ function requireAdminKey(req: Request, res: Response, next: NextFunction): void 
   });
 }
 
+async function isAdmin(req: Request): Promise<boolean> {
+  const provided = req.headers["x-admin-key"];
+  if (!provided || typeof provided !== "string") return false;
+  try {
+    const key = await getAdminKey();
+    return provided === key;
+  } catch {
+    return false;
+  }
+}
+
 router.get("/events", async (req, res): Promise<void> => {
-  const events = await db
-    .select()
-    .from(eventsTable)
-    .orderBy(asc(eventsTable.date));
+  const admin = await isAdmin(req);
+  const base = db.select().from(eventsTable);
+  const events = admin
+    ? await base.orderBy(asc(eventsTable.date))
+    : await base.where(eq(eventsTable.isDraft, false)).orderBy(asc(eventsTable.date));
   res.json(ListEventsResponse.parse(events.map(serializeEvent)));
 });
 
@@ -56,10 +68,12 @@ router.get("/events/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [event] = await db
-    .select()
-    .from(eventsTable)
-    .where(eq(eventsTable.id, params.data.id));
+  const admin = await isAdmin(req);
+  const whereExpr = admin
+    ? eq(eventsTable.id, params.data.id)
+    : and(eq(eventsTable.id, params.data.id), eq(eventsTable.isDraft, false));
+
+  const [event] = await db.select().from(eventsTable).where(whereExpr);
 
   if (!event) {
     res.status(404).json({ error: "Evento non trovato" });
@@ -126,7 +140,7 @@ router.post("/events/:id/verify-password", async (req, res): Promise<void> => {
     return;
   }
   const [event] = await db.select().from(eventsTable).where(eq(eventsTable.id, idNum));
-  if (!event) {
+  if (!event || event.isDraft) {
     res.status(404).json({ ok: false, error: "Evento non trovato." });
     return;
   }

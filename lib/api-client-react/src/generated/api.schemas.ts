@@ -47,6 +47,7 @@ export interface Event {
   recurringUntil?: string | null;
   isGenderless: boolean;
   isPasswordProtected?: boolean;
+  isDraft?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +76,7 @@ export interface EventInput {
   isGenderless?: boolean;
   isPasswordProtected?: boolean;
   password?: string;
+  isDraft?: boolean;
 }
 
 export interface EventUpdate {
@@ -99,6 +101,7 @@ export interface EventUpdate {
   isGenderless?: boolean;
   isPasswordProtected?: boolean;
   password?: string;
+  isDraft?: boolean;
 }
 
 export interface ParticipationInput {

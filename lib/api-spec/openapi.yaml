@@ -410,6 +410,8 @@ components:
           type: boolean
         isPasswordProtected:
           type: boolean
+        isDraft:
+          type: boolean
         createdAt:
           type: string
         updatedAt:
@@ -462,6 +464,8 @@ components:
           type: boolean
         password:
           type: string
+        isDraft:
+          type: boolean
 
     EventUpdate:
       type: object
@@ -507,6 +511,8 @@ components:
           type: boolean
         password:
           type: string
+        isDraft:
+          type: boolean
 
     ParticipationInput:
       type: object

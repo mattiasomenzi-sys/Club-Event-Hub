@@ -24,6 +24,7 @@ export const eventsTable = pgTable("events", {
   isGenderless: boolean("is_genderless").notNull().default(false),
   isPasswordProtected: boolean("is_password_protected").notNull().default(false),
   password: text("password"),
+  isDraft: boolean("is_draft").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

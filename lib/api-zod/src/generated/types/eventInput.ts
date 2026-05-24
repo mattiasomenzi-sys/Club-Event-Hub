@@ -30,4 +30,5 @@ export interface EventInput {
   isGenderless?: boolean;
   isPasswordProtected?: boolean;
   password?: string;
+  isDraft?: boolean;
 }

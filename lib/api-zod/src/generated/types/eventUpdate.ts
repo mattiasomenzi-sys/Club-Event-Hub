@@ -28,4 +28,5 @@ export interface EventUpdate {
   isGenderless?: boolean;
   isPasswordProtected?: boolean;
   password?: string;
+  isDraft?: boolean;
 }

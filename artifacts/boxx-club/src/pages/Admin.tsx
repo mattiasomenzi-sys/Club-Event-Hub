@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { Link } from "wouter";
 import { useListEvents, useListGalleryPhotos } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getListEventsQueryKey, getListGalleryPhotosQueryKey } from "@workspace/api-client-react";
 import { Upload, X, Loader2, RefreshCw, Pencil, Check } from "lucide-react";
 
@@ -83,6 +83,7 @@ interface EventFormData {
   isGenderless: boolean;
   isPasswordProtected: boolean;
   password: string;
+  isDraft: boolean;
 }
 
 const emptyForm: EventFormData = {
@@ -106,6 +107,7 @@ const emptyForm: EventFormData = {
   isGenderless: false,
   isPasswordProtected: false,
   password: "",
+  isDraft: false,
 };
 
 function getImageSrc(imageUrl: string): string {
@@ -570,6 +572,7 @@ function EventForm({
       body.isGenderless = form.isGenderless;
       body.isPasswordProtected = form.isPasswordProtected;
       if (form.isPasswordProtected && form.password) body.password = form.password;
+      body.isDraft = form.isDraft;
 
       const res = await fetch(url, {
         method,
@@ -808,6 +811,24 @@ function EventForm({
           onChange={(e) => set("registrationUrl", e.target.value)} />
       </div>
 
+      {/* Bozza */}
+      <div className="border border-white/10 bg-white/5 p-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div
+            onClick={() => set("isDraft", !form.isDraft)}
+            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 cursor-pointer ${form.isDraft ? "bg-[#FF006E]" : "bg-white/10"}`}
+          >
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${form.isDraft ? "translate-x-5" : "translate-x-0.5"}`} />
+          </div>
+          <div>
+            <span className="text-sm text-white font-medium">Bozza</span>
+            <span className="text-[12px] text-white/40 tracking-wider block">
+              Salva l'evento senza renderlo visibile al pubblico. Visibile solo qui in admin.
+            </span>
+          </div>
+        </label>
+      </div>
+
       {/* Password protezione evento */}
       <div className="border border-[#FF006E]/20 bg-[#FF006E]/5 p-4">
         <label className="flex items-center gap-3 cursor-pointer">
@@ -890,8 +911,15 @@ function adminTodayString(): string {
 }
 
 function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: () => void }) {
-  const { data: events = [], isLoading } = useListEvents();
   const queryClient = useQueryClient();
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["admin", "events", adminKey],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/events`, { headers: { "X-Admin-Key": adminKey } });
+      if (!res.ok) throw new Error("Errore caricamento eventi");
+      return (await res.json()) as Event[];
+    },
+  });
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -911,11 +939,13 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
     if (!confirm("Eliminare questo evento?")) return;
     setDeletingId(id);
     await fetch(`${API_BASE}/events/${id}`, { method: "DELETE", headers: { "X-Admin-Key": adminKey } });
+    await queryClient.invalidateQueries({ queryKey: ["admin", "events", adminKey] });
     await queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
     setDeletingId(null);
   }
 
   async function handleSave() {
+    await queryClient.invalidateQueries({ queryKey: ["admin", "events", adminKey] });
     await queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
     setShowForm(false);
     setEditingEvent(null);
@@ -943,6 +973,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       isGenderless: e.isGenderless ?? false,
       isPasswordProtected: e.isPasswordProtected ?? false,
       password: "",
+      isDraft: e.isDraft ?? false,
     };
   }
 
@@ -1040,6 +1071,11 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
                   {event.isRecurring && (
                     <span className="inline-flex items-center gap-1 text-[13px] tracking-wider uppercase text-white/30 border border-white/10 px-1.5 py-0.5">
                       <RefreshCw className="w-2.5 h-2.5" /> Ricorrente
+                    </span>
+                  )}
+                  {event.isDraft && (
+                    <span className="text-[12px] tracking-[0.3em] uppercase text-black bg-[#FF006E] px-1.5 py-0.5 font-bold">
+                      BOZZA
                     </span>
                   )}
                 </div>

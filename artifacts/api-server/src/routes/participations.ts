@@ -20,8 +20,8 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
   const eventId = Number(req.params.id);
   if (isNaN(eventId)) { res.status(400).json({ error: "Invalid event id" }); return; }
 
-  const [event] = await db.select({ id: eventsTable.id }).from(eventsTable).where(eq(eventsTable.id, eventId));
-  if (!event) { res.status(404).json({ error: "Event not found" }); return; }
+  const [event] = await db.select({ id: eventsTable.id, isDraft: eventsTable.isDraft }).from(eventsTable).where(eq(eventsTable.id, eventId));
+  if (!event || event.isDraft) { res.status(404).json({ error: "Event not found" }); return; }
 
   const { name, contact } = req.body as { name?: unknown; contact?: unknown };
   if (typeof name !== "string" || !name.trim()) { res.status(400).json({ error: "Nome richiesto" }); return; }
