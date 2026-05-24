@@ -7,6 +7,7 @@ import type { Event } from "@workspace/api-client-react";
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
 import RotatingBackground from "@/components/RotatingBackground";
+import { useEventPoster } from "@/hooks/useEventPoster";
 
 const ITALIAN_DAYS: Record<string, string> = {
   Monday: "LUNEDI",
@@ -109,20 +110,18 @@ const PLACEHOLDER_EVENTS: Event[] = [
   },
 ];
 
-function EventRow({ event, usingRealEvents, past }: { event: Event; usingRealEvents: boolean; past?: boolean }) {
+function EventRow({ event, usingRealEvents, past, posterSrc }: { event: Event; usingRealEvents: boolean; past?: boolean; posterSrc: string }) {
   const { day, date } = formatDate(event.date);
   return (
     <div className={`px-6 md:px-12 py-10 border-b border-white/10 hover:bg-white/[0.02] transition-colors group ${past ? "opacity-50 hover:opacity-70" : ""}`}>
       <div className="flex gap-6 items-start">
-        {event.imageUrl && (
-          <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
-            <img
-              src={event.imageUrl.startsWith("/objects/") ? `/api/storage${event.imageUrl}` : event.imageUrl}
-              alt={event.title}
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-            />
-          </div>
-        )}
+        <div className="flex-shrink-0 w-20 h-28 sm:w-28 sm:h-36 lg:w-36 lg:h-48 overflow-hidden border border-white/10 group-hover:border-[#FF006E]/30 transition-colors">
+          <img
+            src={posterSrc}
+            alt={event.title}
+            className={`w-full h-full object-cover transition-opacity ${event.imageUrl ? "opacity-80 group-hover:opacity-100" : "opacity-60 group-hover:opacity-90"}`}
+          />
+        </div>
         <div className="flex-1 min-w-0">
           {event.category && (
             <p className="text-[12px] font-bold tracking-[0.35em] uppercase text-[#FF006E] mb-3">
@@ -258,6 +257,7 @@ function expandEvents(allEvents: Event[], todayISO: string, windowEndISO: string
 
 export default function Home() {
   const { data: apiEvents, isLoading } = useListEvents();
+  const getEventPoster = useEventPoster();
   const usingRealEvents = !!(apiEvents && apiEvents.length > 0);
   const allEvents: Event[] = usingRealEvents ? apiEvents! : PLACEHOLDER_EVENTS;
 
@@ -516,7 +516,7 @@ export default function Home() {
                     </div>
 
                     {monthEvents.map((event) => (
-                      <EventRow key={`${event.id}-${event.date}`} event={event} usingRealEvents={usingRealEvents} />
+                      <EventRow key={`${event.id}-${event.date}`} event={event} usingRealEvents={usingRealEvents} posterSrc={getEventPoster({ id: event.id, imageUrl: event.imageUrl })} />
                     ))}
                   </div>
                 );
@@ -537,7 +537,7 @@ export default function Home() {
                     </span>
                   </button>
                   {archiveOpen && pastEvents.map((event) => (
-                    <EventRow key={event.id} event={event} usingRealEvents={usingRealEvents} past />
+                    <EventRow key={event.id} event={event} usingRealEvents={usingRealEvents} past posterSrc={getEventPoster({ id: event.id, imageUrl: event.imageUrl })} />
                   ))}
                 </div>
               )}

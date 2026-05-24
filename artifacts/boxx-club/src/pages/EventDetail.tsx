@@ -17,6 +17,7 @@ function parsePricing(value: string | null | undefined): PricingRow[] | null {
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
+import { useEventPoster } from "@/hooks/useEventPoster";
 import RotatingBackground from "@/components/RotatingBackground";
 
 const ITALIAN_DAYS: Record<string, string> = {
@@ -307,7 +308,8 @@ export default function EventDetail() {
   }
 
   const { weekday, day, month, year } = formatFullDate(event.date);
-  const posterSrc = getImageSrc(event.imageUrl ?? null);
+  const getEventPoster = useEventPoster();
+  const posterSrc = getEventPoster({ id: event.id, imageUrl: event.imageUrl });
   const hasCustomPoster = !!event.imageUrl;
   const hasDetailsContent = !!(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes);
 
