@@ -11,4 +11,5 @@ export interface ParticipationInput {
   name: string;
   /** @minLength 1 */
   contact: string;
+  photoUrl?: string;
 }

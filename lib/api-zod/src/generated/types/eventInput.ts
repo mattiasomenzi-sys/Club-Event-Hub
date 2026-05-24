@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EventInputPhotoRequirement } from './eventInputPhotoRequirement';
 
 export interface EventInput {
   /** @minLength 1 */
@@ -31,4 +32,5 @@ export interface EventInput {
   isPasswordProtected?: boolean;
   password?: string;
   isDraft?: boolean;
+  photoRequirement?: EventInputPhotoRequirement;
 }

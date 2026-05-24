@@ -412,6 +412,9 @@ components:
           type: boolean
         isDraft:
           type: boolean
+        photoRequirement:
+          type: string
+          enum: [none, optional, required]
         createdAt:
           type: string
         updatedAt:
@@ -466,6 +469,9 @@ components:
           type: string
         isDraft:
           type: boolean
+        photoRequirement:
+          type: string
+          enum: [none, optional, required]
 
     EventUpdate:
       type: object
@@ -513,6 +519,9 @@ components:
           type: string
         isDraft:
           type: boolean
+        photoRequirement:
+          type: string
+          enum: [none, optional, required]
 
     ParticipationInput:
       type: object
@@ -524,6 +533,8 @@ components:
         contact:
           type: string
           minLength: 1
+        photoUrl:
+          type: string
 
     ParticipationResponse:
       type: object
@@ -537,6 +548,8 @@ components:
           type: string
         contact:
           type: string
+        photoUrl:
+          type: ["string", "null"]
         createdAt:
           type: string
 

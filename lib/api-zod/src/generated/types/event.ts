@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EventPhotoRequirement } from './eventPhotoRequirement';
 
 export interface Event {
   id: number;
@@ -45,6 +46,7 @@ export interface Event {
   isGenderless: boolean;
   isPasswordProtected?: boolean;
   isDraft?: boolean;
+  photoRequirement?: EventPhotoRequirement;
   createdAt: string;
   updatedAt: string;
 }

@@ -6,6 +6,7 @@ export const participationsTable = pgTable("participations", {
   eventId: integer("event_id").notNull().references(() => eventsTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   contact: text("contact").notNull(),
+  photoUrl: text("photo_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

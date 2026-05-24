@@ -43,6 +43,7 @@ export const ListEventsResponseItem = zod.object({
   "isGenderless": zod.boolean(),
   "isPasswordProtected": zod.boolean().optional(),
   "isDraft": zod.boolean().optional(),
+  "photoRequirement": zod.enum(['none', 'optional', 'required']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -76,7 +77,8 @@ export const CreateEventBody = zod.object({
   "isGenderless": zod.boolean().optional(),
   "isPasswordProtected": zod.boolean().optional(),
   "password": zod.string().optional(),
-  "isDraft": zod.boolean().optional()
+  "isDraft": zod.boolean().optional(),
+  "photoRequirement": zod.enum(['none', 'optional', 'required']).optional()
 })
 
 
@@ -109,6 +111,7 @@ export const GetEventResponse = zod.object({
   "isGenderless": zod.boolean(),
   "isPasswordProtected": zod.boolean().optional(),
   "isDraft": zod.boolean().optional(),
+  "photoRequirement": zod.enum(['none', 'optional', 'required']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -145,7 +148,8 @@ export const UpdateEventBody = zod.object({
   "isGenderless": zod.boolean().optional(),
   "isPasswordProtected": zod.boolean().optional(),
   "password": zod.string().optional(),
-  "isDraft": zod.boolean().optional()
+  "isDraft": zod.boolean().optional(),
+  "photoRequirement": zod.enum(['none', 'optional', 'required']).optional()
 })
 
 export const UpdateEventResponse = zod.object({
@@ -170,6 +174,7 @@ export const UpdateEventResponse = zod.object({
   "isGenderless": zod.boolean(),
   "isPasswordProtected": zod.boolean().optional(),
   "isDraft": zod.boolean().optional(),
+  "photoRequirement": zod.enum(['none', 'optional', 'required']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -196,7 +201,8 @@ export const ParticipateInEventParams = zod.object({
 
 export const ParticipateInEventBody = zod.object({
   "name": zod.string().min(1),
-  "contact": zod.string().min(1)
+  "contact": zod.string().min(1),
+  "photoUrl": zod.string().optional()
 })
 
 
@@ -212,6 +218,7 @@ export const ListParticipationsResponseItem = zod.object({
   "eventId": zod.number(),
   "name": zod.string(),
   "contact": zod.string(),
+  "photoUrl": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListParticipationsResponse = zod.array(ListParticipationsResponseItem)

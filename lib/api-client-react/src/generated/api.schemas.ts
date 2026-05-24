@@ -9,6 +9,15 @@ export interface HealthStatus {
   status: string;
 }
 
+export type EventPhotoRequirement = typeof EventPhotoRequirement[keyof typeof EventPhotoRequirement];
+
+
+export const EventPhotoRequirement = {
+  none: 'none',
+  optional: 'optional',
+  required: 'required',
+} as const;
+
 export interface Event {
   id: number;
   title: string;
@@ -48,9 +57,19 @@ export interface Event {
   isGenderless: boolean;
   isPasswordProtected?: boolean;
   isDraft?: boolean;
+  photoRequirement?: EventPhotoRequirement;
   createdAt: string;
   updatedAt: string;
 }
+
+export type EventInputPhotoRequirement = typeof EventInputPhotoRequirement[keyof typeof EventInputPhotoRequirement];
+
+
+export const EventInputPhotoRequirement = {
+  none: 'none',
+  optional: 'optional',
+  required: 'required',
+} as const;
 
 export interface EventInput {
   /** @minLength 1 */
@@ -77,7 +96,17 @@ export interface EventInput {
   isPasswordProtected?: boolean;
   password?: string;
   isDraft?: boolean;
+  photoRequirement?: EventInputPhotoRequirement;
 }
+
+export type EventUpdatePhotoRequirement = typeof EventUpdatePhotoRequirement[keyof typeof EventUpdatePhotoRequirement];
+
+
+export const EventUpdatePhotoRequirement = {
+  none: 'none',
+  optional: 'optional',
+  required: 'required',
+} as const;
 
 export interface EventUpdate {
   /** @minLength 1 */
@@ -102,6 +131,7 @@ export interface EventUpdate {
   isPasswordProtected?: boolean;
   password?: string;
   isDraft?: boolean;
+  photoRequirement?: EventUpdatePhotoRequirement;
 }
 
 export interface ParticipationInput {
@@ -109,6 +139,7 @@ export interface ParticipationInput {
   name: string;
   /** @minLength 1 */
   contact: string;
+  photoUrl?: string;
 }
 
 export interface ParticipationResponse {
@@ -116,6 +147,8 @@ export interface ParticipationResponse {
   eventId: number;
   name: string;
   contact: string;
+  /** @nullable */
+  photoUrl?: string | null;
   createdAt: string;
 }
 

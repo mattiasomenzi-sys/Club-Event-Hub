@@ -142,25 +142,50 @@ function UnlockForm({ eventId, onUnlock, title, message }: { eventId: number; on
   );
 }
 
-function ParticipateForm({ eventId }: { eventId: number }) {
+function ParticipateForm({ eventId, photoRequirement }: { eventId: number; photoRequirement: "none" | "optional" | "required" }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
   const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-3 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
+  const photoRequired = photoRequirement === "required";
+  const photoVisible = photoRequirement !== "none";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
+      let photoUrl: string | undefined;
+      if (photoFile) {
+        const urlRes = await fetch(`/api/storage/uploads/request-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: photoFile.name, size: photoFile.size, contentType: photoFile.type }),
+        });
+        if (!urlRes.ok) { setError("Errore caricamento foto"); setLoading(false); return; }
+        const { uploadURL, objectPath } = await urlRes.json();
+        const putRes = await fetch(uploadURL, {
+          method: "PUT",
+          headers: { "Content-Type": photoFile.type },
+          body: photoFile,
+        });
+        if (!putRes.ok) { setError("Errore caricamento foto"); setLoading(false); return; }
+        photoUrl = objectPath;
+      } else if (photoRequired) {
+        setError("Foto obbligatoria");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch(`/api/events/${eventId}/participate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), contact: contact.trim() }),
+        body: JSON.stringify({ name: name.trim(), contact: contact.trim(), ...(photoUrl ? { photoUrl } : {}) }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -220,10 +245,27 @@ function ParticipateForm({ eventId }: { eventId: number }) {
                 required
               />
             </div>
+            {photoVisible && (
+              <div>
+                <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">
+                  Foto {photoRequired ? <span className="text-[#FF006E]">*</span> : <span className="text-white/20 normal-case tracking-normal">(opzionale)</span>}
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+                  required={photoRequired}
+                  className="text-white/60 text-sm w-full file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-white/10 file:text-white file:text-[12px] file:tracking-widest file:uppercase file:cursor-pointer hover:file:bg-[#FF006E]/80 transition-colors"
+                />
+                {photoFile && (
+                  <p className="text-[12px] text-white/40 mt-1 truncate">{photoFile.name}</p>
+                )}
+              </div>
+            )}
             {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
             <button
               type="submit"
-              disabled={loading || !name.trim() || !contact.trim()}
+              disabled={loading || !name.trim() || !contact.trim() || (photoRequired && !photoFile)}
               className="bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-4 hover:bg-white hover:text-black transition-colors disabled:opacity-30"
             >
               {loading ? "..." : "INVIA →"}
@@ -421,7 +463,7 @@ export default function EventDetail() {
               )}
 
               {/* Partecipa */}
-              <ParticipateForm eventId={event.id} />
+              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} />
             </div>
           </div>
         </div>

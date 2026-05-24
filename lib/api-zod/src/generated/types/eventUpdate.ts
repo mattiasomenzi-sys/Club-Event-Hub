@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EventUpdatePhotoRequirement } from './eventUpdatePhotoRequirement';
 
 export interface EventUpdate {
   /** @minLength 1 */
@@ -29,4 +30,5 @@ export interface EventUpdate {
   isPasswordProtected?: boolean;
   password?: string;
   isDraft?: boolean;
+  photoRequirement?: EventUpdatePhotoRequirement;
 }

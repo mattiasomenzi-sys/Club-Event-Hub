@@ -84,6 +84,7 @@ interface EventFormData {
   isPasswordProtected: boolean;
   password: string;
   isDraft: boolean;
+  photoRequirement: "none" | "optional" | "required";
 }
 
 const emptyForm: EventFormData = {
@@ -108,6 +109,7 @@ const emptyForm: EventFormData = {
   isPasswordProtected: false,
   password: "",
   isDraft: false,
+  photoRequirement: "none",
 };
 
 function getImageSrc(imageUrl: string): string {
@@ -574,6 +576,7 @@ function EventForm({
       body.isPasswordProtected = form.isPasswordProtected;
       if (form.isPasswordProtected && form.password) body.password = form.password;
       body.isDraft = form.isDraft;
+      body.photoRequirement = form.photoRequirement;
 
       const res = await fetch(url, {
         method,
@@ -812,6 +815,23 @@ function EventForm({
           onChange={(e) => set("registrationUrl", e.target.value)} />
       </div>
 
+      {/* Foto richiesta */}
+      <div>
+        <label className={labelClass}>Foto iscrizione</label>
+        <select
+          className={inputClass}
+          value={form.photoRequirement}
+          onChange={(e) => set("photoRequirement", e.target.value as "none" | "optional" | "required")}
+        >
+          <option value="none">Non richiesta</option>
+          <option value="optional">Opzionale</option>
+          <option value="required">Obbligatoria</option>
+        </select>
+        <p className="text-[12px] text-white/30 mt-1 tracking-wide">
+          Se attiva, nel form "Mettiti in lista" comparirà un campo per caricare una foto.
+        </p>
+      </div>
+
       {/* Bozza */}
       <div className="border border-white/10 bg-white/5 p-4">
         <label className="flex items-center gap-3 cursor-pointer">
@@ -975,6 +995,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       isPasswordProtected: e.isPasswordProtected ?? false,
       password: "",
       isDraft: e.isDraft ?? false,
+      photoRequirement: (e.photoRequirement ?? "none") as "none" | "optional" | "required",
     };
   }
 
@@ -1310,7 +1331,7 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
   );
 }
 
-interface ParticipationEntry { id: number; name: string; contact: string; createdAt: string }
+interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; createdAt: string }
 
 function ParticipationsButton({ eventId, adminKey }: { eventId: number; adminKey: string }) {
   const [open, setOpen] = useState(false);
@@ -1347,10 +1368,18 @@ function ParticipationsButton({ eventId, adminKey }: { eventId: number; adminKey
           ) : (
             <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
               {list.map((p) => (
-                <div key={p.id} className="border-b border-white/5 pb-2">
-                  <p className="text-sm text-white font-medium">{p.name}</p>
-                  <p className="text-[13px] text-white/40 font-mono">{p.contact}</p>
-                  <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
+                <div key={p.id} className="border-b border-white/5 pb-2 flex gap-2">
+                  {p.photoUrl && (
+                    <a href={getImageSrc(p.photoUrl)} target="_blank" rel="noreferrer" className="flex-shrink-0">
+                      <img src={getImageSrc(p.photoUrl)} alt={p.name}
+                        className="w-12 h-12 object-cover border border-white/10 hover:border-[#FF006E] transition-colors" />
+                    </a>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-medium">{p.name}</p>
+                    <p className="text-[13px] text-white/40 font-mono truncate">{p.contact}</p>
+                    <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
+                  </div>
                 </div>
               ))}
             </div>

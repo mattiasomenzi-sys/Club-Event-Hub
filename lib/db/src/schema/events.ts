@@ -25,6 +25,8 @@ export const eventsTable = pgTable("events", {
   isPasswordProtected: boolean("is_password_protected").notNull().default(false),
   password: text("password"),
   isDraft: boolean("is_draft").notNull().default(false),
+  // 'none' | 'optional' | 'required' — whether to ask for a photo on signup
+  photoRequirement: text("photo_requirement").notNull().default("none"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
