@@ -1122,7 +1122,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
               </div>
 
               <div className="flex gap-3 items-center flex-shrink-0">
-                <ParticipationsButton eventId={event.id} adminKey={adminKey} />
+                <ParticipationsButton eventId={event.id} adminKey={adminKey} initialPhotoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} />
                 <button
                   onClick={() => {
                     setEditingEvent(event);
@@ -1333,10 +1333,13 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
 
 interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; createdAt: string }
 
-function ParticipationsButton({ eventId, adminKey }: { eventId: number; adminKey: string }) {
+function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { eventId: number; adminKey: string; initialPhotoRequirement: "none" | "optional" | "required" }) {
   const [open, setOpen] = useState(false);
   const [list, setList] = useState<ParticipationEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [photoReq, setPhotoReq] = useState<"none" | "optional" | "required">(initialPhotoRequirement);
+  const [savingReq, setSavingReq] = useState(false);
+  const [reqMsg, setReqMsg] = useState("");
 
   async function load() {
     if (list !== null) { setOpen(!open); return; }
@@ -1351,6 +1354,23 @@ function ParticipationsButton({ eventId, adminKey }: { eventId: number; adminKey
     setOpen(true);
   }
 
+  async function updatePhotoReq(value: "none" | "optional" | "required") {
+    const prev = photoReq;
+    setPhotoReq(value);
+    setSavingReq(true);
+    setReqMsg("");
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ photoRequirement: value }),
+      });
+      if (!res.ok) { setPhotoReq(prev); setReqMsg("Errore"); }
+      else { setReqMsg("Salvato"); setTimeout(() => setReqMsg(""), 1500); }
+    } catch { setPhotoReq(prev); setReqMsg("Errore"); }
+    setSavingReq(false);
+  }
+
   return (
     <div className="relative">
       <button onClick={load}
@@ -1358,11 +1378,30 @@ function ParticipationsButton({ eventId, adminKey }: { eventId: number; adminKey
         {loading ? "..." : `ISCRITTI${list ? ` (${list.length})` : ""}`}
       </button>
       {open && list !== null && (
-        <div className="absolute right-0 top-6 z-50 bg-black border border-white/20 p-4 w-72 shadow-2xl">
+        <div className="absolute right-0 top-6 z-50 bg-black border border-white/20 p-4 w-80 shadow-2xl">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] font-bold tracking-[0.3em] uppercase text-[#FF006E]">Lista iscritti</p>
             <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white text-sm">✕</button>
           </div>
+
+          {/* Quick toggle: foto richiesta */}
+          <div className="mb-3 pb-3 border-b border-white/10">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] tracking-[0.25em] uppercase text-white/40">Foto iscrizione</label>
+              {reqMsg && <span className="text-[10px] tracking-widest uppercase text-white/40">{reqMsg}</span>}
+            </div>
+            <select
+              value={photoReq}
+              disabled={savingReq}
+              onChange={(e) => updatePhotoReq(e.target.value as "none" | "optional" | "required")}
+              className="w-full bg-white/5 border border-white/10 text-white text-sm px-3 py-2 outline-none focus:border-[#FF006E] transition-colors disabled:opacity-50"
+            >
+              <option value="none">Non richiesta</option>
+              <option value="optional">Opzionale</option>
+              <option value="required">Obbligatoria</option>
+            </select>
+          </div>
+
           {list.length === 0 ? (
             <p className="text-white/30 text-sm">Nessuna iscrizione</p>
           ) : (
