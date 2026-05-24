@@ -428,11 +428,14 @@ export default function EventDetail() {
 
               {/* Dresscode */}
               {event.dresscode && (
-                <div className="inline-flex items-center gap-3 border border-white/10 px-4 py-2.5 mb-8">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF006E] flex-shrink-0" />
-                  <span className="text-[13px] tracking-[0.25em] uppercase text-white/50">
-                    {event.dresscode}
-                  </span>
+                <div className="mb-8">
+                  <div className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Dress code</div>
+                  <div className="inline-flex items-center gap-3 border border-white/10 px-4 py-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF006E] flex-shrink-0" />
+                    <span className="text-[13px] tracking-[0.25em] uppercase text-white/50">
+                      {event.dresscode}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
