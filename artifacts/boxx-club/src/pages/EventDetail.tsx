@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, useSearch } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
 import { ArrowLeft } from "lucide-react";
 import TelegramIcon from "@/components/TelegramIcon";
@@ -281,6 +281,8 @@ function ParticipateForm({ eventId, photoRequirement }: { eventId: number; photo
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
+  const search = useSearch();
+  const occurrenceDate = new URLSearchParams(search).get("d");
   const { data: event, isLoading, isError } = useGetEvent(Number(id));
   const isProtected = event?.isPasswordProtected ?? false;
   const { unlocked, unlock } = useEventUnlock(Number(id), isProtected);
@@ -308,7 +310,8 @@ export default function EventDetail() {
     );
   }
 
-  const { weekday, day, month, year } = formatFullDate(event.date);
+  const displayDate = occurrenceDate || event.date;
+  const { weekday, day, month, year } = formatFullDate(displayDate);
   const posterSrc = getEventPoster({ id: event.id, imageUrl: event.imageUrl });
   const hasCustomPoster = !!event.imageUrl;
   const hasDetailsContent = !!(event.areaDescription || event.membershipInfo || event.memberQuotes || event.promo || event.memberNotes);

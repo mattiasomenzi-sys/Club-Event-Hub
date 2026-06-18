@@ -132,7 +132,7 @@ function EventRow({ event, usingRealEvents, past, posterSrc }: { event: Event; u
           <p className="text-sm font-mono text-white/60 mb-4">{date} &nbsp; {event.time}</p>
 
           {usingRealEvents ? (
-            <Link href={`/eventi/${event.id}`}>
+            <Link href={`/eventi/${event.id}?d=${event.date}`}>
               <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black uppercase leading-none tracking-tighter text-white mb-4 group-hover:text-[#FF006E] transition-colors duration-300 cursor-pointer">
                 {event.title}
               </h2>
@@ -151,7 +151,7 @@ function EventRow({ event, usingRealEvents, past, posterSrc }: { event: Event; u
           )}
 
           {usingRealEvents ? (
-            <Link href={`/eventi/${event.id}`}
+            <Link href={`/eventi/${event.id}?d=${event.date}`}
               className="inline-block text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
               {past ? "VEDI DETTAGLI →" : "ACCEDI ALL'EVENTO →"}
             </Link>
