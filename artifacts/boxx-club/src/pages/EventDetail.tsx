@@ -143,8 +143,9 @@ function UnlockForm({ eventId, onUnlock, title, message }: { eventId: number; on
   );
 }
 
-function ParticipateForm({ eventId, photoRequirement }: { eventId: number; photoRequirement: "none" | "optional" | "required" }) {
-  const [open, setOpen] = useState(false);
+function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: number; photoRequirement: "none" | "optional" | "required"; autoOpen?: boolean }) {
+  const [open, setOpen] = useState(!!autoOpen);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -155,6 +156,12 @@ function ParticipateForm({ eventId, photoRequirement }: { eventId: number; photo
   const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-3 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
   const photoRequired = photoRequirement === "required";
   const photoVisible = photoRequirement !== "none";
+
+  useEffect(() => {
+    if (autoOpen && rootRef.current) {
+      rootRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [autoOpen]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -211,7 +218,7 @@ function ParticipateForm({ eventId, photoRequirement }: { eventId: number; photo
   }
 
   return (
-    <div className="w-full lg:w-auto">
+    <div ref={rootRef} id="partecipa" className="w-full lg:w-auto scroll-mt-24">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
@@ -282,7 +289,9 @@ export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const search = useSearch();
-  const occurrenceDate = new URLSearchParams(search).get("d");
+  const params = new URLSearchParams(search);
+  const occurrenceDate = params.get("d");
+  const autoOpenParticipate = params.get("partecipa") === "1";
   const { data: event, isLoading, isError } = useGetEvent(Number(id));
   const isProtected = event?.isPasswordProtected ?? false;
   const { unlocked, unlock } = useEventUnlock(Number(id), isProtected);
@@ -471,7 +480,7 @@ export default function EventDetail() {
               )}
 
               {/* Partecipa */}
-              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} />
+              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} autoOpen={autoOpenParticipate} />
             </div>
           </div>
         </div>

@@ -1143,6 +1143,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
               </div>
 
               <div className="flex gap-3 items-center flex-shrink-0">
+                <CopyParticipateLink eventId={event.id} />
                 <ParticipationsButton eventId={event.id} adminKey={adminKey} initialPhotoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} />
                 <button
                   onClick={() => {
@@ -1353,6 +1354,28 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
 }
 
 interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; createdAt: string }
+
+function CopyParticipateLink({ eventId }: { eventId: number }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    const url = `${window.location.origin}/eventi/${eventId}?partecipa=1`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      window.prompt("Copia il link:", url);
+    });
+  }
+  return (
+    <button
+      onClick={copy}
+      title="Copia il link al modulo di partecipazione"
+      className="text-[12px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] border-b border-transparent hover:border-[#FF006E]/30 transition-colors pb-0.5"
+    >
+      {copied ? "COPIATO ✓" : "LINK PARTECIPA"}
+    </button>
+  );
+}
 
 function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { eventId: number; adminKey: string; initialPhotoRequirement: "none" | "optional" | "required" }) {
   const [open, setOpen] = useState(false);
