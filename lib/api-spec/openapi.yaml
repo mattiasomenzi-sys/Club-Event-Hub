@@ -296,6 +296,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /banners:
+    get:
+      operationId: listBanners
+      tags: [banners]
+      summary: List all communication banners
+      responses:
+        "200":
+          description: List of banners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Banner"
+    post:
+      operationId: createBanner
+      tags: [banners]
+      summary: Add a banner (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BannerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Banner"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /banners/{id}:
+    delete:
+      operationId: deleteBanner
+      tags: [banners]
+      summary: Delete a banner (admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /storage/uploads/request-url:
     post:
       tags: [Storage]
@@ -577,6 +642,33 @@ components:
           minLength: 1
         caption:
           type: string
+
+    Banner:
+      type: object
+      required: [id, imageUrl, sortOrder, createdAt]
+      properties:
+        id:
+          type: integer
+        imageUrl:
+          type: string
+        caption:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    BannerInput:
+      type: object
+      required: [imageUrl]
+      properties:
+        imageUrl:
+          type: string
+          minLength: 1
+        caption:
+          type: string
+        sortOrder:
+          type: integer
 
     UploadUrlRequest:
       type: object

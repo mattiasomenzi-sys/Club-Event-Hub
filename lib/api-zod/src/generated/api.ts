@@ -258,6 +258,40 @@ export const DeleteGalleryPhotoParams = zod.object({
 
 
 /**
+ * @summary List all communication banners
+ */
+export const ListBannersResponseItem = zod.object({
+  "id": zod.number(),
+  "imageUrl": zod.string(),
+  "caption": zod.string().nullish(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string()
+})
+export const ListBannersResponse = zod.array(ListBannersResponseItem)
+
+
+/**
+ * @summary Add a banner (admin)
+ */
+
+
+
+export const CreateBannerBody = zod.object({
+  "imageUrl": zod.string().min(1),
+  "caption": zod.string().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+
+/**
+ * @summary Delete a banner (admin)
+ */
+export const DeleteBannerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Request a presigned URL for file upload
  */
 

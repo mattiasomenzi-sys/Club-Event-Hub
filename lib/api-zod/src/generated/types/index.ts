@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './banner';
+export * from './bannerInput';
 export * from './errorResponse';
 export * from './event';
 export * from './eventInput';

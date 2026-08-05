@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import TelegramIcon from "@/components/TelegramIcon";
 import { Link } from "wouter";
-import { useListEvents } from "@workspace/api-client-react";
+import { useListEvents, useListBanners } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
@@ -164,6 +164,113 @@ function EventRow({ event, usingRealEvents, past, posterSrc }: { event: Event; u
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function resolveBannerSrc(imageUrl: string): string {
+  if (imageUrl.startsWith("/objects/")) return `/api/storage${imageUrl}`;
+  return imageUrl;
+}
+
+function HomeBanners() {
+  const { data } = useListBanners();
+  const banners = data ?? [];
+  const [index, setIndex] = useState(0);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 640px)");
+    const onChange = () => setWide(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  const perView = wide ? 2 : 1;
+  const pages = Math.max(1, Math.ceil(banners.length / perView));
+
+  useEffect(() => {
+    setIndex((i) => Math.min(i, pages - 1));
+  }, [pages]);
+
+  useEffect(() => {
+    if (banners.length <= perView) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % pages), 6000);
+    return () => clearInterval(t);
+  }, [banners.length, pages]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightbox(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  if (banners.length === 0) return null;
+
+  const visible = banners.slice(index * perView, index * perView + perView);
+  const shown = visible.length > 0 ? visible : banners.slice(0, perView);
+
+  return (
+    <div className="px-6 md:px-12 pt-6 pb-2 border-b border-white/5">
+      <p className="text-[11px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">
+        Comunicazioni
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {shown.map((b, i) => (
+          <button
+            key={b.id}
+            onClick={() => setLightbox(index * perView + i)}
+            className="relative group overflow-hidden border border-white/10 bg-white/5 text-left"
+          >
+            <img
+              src={resolveBannerSrc(b.imageUrl)}
+              alt={b.caption ?? "Comunicazione"}
+              className="w-full h-auto max-h-[420px] object-contain bg-black/40 group-hover:opacity-90 transition-opacity"
+            />
+            {b.caption && (
+              <span className="absolute bottom-0 left-0 right-0 bg-black/70 px-4 py-2 text-[12px] tracking-[0.2em] uppercase text-white/70">
+                {b.caption}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+      {/* Mobile: one per view — extra dots to page through singles */}
+      {banners.length > 1 && (
+        <div className="flex gap-2 justify-center mt-3">
+          {Array.from({ length: pages }).map((_, p) => (
+            <button
+              key={p}
+              onClick={() => setIndex(p)}
+              aria-label={`Vai al gruppo ${p + 1}`}
+              className={`w-2 h-2 rounded-full transition-colors ${p === index ? "bg-[#FF006E]" : "bg-white/20 hover:bg-white/40"}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {lightbox !== null && banners[lightbox] && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <img
+            src={resolveBannerSrc(banners[lightbox].imageUrl)}
+            alt={banners[lightbox].caption ?? "Comunicazione"}
+            className="max-w-full max-h-full object-contain"
+          />
+          <button
+            className="absolute top-5 right-6 text-white/60 hover:text-white text-3xl leading-none"
+            aria-label="Chiudi"
+            onClick={() => setLightbox(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -475,6 +582,9 @@ export default function Home() {
               uno spazio contemporaneo<br className="sm:hidden" /> per una comunità libera<br className="sm:hidden" /> di essere se stessa — Lago di Garda
             </p>
           </div>
+
+          {/* Comunicazioni — banner strip */}
+          <HomeBanners />
 
           {/* Events */}
           {isLoading ? (

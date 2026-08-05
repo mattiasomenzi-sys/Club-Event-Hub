@@ -167,6 +167,22 @@ export interface GalleryPhotoInput {
   caption?: string;
 }
 
+export interface Banner {
+  id: number;
+  imageUrl: string;
+  /** @nullable */
+  caption?: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface BannerInput {
+  /** @minLength 1 */
+  imageUrl: string;
+  caption?: string;
+  sortOrder?: number;
+}
+
 export interface UploadUrlRequest {
   /** @minLength 1 */
   name: string;

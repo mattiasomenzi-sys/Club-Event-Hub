@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import { Link } from "wouter";
-import { useListEvents, useListGalleryPhotos } from "@workspace/api-client-react";
+import { useListEvents, useListGalleryPhotos, useListBanners } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getListEventsQueryKey, getListGalleryPhotosQueryKey } from "@workspace/api-client-react";
+import { getListEventsQueryKey, getListGalleryPhotosQueryKey, getListBannersQueryKey } from "@workspace/api-client-react";
 import { Upload, X, Loader2, RefreshCw, Pencil, Check } from "lucide-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
@@ -1168,11 +1168,120 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
         </div>
       </div>
 
+      {/* Banner management */}
+      <BannerManager adminKey={adminKey} />
+
       {/* Gallery management */}
       <GalleryManager adminKey={adminKey} />
 
       {/* Cambia chiave */}
       <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
+    </div>
+  );
+}
+
+function BannerManager({ adminKey }: { adminKey: string }) {
+  const qc = useQueryClient();
+  const { data, isLoading } = useListBanners();
+  const banners = data ?? [];
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  async function refresh() {
+    await qc.invalidateQueries({ queryKey: getListBannersQueryKey() });
+  }
+
+  async function handleFiles(files: FileList) {
+    setError("");
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) continue;
+        const urlRes = await fetch(`${API_BASE}/storage/uploads/request-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+          body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+        });
+        if (!urlRes.ok) { setError("Errore richiesta URL upload"); continue; }
+        const { uploadURL, objectPath } = await urlRes.json();
+        const putRes = await fetch(uploadURL, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+        if (!putRes.ok) { setError("Errore upload"); continue; }
+        const createRes = await fetch(`${API_BASE}/banners`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+          body: JSON.stringify({ imageUrl: objectPath }),
+        });
+        if (!createRes.ok) { setError("Errore salvataggio"); continue; }
+      }
+      await refresh();
+    } catch { setError("Errore di connessione"); }
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Rimuovere questa comunicazione dalla home?")) return;
+    setDeletingId(id);
+    try {
+      await fetch(`${API_BASE}/banners/${id}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Key": adminKey },
+      });
+      await refresh();
+    } catch { /* ignore */ }
+    setDeletingId(null);
+  }
+
+  return (
+    <div className="mt-16 border-t border-white/10 pt-10">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-[12px] font-bold tracking-[0.4em] uppercase text-white/40">
+          COMUNICAZIONI HOME ({banners.length})
+        </h2>
+        <button
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="bg-[#FF006E] text-white text-[12px] font-bold tracking-[0.3em] uppercase py-2 px-5 hover:bg-white hover:text-black transition-colors disabled:opacity-50"
+        >
+          {uploading ? "Caricamento..." : "+ AGGIUNGI IMMAGINE"}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files); }}
+        />
+      </div>
+      <p className="text-[12px] text-white/30 mb-4 tracking-wider">
+        Le immagini compaiono in home tra la scritta di apertura e il calendario (calendario orari, note del direttivo, avvisi). Con più di 2 immagini scorrono in automatico.
+      </p>
+      {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase mb-3">{error}</p>}
+      {isLoading && <p className="text-white/30 text-sm tracking-widest uppercase">Caricamento...</p>}
+      {!isLoading && banners.length === 0 && (
+        <p className="text-white/20 text-sm">Nessuna comunicazione. Aggiungi un'immagine.</p>
+      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {banners.map((b) => (
+          <div key={b.id} className="relative group overflow-hidden border border-white/10 bg-white/5">
+            <img src={getImageSrc(b.imageUrl)} alt={b.caption ?? ""} className="w-full h-auto object-contain max-h-56" />
+            <button
+              onClick={() => handleDelete(b.id)}
+              disabled={deletingId === b.id}
+              className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[#FF006E] text-[12px] font-bold tracking-[0.3em] uppercase"
+            >
+              {deletingId === b.id ? "..." : "ELIMINA"}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

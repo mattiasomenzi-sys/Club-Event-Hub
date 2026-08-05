@@ -20,6 +20,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  Banner,
+  BannerInput,
   ErrorResponse,
   Event,
   EventInput,
@@ -856,6 +858,224 @@ export const useDeleteGalleryPhoto = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getDeleteGalleryPhotoMutationOptions(options));
+    }
+
+export const getListBannersUrl = () => {
+
+
+
+
+  return `/api/banners`
+}
+
+/**
+ * @summary List all communication banners
+ */
+export const listBanners = async ( options?: RequestInit): Promise<Banner[]> => {
+
+  return customFetch<Banner[]>(getListBannersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBannersQueryKey = () => {
+    return [
+    `/api/banners`
+    ] as const;
+    }
+
+
+export const getListBannersQueryOptions = <TData = Awaited<ReturnType<typeof listBanners>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBanners>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBannersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBanners>>> = ({ signal }) => listBanners({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBanners>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBannersQueryResult = NonNullable<Awaited<ReturnType<typeof listBanners>>>
+export type ListBannersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all communication banners
+ */
+
+export function useListBanners<TData = Awaited<ReturnType<typeof listBanners>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBanners>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBannersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateBannerUrl = () => {
+
+
+
+
+  return `/api/banners`
+}
+
+/**
+ * @summary Add a banner (admin)
+ */
+export const createBanner = async (bannerInput: BannerInput, options?: RequestInit): Promise<Banner> => {
+
+  return customFetch<Banner>(getCreateBannerUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      bannerInput,)
+  }
+);}
+
+
+
+
+export const getCreateBannerMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBanner>>, TError,{data: BodyType<BannerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBanner>>, TError,{data: BodyType<BannerInput>}, TContext> => {
+
+const mutationKey = ['createBanner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBanner>>, {data: BodyType<BannerInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBanner(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBannerMutationResult = NonNullable<Awaited<ReturnType<typeof createBanner>>>
+    export type CreateBannerMutationBody = BodyType<BannerInput>
+    export type CreateBannerMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Add a banner (admin)
+ */
+export const useCreateBanner = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBanner>>, TError,{data: BodyType<BannerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBanner>>,
+        TError,
+        {data: BodyType<BannerInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBannerMutationOptions(options));
+    }
+
+export const getDeleteBannerUrl = (id: number,) => {
+
+
+
+
+  return `/api/banners/${id}`
+}
+
+/**
+ * @summary Delete a banner (admin)
+ */
+export const deleteBanner = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteBannerUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteBannerMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBanner>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBanner>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteBanner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBanner>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteBanner(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBannerMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBanner>>>
+
+    export type DeleteBannerMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete a banner (admin)
+ */
+export const useDeleteBanner = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBanner>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBanner>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteBannerMutationOptions(options));
     }
 
 export const getRequestUploadUrlUrl = () => {
