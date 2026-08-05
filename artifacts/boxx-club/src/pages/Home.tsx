@@ -179,6 +179,7 @@ function HomeBanners() {
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 640px)");
@@ -213,12 +214,31 @@ function HomeBanners() {
   const visible = banners.slice(index * perView, index * perView + perView);
   const shown = visible.length > 0 ? visible : banners.slice(0, perView);
 
+  function onTouchStart(e: React.TouchEvent) {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    if (!touchStart.current) return;
+    const dx = e.changedTouches[0].clientX - touchStart.current.x;
+    const dy = e.changedTouches[0].clientY - touchStart.current.y;
+    touchStart.current = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) setIndex((i) => (i + 1) % pages);
+    else setIndex((i) => (i - 1 + pages) % pages);
+  }
+
   return (
-    <div className="px-6 md:px-12 pt-6 pb-2 border-b border-white/5">
+    <div className="hidden sm:block px-6 md:px-12 pt-6 pb-2 border-b border-white/5">
       <p className="text-[11px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">
         Comunicazioni
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+        style={{ touchAction: "pan-y" }}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         {shown.map((b, i) => (
           <button
             key={b.id}
@@ -246,7 +266,7 @@ function HomeBanners() {
               key={p}
               onClick={() => setIndex(p)}
               aria-label={`Vai al gruppo ${p + 1}`}
-              className={`w-2 h-2 rounded-full transition-colors ${p === index ? "bg-[#FF006E]" : "bg-white/20 hover:bg-white/40"}`}
+              className={`w-2 h-2 rounded-full transition-colors ${p === index ? "bg-white" : "bg-white/20 hover:bg-white/50"}`}
             />
           ))}
         </div>
