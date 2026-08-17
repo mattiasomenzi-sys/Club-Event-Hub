@@ -12,4 +12,5 @@ export interface ParticipationInput {
   /** @minLength 1 */
   contact: string;
   photoUrl?: string;
+  inviteToken?: string;
 }

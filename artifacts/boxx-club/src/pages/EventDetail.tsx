@@ -144,7 +144,7 @@ function UnlockForm({ eventId, onUnlock, title, message }: { eventId: number; on
   );
 }
 
-function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: number; photoRequirement: "none" | "optional" | "required"; autoOpen?: boolean }) {
+function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: { eventId: number; photoRequirement: "none" | "optional" | "required"; autoOpen?: boolean; inviteToken?: string | null }) {
   const gate = useProfileGate();
   const [, setLocation] = useLocation();
   const [open, setOpen] = useState(!!autoOpen);
@@ -173,6 +173,19 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
     if (gate.status === "ready") setOpen(true);
   };
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  // Invito: verifica il token e mostra il tipo (ospite/regolare)
+  const [inviteType, setInviteType] = useState<string | null>(null);
+  const [inviteInvalid, setInviteInvalid] = useState(false);
+  useEffect(() => {
+    if (!inviteToken) return;
+    fetch(`/api/invites/${encodeURIComponent(inviteToken)}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d: { eventId: number; inviteType: string }) => {
+        if (d.eventId === eventId) setInviteType(d.inviteType);
+        else setInviteInvalid(true);
+      })
+      .catch(() => setInviteInvalid(true));
+  }, [inviteToken, eventId]);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -180,6 +193,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
   const inputClass = "bg-white/5 border border-white/10 text-white text-sm px-4 py-3 w-full outline-none focus:border-[#FF006E] transition-colors placeholder-white/20";
   const photoRequired = photoRequirement === "required";
   const photoVisible = photoRequirement !== "none";
+  const profilePhoto = gate.status === "ready" ? gate.profile?.photoUrl ?? null : null;
 
   useEffect(() => {
     if (autoOpen && rootRef.current) {
@@ -208,7 +222,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
         });
         if (!putRes.ok) { setError("Errore caricamento foto"); setLoading(false); return; }
         photoUrl = objectPath;
-      } else if (photoRequired) {
+      } else if (photoRequired && !profilePhoto) {
         setError("Foto obbligatoria");
         setLoading(false);
         return;
@@ -217,7 +231,12 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
       const res = await fetch(`/api/events/${eventId}/participate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), contact: contact.trim(), ...(photoUrl ? { photoUrl } : {}) }),
+        body: JSON.stringify({
+          name: name.trim(),
+          contact: contact.trim(),
+          ...(photoUrl ? { photoUrl } : {}),
+          ...(inviteToken && inviteType ? { inviteToken } : {}),
+        }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -256,6 +275,14 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
             <p className="text-[12px] font-bold tracking-[0.35em] uppercase text-white/60">Mettiti in lista</p>
             <button onClick={() => setOpen(false)} className="text-white/20 hover:text-white text-sm transition-colors">✕</button>
           </div>
+          {inviteType && (
+            <p className="text-[12px] tracking-[0.25em] uppercase text-[#FF006E] border border-[#FF006E]/40 px-3 py-2">
+              Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza biglietto)" : "REGOLARE (biglietto all'ingresso)"}
+            </p>
+          )}
+          {inviteInvalid && (
+            <p className="text-[12px] tracking-[0.25em] uppercase text-white/40">Link di invito non valido — puoi comunque iscriverti normalmente.</p>
+          )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div>
               <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">Nome o Nick</label>
@@ -286,18 +313,20 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
                   type="file"
                   accept="image/*"
                   onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
-                  required={photoRequired}
+                  required={photoRequired && !profilePhoto}
                   className="text-white/60 text-sm w-full file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-white/10 file:text-white file:text-[12px] file:tracking-widest file:uppercase file:cursor-pointer hover:file:bg-[#FF006E]/80 transition-colors"
                 />
-                {photoFile && (
+                {photoFile ? (
                   <p className="text-[12px] text-white/40 mt-1 truncate">{photoFile.name}</p>
-                )}
+                ) : profilePhoto ? (
+                  <p className="text-[12px] text-white/40 mt-1">Useremo la foto del tuo profilo (o caricane un'altra qui)</p>
+                ) : null}
               </div>
             )}
             {error && <p className="text-[#FF006E] text-[12px] tracking-widest uppercase">{error}</p>}
             <button
               type="submit"
-              disabled={loading || !name.trim() || !contact.trim() || (photoRequired && !photoFile)}
+              disabled={loading || !name.trim() || !contact.trim() || (photoRequired && !photoFile && !profilePhoto)}
               className="bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-4 hover:bg-white hover:text-black transition-colors disabled:opacity-30"
             >
               {loading ? "..." : "INVIA →"}
@@ -315,7 +344,8 @@ export default function EventDetail() {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const occurrenceDate = params.get("d");
-  const autoOpenParticipate = params.get("partecipa") === "1";
+  const autoOpenParticipate = params.get("partecipa") === "1" || !!params.get("invito");
+  const inviteToken = params.get("invito");
   const { data: event, isLoading, isError } = useGetEvent(Number(id));
   const isProtected = event?.isPasswordProtected ?? false;
   const { unlocked, unlock } = useEventUnlock(Number(id), isProtected);
@@ -502,7 +532,7 @@ export default function EventDetail() {
               )}
 
               {/* Partecipa */}
-              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} autoOpen={autoOpenParticipate} />
+              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} autoOpen={autoOpenParticipate} inviteToken={inviteToken} />
             </div>
           </div>
         </div>

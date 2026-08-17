@@ -5,3 +5,4 @@ export * from "./gallery";
 export * from "./pageViews";
 export * from "./banners";
 export * from "./profiles";
+export * from "./invites";

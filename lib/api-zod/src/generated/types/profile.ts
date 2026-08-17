@@ -17,6 +17,7 @@ export interface Profile {
   whatsapp?: string | null;
   memberType: ProfileMemberType;
   interests: ProfileInterestsItem[];
+  photoUrl?: string | null;
   consentEmail: boolean;
   consentMessages: boolean;
   createdAt: string;

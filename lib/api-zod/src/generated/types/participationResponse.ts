@@ -13,5 +13,7 @@ export interface ParticipationResponse {
   contact: string;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  inviteType?: string | null;
   createdAt: string;
 }

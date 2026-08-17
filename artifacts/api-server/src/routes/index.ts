@@ -9,6 +9,7 @@ import bannersRouter from "./banners";
 import analyticsRouter from "./analytics";
 import profilesRouter from "./profiles";
 import adminEmailRouter from "./admin-email";
+import invitesRouter from "./invites";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(bannersRouter);
 router.use(analyticsRouter);
 router.use(profilesRouter);
 router.use(adminEmailRouter);
+router.use(invitesRouter);
 
 export default router;

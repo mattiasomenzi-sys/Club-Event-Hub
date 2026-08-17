@@ -4,6 +4,8 @@ import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
 } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
+import { isAdminRequest } from "./admin-auth";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
 
@@ -18,6 +20,13 @@ const objectStorageService = new ObjectStorageService();
  * Then uploads the file directly to the returned presigned URL.
  */
 router.post("/storage/uploads/request-url", async (req: Request, res: Response) => {
+  // Solo utenti loggati o admin possono caricare file
+  const { userId } = getAuth(req);
+  if (!userId && !(await isAdminRequest(req))) {
+    res.status(401).json({ error: "Devi accedere per caricare file" });
+    return;
+  }
+
   const parsed = RequestUploadUrlBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Missing or invalid required fields" });
@@ -26,6 +35,14 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
 
   try {
     const { name, size, contentType } = parsed.data;
+    if (!contentType.startsWith("image/") && !contentType.startsWith("video/")) {
+      res.status(400).json({ error: "Sono ammessi solo immagini e video" });
+      return;
+    }
+    if (size > 50 * 1024 * 1024) {
+      res.status(400).json({ error: "File troppo grande (max 50MB)" });
+      return;
+    }
 
     const uploadURL = await objectStorageService.getObjectEntityUploadURL();
     const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);

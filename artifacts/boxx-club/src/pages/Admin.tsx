@@ -1145,6 +1145,7 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
               <div className="flex gap-3 items-center flex-shrink-0">
                 <CopyParticipateLink eventId={event.id} />
                 <ParticipationsButton eventId={event.id} adminKey={adminKey} initialPhotoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} />
+                <InvitesButton eventId={event.id} adminKey={adminKey} />
                 <button
                   onClick={() => {
                     setEditingEvent(event);
@@ -1646,7 +1647,7 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
   );
 }
 
-interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; createdAt: string }
+interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; inviteType?: string | null; createdAt: string }
 
 function CopyParticipateLink({ eventId }: { eventId: number }) {
   const [copied, setCopied] = useState(false);
@@ -1667,6 +1668,130 @@ function CopyParticipateLink({ eventId }: { eventId: number }) {
     >
       {copied ? "COPIATO ✓" : "LINK PARTECIPA"}
     </button>
+  );
+}
+
+type AdminInvite = {
+  id: number;
+  token: string;
+  inviteType: string;
+  note: string | null;
+  uses: number;
+  createdAt: string;
+};
+
+function InvitesButton({ eventId, adminKey }: { eventId: number; adminKey: string }) {
+  const [open, setOpen] = useState(false);
+  const [invites, setInvites] = useState<AdminInvite[] | null>(null);
+  const [note, setNote] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const load = async () => {
+    const res = await fetch(`${API_BASE}/admin/events/${eventId}/invites`, { headers: { "X-Admin-Key": adminKey } });
+    if (res.ok) setInvites(await res.json());
+  };
+
+  const toggle = async () => {
+    const next = !open;
+    setOpen(next);
+    if (next && invites === null) await load();
+  };
+
+  const create = async (inviteType: "ospite" | "regolare") => {
+    setCreating(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/events/${eventId}/invites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ inviteType, ...(note.trim() ? { note: note.trim() } : {}) }),
+      });
+      if (res.ok) {
+        setNote("");
+        await load();
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const remove = async (id: number) => {
+    if (!window.confirm("Disattivare questo link di invito? Le iscrizioni già fatte restano.")) return;
+    await fetch(`${API_BASE}/admin/invites/${id}`, { method: "DELETE", headers: { "X-Admin-Key": adminKey } });
+    await load();
+  };
+
+  const copy = async (inv: AdminInvite) => {
+    const url = `${window.location.origin}/eventi/${eventId}?invito=${inv.token}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(inv.id);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  return (
+    <div className="relative inline-block">
+      <button
+        onClick={toggle}
+        className="text-[11px] tracking-[0.2em] uppercase text-white/50 hover:text-[#FF006E] border border-white/15 px-3 py-1.5 transition-colors"
+      >
+        INVITI
+      </button>
+      {open && (
+        <div className="absolute right-0 z-30 mt-2 w-80 bg-[#111] border border-white/15 p-4 shadow-xl text-left">
+          <p className="text-[11px] tracking-[0.2em] uppercase text-white/40 mb-3">Link di invito</p>
+          <input
+            className="w-full bg-[#1a1a1a] border border-white/15 rounded px-3 py-2 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#FF006E] mb-2"
+            placeholder="Nota (es. amici di Marco) — opzionale"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            maxLength={200}
+          />
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => create("ospite")}
+              disabled={creating}
+              className="flex-1 bg-[#FF006E] hover:bg-[#FF1493] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest py-2 rounded"
+            >
+              + Ospite
+            </button>
+            <button
+              onClick={() => create("regolare")}
+              disabled={creating}
+              className="flex-1 border border-[#FF006E] text-[#FF006E] hover:bg-[#FF006E]/10 disabled:opacity-50 text-[11px] font-bold uppercase tracking-widest py-2 rounded"
+            >
+              + Regolare
+            </button>
+          </div>
+          {invites === null ? (
+            <p className="text-white/30 text-xs">Caricamento…</p>
+          ) : invites.length === 0 ? (
+            <p className="text-white/30 text-xs">Nessun invito creato.</p>
+          ) : (
+            <div className="space-y-2 max-h-56 overflow-y-auto">
+              {invites.map((inv) => (
+                <div key={inv.id} className="border border-white/10 p-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={inv.inviteType === "ospite" ? "text-green-400 uppercase font-bold" : "text-[#FF1493] uppercase font-bold"}>
+                      {inv.inviteType}
+                    </span>
+                    <span className="text-white/40">{inv.uses} iscritti</span>
+                  </div>
+                  {inv.note && <p className="text-white/50 mt-1">{inv.note}</p>}
+                  <div className="flex gap-3 mt-1.5">
+                    <button onClick={() => copy(inv)} className="text-white/60 hover:text-white uppercase tracking-widest text-[10px]">
+                      {copiedId === inv.id ? "Copiato ✓" : "Copia link"}
+                    </button>
+                    <button onClick={() => remove(inv.id)} className="text-red-400/70 hover:text-red-400 uppercase tracking-widest text-[10px]">
+                      Disattiva
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1752,7 +1877,14 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
                     </a>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white font-medium">{p.name}</p>
+                    <p className="text-sm text-white font-medium">
+                      {p.name}
+                      {p.inviteType && (
+                        <span className={`ml-2 text-[10px] uppercase tracking-widest ${p.inviteType === "ospite" ? "text-green-400" : "text-[#FF1493]"}`}>
+                          {p.inviteType}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-[13px] text-white/40 font-mono truncate">{p.contact}</p>
                     <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
                   </div>

@@ -675,6 +675,8 @@ components:
           minLength: 1
         photoUrl:
           type: string
+        inviteToken:
+          type: string
 
     ParticipationResponse:
       type: object
@@ -689,6 +691,8 @@ components:
         contact:
           type: string
         photoUrl:
+          type: ["string", "null"]
+        inviteType:
           type: ["string", "null"]
         createdAt:
           type: string
@@ -771,6 +775,9 @@ components:
           items:
             type: string
             enum: [swinger, sexpositive, kinky, gangbang]
+        photoUrl:
+          type: string
+          nullable: true
         consentEmail:
           type: boolean
         consentMessages:
@@ -805,6 +812,8 @@ components:
           items:
             type: string
             enum: [swinger, sexpositive, kinky, gangbang]
+        photoUrl:
+          type: string
         consentEmail:
           type: boolean
         consentMessages:

@@ -40,6 +40,8 @@ export default function Profilo() {
   const [whatsapp, setWhatsapp] = useState("");
   const [memberType, setMemberType] = useState<string>("");
   const [interests, setInterests] = useState<string[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [consentEmail, setConsentEmail] = useState<boolean | null>(null);
   const [consentMessages, setConsentMessages] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +61,7 @@ export default function Profilo() {
       setWhatsapp(p.whatsapp ?? "");
       setMemberType(p.memberType);
       setInterests(p.interests);
+      setPhotoUrl(p.photoUrl ?? null);
       setConsentEmail(p.consentEmail);
       setConsentMessages(p.consentMessages);
     } else if (user?.primaryEmailAddress?.emailAddress && !email) {
@@ -87,6 +90,19 @@ export default function Profilo() {
     if (consentMessages === null) return setError("Indica se autorizzi i messaggi Telegram/WhatsApp");
 
     try {
+      let newPhotoUrl = photoUrl;
+      if (photoFile) {
+        const urlRes = await fetch(`/api/storage/uploads/request-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: photoFile.name, size: photoFile.size, contentType: photoFile.type }),
+        });
+        if (!urlRes.ok) return setError("Errore caricamento foto");
+        const { uploadURL, objectPath } = await urlRes.json();
+        const putRes = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": photoFile.type }, body: photoFile });
+        if (!putRes.ok) return setError("Errore caricamento foto");
+        newPhotoUrl = objectPath;
+      }
       await upsert.mutateAsync({
         data: {
           nickname: nickname.trim(),
@@ -98,6 +114,7 @@ export default function Profilo() {
           interests: interests as ("swinger" | "sexpositive" | "kinky" | "gangbang")[],
           consentEmail,
           consentMessages,
+          ...(newPhotoUrl ? { photoUrl: newPhotoUrl } : {}),
         },
       });
       await queryClient.invalidateQueries({ queryKey: getGetMyProfileQueryKey() });
@@ -211,6 +228,25 @@ export default function Profilo() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-300 mb-1.5">
+              Foto profilo <span className="text-gray-500">(usata per gli eventi che la richiedono)</span>
+            </label>
+            {photoUrl && !photoFile && (
+              <div className="flex items-center gap-3 mb-2">
+                <img src={photoUrl.startsWith("/objects/") ? `/api/storage${photoUrl}` : photoUrl} alt="Foto profilo" className="w-14 h-14 rounded object-cover border border-white/15" />
+                <span className="text-xs text-gray-400">Foto attuale — caricane una nuova per sostituirla</span>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              className="text-gray-300 text-sm w-full file:mr-3 file:py-2 file:px-3 file:border-0 file:rounded file:bg-white/10 file:text-white file:text-xs file:uppercase file:cursor-pointer hover:file:bg-[#FF006E]/80 transition-colors"
+            />
+            {photoFile && <p className="text-xs text-gray-400 mt-1 truncate">{photoFile.name}</p>}
           </div>
 
           <div className="space-y-4 border border-white/10 rounded-lg p-4">

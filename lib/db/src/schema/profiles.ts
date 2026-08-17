@@ -10,6 +10,7 @@ export const profilesTable = pgTable("profiles", {
   whatsapp: text("whatsapp"), // numero
   memberType: text("member_type").notNull(), // "singolo" | "coppia" | "singola" | "trav"
   interests: text("interests").array().notNull().default([]), // "swinger" | "sexpositive" | "kinky"
+  photoUrl: text("photo_url"), // foto del profilo (percorso /objects/...)
   consentEmail: boolean("consent_email").notNull().default(false), // autorizza email promo/info
   consentMessages: boolean("consent_messages").notNull().default(false), // autorizza messaggi TG/WA
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

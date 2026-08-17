@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
-import { db, eventsTable, participationsTable, profilesTable } from "@workspace/db";
+import { db, eventsTable, participationsTable, profilesTable, invitesTable } from "@workspace/db";
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { requireAdmin, isAdminRequest } from "./admin-auth";
@@ -16,7 +16,7 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
   const { userId } = getAuth(req);
   if (!userId) { res.status(401).json({ error: "Devi accedere per partecipare" }); return; }
   const [profile] = await db
-    .select({ id: profilesTable.id })
+    .select({ id: profilesTable.id, photoUrl: profilesTable.photoUrl })
     .from(profilesTable)
     .where(eq(profilesTable.clerkUserId, userId));
   if (!profile) { res.status(403).json({ error: "Completa il tuo profilo per partecipare" }); return; }
@@ -28,7 +28,9 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
   }).from(eventsTable).where(eq(eventsTable.id, eventId));
   if (!event || event.isDraft) { res.status(404).json({ error: "Event not found" }); return; }
 
-  const { name, contact, photoUrl } = req.body as { name?: unknown; contact?: unknown; photoUrl?: unknown };
+  const { name, contact, photoUrl, inviteToken } = req.body as {
+    name?: unknown; contact?: unknown; photoUrl?: unknown; inviteToken?: unknown;
+  };
   if (typeof name !== "string" || !name.trim()) { res.status(400).json({ error: "Nome richiesto" }); return; }
   if (typeof contact !== "string" || !contact.trim()) { res.status(400).json({ error: "Contatto richiesto" }); return; }
 
@@ -39,9 +41,25 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     if (!p.startsWith("/objects/")) { res.status(400).json({ error: "Foto non valida" }); return; }
     normalizedPhoto = p;
   }
+  // Se non è stata caricata una foto, usa quella del profilo
+  if (!normalizedPhoto && profile.photoUrl) normalizedPhoto = profile.photoUrl;
   if (event.photoRequirement === "required" && !normalizedPhoto) {
-    res.status(400).json({ error: "Foto obbligatoria" });
+    res.status(400).json({ error: "Foto obbligatoria: caricala qui o nel tuo profilo" });
     return;
+  }
+
+  // Invito (opzionale): deve esistere ed essere di questo evento
+  let invite: { id: number; inviteType: string } | null = null;
+  if (typeof inviteToken === "string" && inviteToken.trim()) {
+    const [inv] = await db
+      .select({ id: invitesTable.id, eventId: invitesTable.eventId, inviteType: invitesTable.inviteType })
+      .from(invitesTable)
+      .where(eq(invitesTable.token, inviteToken.trim()));
+    if (!inv || inv.eventId !== eventId) {
+      res.status(400).json({ error: "Invito non valido per questo evento" });
+      return;
+    }
+    invite = { id: inv.id, inviteType: inv.inviteType };
   }
 
   const [row] = await db.insert(participationsTable).values({
@@ -49,6 +67,8 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     name: name.trim(),
     contact: contact.trim(),
     photoUrl: normalizedPhoto,
+    inviteId: invite?.id ?? null,
+    inviteType: invite?.inviteType ?? null,
   }).returning();
 
   res.status(201).json({
@@ -77,6 +97,7 @@ router.get("/events/:id/participations", requireAdmin, async (req: Request, res:
     name: r.name,
     contact: r.contact,
     photoUrl: r.photoUrl,
+    inviteType: r.inviteType,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
   })));
 });

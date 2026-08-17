@@ -140,6 +140,7 @@ export interface ParticipationInput {
   /** @minLength 1 */
   contact: string;
   photoUrl?: string;
+  inviteToken?: string;
 }
 
 export interface ParticipationResponse {
@@ -149,6 +150,8 @@ export interface ParticipationResponse {
   contact: string;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  inviteType?: string | null;
   createdAt: string;
 }
 
@@ -212,6 +215,7 @@ export interface Profile {
   whatsapp?: string | null;
   memberType: ProfileMemberType;
   interests: ProfileInterestsItem[];
+  photoUrl?: string | null;
   consentEmail: boolean;
   consentMessages: boolean;
   createdAt: string;
@@ -249,6 +253,7 @@ export interface ProfileInput {
   whatsapp?: string;
   memberType: ProfileInputMemberType;
   interests: ProfileInputInterestsItem[];
+  photoUrl?: string;
   consentEmail: boolean;
   consentMessages: boolean;
 }

@@ -202,7 +202,8 @@ export const ParticipateInEventParams = zod.object({
 export const ParticipateInEventBody = zod.object({
   "name": zod.string().min(1),
   "contact": zod.string().min(1),
-  "photoUrl": zod.string().optional()
+  "photoUrl": zod.string().optional(),
+  "inviteToken": zod.string().optional()
 })
 
 
@@ -219,6 +220,7 @@ export const ListParticipationsResponseItem = zod.object({
   "name": zod.string(),
   "contact": zod.string(),
   "photoUrl": zod.string().nullish(),
+  "inviteType": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListParticipationsResponse = zod.array(ListParticipationsResponseItem)
@@ -303,6 +305,7 @@ export const GetMyProfileResponse = zod.object({
   "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "photoUrl": zod.string().nullish(),
   "consentEmail": zod.boolean(),
   "consentMessages": zod.boolean(),
   "createdAt": zod.string(),
@@ -328,6 +331,7 @@ export const UpsertMyProfileBody = zod.object({
   "whatsapp": zod.string().optional(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "photoUrl": zod.string().optional(),
   "consentEmail": zod.boolean(),
   "consentMessages": zod.boolean()
 })
@@ -341,6 +345,7 @@ export const UpsertMyProfileResponse = zod.object({
   "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "photoUrl": zod.string().nullish(),
   "consentEmail": zod.boolean(),
   "consentMessages": zod.boolean(),
   "createdAt": zod.string(),
@@ -360,6 +365,7 @@ export const ListProfilesResponseItem = zod.object({
   "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "photoUrl": zod.string().nullish(),
   "consentEmail": zod.boolean(),
   "consentMessages": zod.boolean(),
   "createdAt": zod.string(),

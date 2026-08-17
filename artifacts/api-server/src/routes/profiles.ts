@@ -30,6 +30,7 @@ function serialize(r: typeof profilesTable.$inferSelect) {
     whatsapp: r.whatsapp,
     memberType: r.memberType,
     interests: r.interests,
+    photoUrl: r.photoUrl,
     consentEmail: r.consentEmail,
     consentMessages: r.consentMessages,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -83,6 +84,17 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     res.status(400).json({ error: "Indica se autorizzi email e messaggi" });
     return;
   }
+  // Foto: se non viene inviata, conserva quella già salvata (non cancellarla)
+  const [existing] = await db
+    .select({ photoUrl: profilesTable.photoUrl })
+    .from(profilesTable)
+    .where(eq(profilesTable.clerkUserId, userId));
+  let photoUrl: string | null = existing?.photoUrl ?? null;
+  if (typeof body.photoUrl === "string" && body.photoUrl.trim()) {
+    const p = body.photoUrl.trim();
+    if (!p.startsWith("/objects/")) { res.status(400).json({ error: "Foto non valida" }); return; }
+    photoUrl = p;
+  }
 
   const values = {
     clerkUserId: userId,
@@ -93,6 +105,7 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     whatsapp: whatsapp || null,
     memberType,
     interests,
+    photoUrl,
     consentEmail: body.consentEmail,
     consentMessages: body.consentMessages,
     updatedAt: new Date(),
