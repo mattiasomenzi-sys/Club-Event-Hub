@@ -6,6 +6,7 @@ type MyParticipation = {
   id: number;
   eventId: number;
   inviteType: string | null;
+  occurrenceDate: string | null;
   createdAt: string;
   eventTitle: string;
   eventDate: string;
@@ -22,6 +23,24 @@ export default function IMieiEventi() {
   const [, setLocation] = useLocation();
   const [list, setList] = useState<MyParticipation[] | null>(null);
   const [error, setError] = useState(false);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  async function cancelParticipation(p: MyParticipation) {
+    if (!window.confirm(`Vuoi annullare la tua iscrizione a "${p.eventTitle}"?`)) return;
+    setCancellingId(p.id);
+    try {
+      const res = await fetch(`/api/participations/${p.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setList((prev) => (prev ? prev.filter((x) => x.id !== p.id) : prev));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        window.alert(data.error || "Errore, riprova.");
+      }
+    } catch {
+      window.alert("Errore di rete, riprova.");
+    }
+    setCancellingId(null);
+  }
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) setLocation("/sign-in");
@@ -60,23 +79,24 @@ export default function IMieiEventi() {
         ) : (
           <div className="flex flex-col gap-4">
             {[...list]
-              .sort((a, b) => b.eventDate.localeCompare(a.eventDate))
+              .sort((a, b) => (b.occurrenceDate ?? b.eventDate).localeCompare(a.occurrenceDate ?? a.eventDate))
               .map((p) => {
                 const img = getImageSrc(p.eventImageUrl);
-                const past = p.eventDate < new Date().toISOString().slice(0, 10);
+                const displayDate = p.occurrenceDate ?? p.eventDate;
+                const past = displayDate < new Date().toISOString().slice(0, 10);
                 return (
                   <Link
                     key={p.id}
-                    href={`/eventi/${p.eventId}`}
+                    href={`/eventi/${p.eventId}${p.occurrenceDate ? `?d=${p.occurrenceDate}` : ""}`}
                     className={`border border-white/10 hover:border-[#FF006E]/60 transition-colors flex gap-4 p-4 ${past ? "opacity-50" : ""}`}
                   >
                     {img && (
                       <img src={img} alt={p.eventTitle} className="w-20 h-20 object-cover border border-white/10 flex-shrink-0" />
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-white font-bold uppercase tracking-wide truncate">{p.eventTitle}</p>
                       <p className="text-white/40 text-sm mt-1">
-                        {new Date(p.eventDate + "T00:00:00").toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                        {new Date(displayDate + "T00:00:00").toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                       </p>
                       <div className="flex gap-3 mt-2 text-[11px] tracking-[0.2em] uppercase">
                         {past ? (
@@ -88,6 +108,19 @@ export default function IMieiEventi() {
                           <span className="text-[#FF1493]">Invito: {p.inviteType}</span>
                         )}
                       </div>
+                      {!past && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            cancelParticipation(p);
+                          }}
+                          disabled={cancellingId === p.id}
+                          className="mt-3 text-[11px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] border-b border-transparent hover:border-[#FF006E]/50 transition-colors pb-0.5 disabled:opacity-50"
+                        >
+                          {cancellingId === p.id ? "Annullamento..." : "Annulla iscrizione"}
+                        </button>
+                      )}
                     </div>
                   </Link>
                 );

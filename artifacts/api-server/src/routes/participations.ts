@@ -32,6 +32,39 @@ router.get("/participations/mine", async (req: Request, res: Response): Promise<
 });
 
 
+// L'utente loggato annulla la propria iscrizione (solo eventi non passati)
+router.delete("/participations/:id", async (req: Request, res: Response): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "Devi accedere" }); return; }
+  const id = Number(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [row] = await db
+    .select({
+      id: participationsTable.id,
+      clerkUserId: participationsTable.clerkUserId,
+      occurrenceDate: participationsTable.occurrenceDate,
+      eventDate: eventsTable.date,
+    })
+    .from(participationsTable)
+    .innerJoin(eventsTable, eq(participationsTable.eventId, eventsTable.id))
+    .where(eq(participationsTable.id, id));
+
+  if (!row || row.clerkUserId !== userId) {
+    res.status(404).json({ error: "Iscrizione non trovata" });
+    return;
+  }
+  const effectiveDate = row.occurrenceDate ?? row.eventDate;
+  const today = new Date().toISOString().slice(0, 10);
+  if (effectiveDate < today) {
+    res.status(400).json({ error: "Non puoi annullare l'iscrizione a un evento passato" });
+    return;
+  }
+
+  await db.delete(participationsTable).where(eq(participationsTable.id, id));
+  res.json({ ok: true });
+});
+
 router.post("/events/:id/participate", async (req: Request, res: Response): Promise<void> => {
   const eventId = Number(req.params.id);
   if (isNaN(eventId)) { res.status(400).json({ error: "Invalid event id" }); return; }
