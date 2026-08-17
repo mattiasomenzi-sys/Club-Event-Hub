@@ -272,7 +272,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
         <div className="flex flex-col gap-3 w-full lg:w-auto">
           {inviteType && (
             <p className="text-[12px] tracking-[0.25em] uppercase text-[#FF006E] border border-[#FF006E]/40 px-3 py-2 self-start">
-              Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza biglietto)" : "REGOLARE (biglietto all'ingresso)"}
+              Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza quota sociale)" : "REGOLARE (quota sociale all'ingresso)"}
             </p>
           )}
           <button
@@ -295,7 +295,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
           </div>
           {inviteType && (
             <p className="text-[12px] tracking-[0.25em] uppercase text-[#FF006E] border border-[#FF006E]/40 px-3 py-2">
-              Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza biglietto)" : "REGOLARE (biglietto all'ingresso)"}
+              Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza quota sociale)" : "REGOLARE (quota sociale all'ingresso)"}
             </p>
           )}
           {inviteInvalid && (
@@ -528,7 +528,7 @@ export default function EventDetail() {
             <div className="flex flex-col gap-4 pb-10 lg:pb-16">
               {event.tickettailorEmbed ? (
                 <div className="w-full">
-                  <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Acquista il biglietto</p>
+                  <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-3">Versa la quota sociale</p>
                   {unlocked ? (
                     <HtmlEmbed html={event.tickettailorEmbed} />
                   ) : (

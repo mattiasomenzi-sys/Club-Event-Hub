@@ -903,7 +903,7 @@ function EventForm({
               autoComplete="off"
             />
             <p className="text-[12px] text-white/30 mt-1 tracking-wide">
-              I soci dovranno inserire questa password per vedere i dettagli e accedere all'acquisto biglietto.
+              I soci dovranno inserire questa password per vedere i dettagli e accedere al versamento della quota sociale.
             </p>
           </div>
         )}
