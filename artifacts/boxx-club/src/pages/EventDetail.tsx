@@ -160,15 +160,21 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
     }
   }, [gate.status, gate.status === "ready" ? gate.profile : null]);
 
-  // Se il form è stato aperto automaticamente (?partecipa=1) ma l'utente non può accedere, reindirizza
+  // Se il form è stato aperto automaticamente (?partecipa=1 o link di invito) ma l'utente
+  // non è loggato, NON reindirizzarlo subito al login: mostra il recap dell'evento con il
+  // bottone "Mettiti in lista" (più elegante). Se manca solo il profilo, portalo a completarlo.
   useEffect(() => {
     if (!open) return;
-    if (gate.status === "signed-out") setLocation("/sign-in");
+    if (gate.status === "signed-out") setOpen(false);
     else if (gate.status === "no-profile") setLocation("/profilo");
   }, [open, gate.status, setLocation]);
 
   const handleParticipateClick = () => {
-    if (gate.status === "signed-out") { setLocation("/sign-in"); return; }
+    if (gate.status === "signed-out") {
+      // Dopo il login Clerk riporta qui (redirect_url), invito compreso
+      setLocation(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
     if (gate.status === "no-profile") { setLocation("/profilo"); return; }
     if (gate.status === "ready") setOpen(true);
   };
@@ -263,12 +269,24 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
   return (
     <div ref={rootRef} id="partecipa" className="w-full lg:w-auto scroll-mt-24">
       {!open ? (
-        <button
-          onClick={handleParticipateClick}
-          className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
-        >
-          PARTECIPA →
-        </button>
+        <div className="flex flex-col gap-3 w-full lg:w-auto">
+          {inviteType && (
+            <p className="text-[12px] tracking-[0.25em] uppercase text-[#FF006E] border border-[#FF006E]/40 px-3 py-2 self-start">
+              Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza biglietto)" : "REGOLARE (biglietto all'ingresso)"}
+            </p>
+          )}
+          <button
+            onClick={handleParticipateClick}
+            className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
+          >
+            METTITI IN LISTA →
+          </button>
+          {gate.status === "signed-out" && (
+            <p className="text-[12px] tracking-[0.2em] uppercase text-white/30">
+              Ti chiederemo di accedere per confermare
+            </p>
+          )}
+        </div>
       ) : (
         <div className="border border-white/10 p-6 flex flex-col gap-4 max-w-sm">
           <div className="flex items-center justify-between">
