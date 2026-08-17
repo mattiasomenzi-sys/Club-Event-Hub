@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { dark } from "@clerk/themes";
+import { itIT } from "@clerk/localizations";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -155,14 +156,19 @@ function ClerkProviderWithRoutes() {
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
       localization={{
+        ...itIT,
         signIn: {
+          ...itIT.signIn,
           start: {
+            ...itIT.signIn?.start,
             title: "Bentornatə",
             subtitle: "Accedi per partecipare agli eventi BOXX",
           },
         },
         signUp: {
+          ...itIT.signUp,
           start: {
+            ...itIT.signUp?.start,
             title: "Crea il tuo account",
             subtitle: "Unisciti alla community BOXX",
           },
