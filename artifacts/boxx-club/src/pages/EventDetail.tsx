@@ -298,7 +298,10 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
           )}
         </div>
       ) : (
-        <div className="border border-white/10 p-6 flex flex-col gap-4 max-w-sm">
+        <div
+          className="border-2 border-[#FF006E] bg-black/70 p-6 flex flex-col gap-4 max-w-sm"
+          style={{ boxShadow: "0 0 18px rgba(255,0,110,0.45), 0 0 45px rgba(255,0,110,0.2)" }}
+        >
           <div className="flex items-center justify-between">
             <p className="text-[12px] font-bold tracking-[0.35em] uppercase text-white/60">Mettiti in lista</p>
             <button onClick={() => setOpen(false)} className="text-white/20 hover:text-white text-sm transition-colors">✕</button>
