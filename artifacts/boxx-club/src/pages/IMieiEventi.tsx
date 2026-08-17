@@ -88,7 +88,7 @@ export default function IMieiEventi() {
                   <Link
                     key={p.id}
                     href={`/eventi/${p.eventId}${p.occurrenceDate ? `?d=${p.occurrenceDate}` : ""}`}
-                    className={`border border-white/10 hover:border-[#FF006E]/60 transition-colors flex gap-4 p-4 ${past ? "opacity-50" : ""}`}
+                    className={`border border-white/10 hover:border-[#FF006E]/60 transition-colors flex gap-4 p-4 ${past ? "opacity-80" : ""}`}
                   >
                     {img && (
                       <img src={img} alt={p.eventTitle} className="w-20 h-20 object-cover border border-white/10 flex-shrink-0" />
