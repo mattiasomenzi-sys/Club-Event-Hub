@@ -3,6 +3,7 @@ import { useParams, useLocation, useSearch } from "wouter";
 import { useGetEvent } from "@workspace/api-client-react";
 import { ArrowLeft } from "lucide-react";
 import TelegramIcon from "@/components/TelegramIcon";
+import { GatedExternalLink, useProfileGate } from "@/components/AuthGate";
 
 interface PricingRow { label: string; price: string; fixed: boolean; consumazioni?: number }
 
@@ -144,10 +145,33 @@ function UnlockForm({ eventId, onUnlock, title, message }: { eventId: number; on
 }
 
 function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: number; photoRequirement: "none" | "optional" | "required"; autoOpen?: boolean }) {
+  const gate = useProfileGate();
+  const [, setLocation] = useLocation();
   const [open, setOpen] = useState(!!autoOpen);
   const rootRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
+
+  // Prefill dal profilo quando disponibile
+  useEffect(() => {
+    if (gate.status === "ready" && gate.profile) {
+      setName((prev) => prev || gate.profile.nickname);
+      setContact((prev) => prev || gate.profile.contactValue);
+    }
+  }, [gate.status, gate.status === "ready" ? gate.profile : null]);
+
+  // Se il form è stato aperto automaticamente (?partecipa=1) ma l'utente non può accedere, reindirizza
+  useEffect(() => {
+    if (!open) return;
+    if (gate.status === "signed-out") setLocation("/sign-in");
+    else if (gate.status === "no-profile") setLocation("/profilo");
+  }, [open, gate.status, setLocation]);
+
+  const handleParticipateClick = () => {
+    if (gate.status === "signed-out") { setLocation("/sign-in"); return; }
+    if (gate.status === "no-profile") { setLocation("/profilo"); return; }
+    if (gate.status === "ready") setOpen(true);
+  };
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -221,7 +245,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
     <div ref={rootRef} id="partecipa" className="w-full lg:w-auto scroll-mt-24">
       {!open ? (
         <button
-          onClick={() => setOpen(true)}
+          onClick={handleParticipateClick}
           className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
         >
           PARTECIPA →
@@ -465,14 +489,12 @@ export default function EventDetail() {
                 </div>
               ) : (
                 <>
-                  <a
+                  <GatedExternalLink
                     href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center border border-white/20 text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:border-[#FF006E] hover:text-[#FF006E] transition-colors duration-200 self-start w-full lg:w-auto"
                   >
                     PRE-TESSERAMENTO →
-                  </a>
+                  </GatedExternalLink>
                   <p className="text-[12px] tracking-[0.25em] uppercase text-white/25">
                     L'ingresso è riservato esclusivamente ai soci tesserati
                   </p>

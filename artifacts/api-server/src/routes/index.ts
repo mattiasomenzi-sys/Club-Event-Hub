@@ -7,6 +7,7 @@ import participationsRouter from "./participations";
 import galleryRouter from "./gallery";
 import bannersRouter from "./banners";
 import analyticsRouter from "./analytics";
+import profilesRouter from "./profiles";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(participationsRouter);
 router.use(galleryRouter);
 router.use(bannersRouter);
 router.use(analyticsRouter);
+router.use(profilesRouter);
 
 export default router;

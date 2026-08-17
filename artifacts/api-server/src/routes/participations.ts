@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
-import { db, eventsTable, participationsTable } from "@workspace/db";
+import { db, eventsTable, participationsTable, profilesTable } from "@workspace/db";
 import type { Request, Response, NextFunction } from "express";
+import { getAuth } from "@clerk/express";
 import { getAdminKey } from "./admin-auth";
 
 const router = Router();
@@ -19,6 +20,15 @@ function requireAdmin(req: Request, res: Response, next: NextFunction): void {
 router.post("/events/:id/participate", async (req: Request, res: Response): Promise<void> => {
   const eventId = Number(req.params.id);
   if (isNaN(eventId)) { res.status(400).json({ error: "Invalid event id" }); return; }
+
+  // Partecipare richiede login e profilo completo (enforced lato server)
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "Devi accedere per partecipare" }); return; }
+  const [profile] = await db
+    .select({ id: profilesTable.id })
+    .from(profilesTable)
+    .where(eq(profilesTable.clerkUserId, userId));
+  if (!profile) { res.status(403).json({ error: "Completa il tuo profilo per partecipare" }); return; }
 
   const [event] = await db.select({
     id: eventsTable.id,

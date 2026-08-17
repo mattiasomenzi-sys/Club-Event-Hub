@@ -1,10 +1,20 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import { clerkMiddleware } from "@clerk/express";
+import { publishableKeyFromHost } from "@clerk/shared/keys";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import {
+  CLERK_PROXY_PATH,
+  clerkProxyMiddleware,
+  getClerkProxyHost,
+} from "./middlewares/clerkProxyMiddleware";
 
 const app: Express = express();
+
+// Clerk Frontend API proxy — must be mounted BEFORE body parsers
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(
   pinoHttp({
@@ -25,9 +35,43 @@ app.use(
     },
   }),
 );
-app.use(cors());
+// L'app web è servita same-origin tramite proxy: nessuna origin cross-site
+// è autorizzata a inviare richieste con credenziali.
+app.use(
+  cors({
+    credentials: true,
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // same-origin / curl
+      try {
+        const host = new URL(origin).hostname;
+        const allowed =
+          host === "localhost" ||
+          host === "127.0.0.1" ||
+          host.endsWith(".replit.dev") ||
+          host.endsWith(".replit.app") ||
+          (process.env.REPLIT_DOMAINS ?? "")
+            .split(",")
+            .map((d) => d.trim())
+            .filter(Boolean)
+            .includes(host);
+        cb(null, allowed);
+      } catch {
+        cb(null, false);
+      }
+    },
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  clerkMiddleware((req) => ({
+    publishableKey: publishableKeyFromHost(
+      getClerkProxyHost(req) ?? "",
+      process.env.CLERK_PUBLISHABLE_KEY,
+    ),
+  })),
+);
 
 app.use("/api", router);
 

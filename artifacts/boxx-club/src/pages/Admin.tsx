@@ -1169,6 +1169,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       </div>
 
       {/* Banner management */}
+      <ProfilesSection adminKey={adminKey} />
+
       <BannerManager adminKey={adminKey} />
 
       {/* Gallery management */}
@@ -1176,6 +1178,91 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
 
       {/* Cambia chiave */}
       <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
+    </div>
+  );
+}
+
+type AdminProfile = {
+  id: number;
+  nickname: string;
+  age: number;
+  email: string;
+  contactMethod: string;
+  contactValue: string;
+  memberType: string;
+  interests: string[];
+  createdAt: string;
+};
+
+const INTEREST_LABELS: Record<string, string> = {
+  swinger: "Swinger",
+  sexpositive: "Sexpositive",
+  kinky: "Kinky",
+};
+
+function ProfilesSection({ adminKey }: { adminKey: string }) {
+  const { data: profiles = [], isLoading } = useQuery<AdminProfile[]>({
+    queryKey: ["admin", "profiles", adminKey],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/profiles`, { headers: { "X-Admin-Key": adminKey } });
+      if (!res.ok) throw new Error("Errore caricamento profili");
+      return res.json();
+    },
+  });
+
+  return (
+    <div className="mt-16">
+      <h2 className="text-xl font-black tracking-[0.2em] uppercase text-white mb-2">
+        UTENTI REGISTRATI ({profiles.length})
+      </h2>
+      <p className="text-white/40 text-sm mb-6">
+        Profili compilati dagli utenti al momento della registrazione.
+      </p>
+      {isLoading ? (
+        <p className="text-white/40 text-sm">Caricamento…</p>
+      ) : profiles.length === 0 ? (
+        <p className="text-white/40 text-sm">Nessun utente registrato per ora.</p>
+      ) : (
+        <div className="overflow-x-auto border border-white/10">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-white/40 uppercase text-[11px] tracking-[0.15em]">
+                <th className="px-4 py-3">Nickname</th>
+                <th className="px-4 py-3">Età</th>
+                <th className="px-4 py-3">Mail</th>
+                <th className="px-4 py-3">Contatto</th>
+                <th className="px-4 py-3">Tipologia</th>
+                <th className="px-4 py-3">Interessi</th>
+                <th className="px-4 py-3">Registrato</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map((p) => (
+                <tr key={p.id} className="border-b border-white/5 text-white/80">
+                  <td className="px-4 py-3 font-bold">{p.nickname}</td>
+                  <td className="px-4 py-3">{p.age}</td>
+                  <td className="px-4 py-3">{p.email}</td>
+                  <td className="px-4 py-3">
+                    <span className="text-white/40 uppercase text-[11px] mr-1.5">
+                      {p.contactMethod === "telegram" ? "TG" : "WA"}
+                    </span>
+                    {p.contactValue}
+                  </td>
+                  <td className="px-4 py-3 capitalize">{p.memberType}</td>
+                  <td className="px-4 py-3">
+                    {p.interests.length > 0
+                      ? p.interests.map((i) => INTEREST_LABELS[i] ?? i).join(", ")
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-white/40">
+                    {new Date(p.createdAt).toLocaleDateString("it-IT")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

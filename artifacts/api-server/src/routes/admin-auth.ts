@@ -6,12 +6,14 @@ const router: IRouter = Router();
 
 const ADMIN_KEY_SETTING = "admin_key";
 
-async function getAdminKey(): Promise<string> {
+// Ritorna la chiave admin. Fail-closed: se non c'è né la riga nel DB né la
+// variabile d'ambiente ADMIN_KEY, ritorna null e ogni endpoint admin rifiuta.
+async function getAdminKey(): Promise<string | null> {
   try {
     const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, ADMIN_KEY_SETTING));
     if (row) return row.value;
   } catch { /* fall through */ }
-  return process.env.ADMIN_KEY ?? "boxx-admin-2025";
+  return process.env.ADMIN_KEY ?? null;
 }
 
 export { getAdminKey };
@@ -27,7 +29,7 @@ router.post("/admin/change-key", async (req, res): Promise<void> => {
     return;
   }
   const actual = await getAdminKey();
-  if (currentKey !== actual) {
+  if (actual === null || currentKey !== actual) {
     res.status(401).json({ error: "Chiave attuale non corretta." });
     return;
   }
@@ -48,8 +50,8 @@ router.post("/admin/recover-key", async (req, res): Promise<void> => {
     res.status(400).json({ error: "La chiave deve essere almeno 8 caratteri." });
     return;
   }
-  const expected = process.env.RECOVERY_KEY ?? "boxx-recovery-2025";
-  if (recoveryKey !== expected) {
+  const expected = process.env.RECOVERY_KEY;
+  if (!expected || recoveryKey !== expected) {
     res.status(401).json({ error: "Codice di recupero non valido." });
     return;
   }

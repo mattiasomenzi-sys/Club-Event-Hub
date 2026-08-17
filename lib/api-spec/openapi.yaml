@@ -361,6 +361,81 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /profile/me:
+    get:
+      operationId: getMyProfile
+      tags: [profiles]
+      summary: Get the current user's profile
+      responses:
+        "200":
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Profile not yet created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: upsertMyProfile
+      tags: [profiles]
+      summary: Create or update the current user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "200":
+          description: Profile saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profiles:
+    get:
+      operationId: listProfiles
+      tags: [profiles]
+      summary: List all user profiles (admin)
+      responses:
+        "200":
+          description: List of profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /storage/uploads/request-url:
     post:
       tags: [Storage]
@@ -669,6 +744,64 @@ components:
           type: string
         sortOrder:
           type: integer
+
+    Profile:
+      type: object
+      required: [id, nickname, age, email, contactMethod, contactValue, memberType, interests, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        nickname:
+          type: string
+        age:
+          type: integer
+        email:
+          type: string
+        contactMethod:
+          type: string
+          enum: [telegram, whatsapp]
+        contactValue:
+          type: string
+        memberType:
+          type: string
+          enum: [singolo, coppia, singola, trav]
+        interests:
+          type: array
+          items:
+            type: string
+            enum: [swinger, sexpositive, kinky, gangbang]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProfileInput:
+      type: object
+      required: [nickname, age, email, contactMethod, contactValue, memberType, interests]
+      properties:
+        nickname:
+          type: string
+          minLength: 1
+        age:
+          type: integer
+          minimum: 18
+        email:
+          type: string
+          minLength: 3
+        contactMethod:
+          type: string
+          enum: [telegram, whatsapp]
+        contactValue:
+          type: string
+          minLength: 1
+        memberType:
+          type: string
+          enum: [singolo, coppia, singola, trav]
+        interests:
+          type: array
+          items:
+            type: string
+            enum: [swinger, sexpositive, kinky, gangbang]
 
     UploadUrlRequest:
       type: object

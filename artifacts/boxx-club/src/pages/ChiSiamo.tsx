@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { GatedExternalLink } from "@/components/AuthGate";
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
 import RotatingBackground from "@/components/RotatingBackground";
@@ -107,14 +108,12 @@ export default function ChiSiamo() {
 
         {/* CTA */}
         <div className="mt-12">
-          <a
+          <GatedExternalLink
             href="https://registrosociasx.it/registrazione?Locale=XP1"
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-4 px-8 hover:bg-white hover:text-black transition-colors duration-200"
           >
             PRE-TESSERAMENTO →
-          </a>
+          </GatedExternalLink>
         </div>
       </div>
     </div>

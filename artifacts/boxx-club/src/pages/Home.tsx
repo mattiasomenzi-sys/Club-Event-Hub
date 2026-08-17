@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import TelegramIcon from "@/components/TelegramIcon";
+import { GatedExternalLink, AuthMenuLink } from "@/components/AuthGate";
 import { Link } from "wouter";
 import { useListEvents, useListBanners } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
@@ -156,11 +157,10 @@ function EventRow({ event, usingRealEvents, past, posterSrc }: { event: Event; u
               {past ? "VEDI DETTAGLI →" : "ACCEDI ALL'EVENTO →"}
             </Link>
           ) : (
-            <a href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
-              target="_blank" rel="noopener noreferrer"
+            <GatedExternalLink href={event.registrationUrl ?? "https://registrosociasx.it/registrazione?Locale=XP1"}
               className="inline-block text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] border-b border-white/20 hover:border-[#FF006E] pb-0.5 transition-colors">
               ACCEDI ALL'EVENTO →
-            </a>
+            </GatedExternalLink>
           )}
         </div>
       </div>
@@ -176,30 +176,7 @@ function resolveBannerSrc(imageUrl: string): string {
 function HomeBanners() {
   const { data } = useListBanners();
   const banners = data ?? [];
-  const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches);
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 640px)");
-    const onChange = () => setWide(mql.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
-  const perView = wide ? 2 : 1;
-  const pages = Math.max(1, Math.ceil(banners.length / perView));
-
-  useEffect(() => {
-    setIndex((i) => Math.min(i, pages - 1));
-  }, [pages]);
-
-  useEffect(() => {
-    if (banners.length <= perView) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % pages), 6000);
-    return () => clearInterval(t);
-  }, [banners.length, pages]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -211,38 +188,16 @@ function HomeBanners() {
 
   if (banners.length === 0) return null;
 
-  const visible = banners.slice(index * perView, index * perView + perView);
-  const shown = visible.length > 0 ? visible : banners.slice(0, perView);
-
-  function onTouchStart(e: React.TouchEvent) {
-    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
-
-  function onTouchEnd(e: React.TouchEvent) {
-    if (!touchStart.current) return;
-    const dx = e.changedTouches[0].clientX - touchStart.current.x;
-    const dy = e.changedTouches[0].clientY - touchStart.current.y;
-    touchStart.current = null;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
-    if (dx < 0) setIndex((i) => (i + 1) % pages);
-    else setIndex((i) => (i - 1 + pages) % pages);
-  }
-
   return (
-    <div className="hidden sm:block px-6 md:px-12 pt-6 pb-2 border-b border-white/5">
+    <div className="hidden sm:block px-6 md:px-12 pt-6 pb-4 border-b border-white/5">
       <p className="text-[11px] font-bold tracking-[0.4em] uppercase text-[#FF006E] mb-3">
         Comunicazioni
       </p>
-      <div
-        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-        style={{ touchAction: "pan-y" }}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        {shown.map((b, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {banners.map((b, i) => (
           <button
             key={b.id}
-            onClick={() => setLightbox(index * perView + i)}
+            onClick={() => setLightbox(i)}
             className="relative group overflow-hidden border border-white/10 bg-white/5 text-left"
           >
             <img
@@ -258,19 +213,6 @@ function HomeBanners() {
           </button>
         ))}
       </div>
-      {/* Mobile: one per view — extra dots to page through singles */}
-      {banners.length > 1 && (
-        <div className="flex gap-2 justify-center mt-3">
-          {Array.from({ length: pages }).map((_, p) => (
-            <button
-              key={p}
-              onClick={() => setIndex(p)}
-              aria-label={`Vai al gruppo ${p + 1}`}
-              className={`w-2 h-2 rounded-full transition-colors ${p === index ? "bg-white" : "bg-white/20 hover:bg-white/50"}`}
-            />
-          ))}
-        </div>
-      )}
 
       {lightbox !== null && banners[lightbox] && (
         <div
@@ -490,14 +432,16 @@ export default function Home() {
             >
               Gallery
             </Link>
-            <a
+            <GatedExternalLink
               href="https://registrosociasx.it/registrazione?Locale=XP1"
-              target="_blank"
-              rel="noopener noreferrer"
               className="text-sm tracking-[0.2em] uppercase text-[#FF006E] hover:text-white transition-colors"
             >
               Pre-Tesseramento
-            </a>
+            </GatedExternalLink>
+            <AuthMenuLink
+              className="text-sm tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors"
+              onNavigate={() => setMenuOpen(false)}
+            />
           </div>
         </div>
       )}
@@ -545,14 +489,13 @@ export default function Home() {
           <Link href="/gallery" className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors">
             GALLERY
           </Link>
-          <a
+          <GatedExternalLink
             href="https://registrosociasx.it/registrazione?Locale=XP1"
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors"
           >
             PRE-TESSERAMENTO
-          </a>
+          </GatedExternalLink>
+          <AuthMenuLink className="text-[12px] font-bold tracking-[0.3em] uppercase text-white/40 hover:text-[#FF006E] transition-colors" />
           <div className="flex gap-3">
             <a
               href="https://t.me/boxx_clubb"
@@ -681,14 +624,12 @@ export default function Home() {
               <p className="text-[12px] tracking-[0.35em] uppercase text-white/30 mb-4">
                 ACCESSO RISERVATO AI SOCI
               </p>
-              <a
+              <GatedExternalLink
                 href="https://registrosociasx.it/registrazione?Locale=XP1"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="inline-block text-lg md:text-2xl font-black uppercase tracking-tighter text-white hover:text-[#FF006E] transition-colors border-b-2 border-white/20 hover:border-[#FF006E] pb-1"
               >
                 Richiedi il Pre-Tesseramento →
-              </a>
+              </GatedExternalLink>
             </div>
 
             {/* Contacts + Address */}

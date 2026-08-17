@@ -292,6 +292,76 @@ export const DeleteBannerParams = zod.object({
 
 
 /**
+ * @summary Get the current user's profile
+ */
+export const GetMyProfileResponse = zod.object({
+  "id": zod.number(),
+  "nickname": zod.string(),
+  "age": zod.number(),
+  "email": zod.string(),
+  "contactMethod": zod.enum(['telegram', 'whatsapp']),
+  "contactValue": zod.string(),
+  "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
+  "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Create or update the current user's profile
+ */
+
+export const upsertMyProfileBodyAgeMin = 18;
+
+export const upsertMyProfileBodyEmailMin = 3;
+
+
+
+
+export const UpsertMyProfileBody = zod.object({
+  "nickname": zod.string().min(1),
+  "age": zod.number().min(upsertMyProfileBodyAgeMin),
+  "email": zod.string().min(upsertMyProfileBodyEmailMin),
+  "contactMethod": zod.enum(['telegram', 'whatsapp']),
+  "contactValue": zod.string().min(1),
+  "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
+  "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang']))
+})
+
+export const UpsertMyProfileResponse = zod.object({
+  "id": zod.number(),
+  "nickname": zod.string(),
+  "age": zod.number(),
+  "email": zod.string(),
+  "contactMethod": zod.enum(['telegram', 'whatsapp']),
+  "contactValue": zod.string(),
+  "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
+  "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary List all user profiles (admin)
+ */
+export const ListProfilesResponseItem = zod.object({
+  "id": zod.number(),
+  "nickname": zod.string(),
+  "age": zod.number(),
+  "email": zod.string(),
+  "contactMethod": zod.enum(['telegram', 'whatsapp']),
+  "contactValue": zod.string(),
+  "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
+  "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListProfilesResponse = zod.array(ListProfilesResponseItem)
+
+
+/**
  * @summary Request a presigned URL for file upload
  */
 
