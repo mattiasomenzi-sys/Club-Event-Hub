@@ -102,6 +102,8 @@ export default function Profilo() {
       });
       await queryClient.invalidateQueries({ queryKey: getGetMyProfileQueryKey() });
       setSaved(true);
+      // Mostra brevemente la conferma, poi torna alla home
+      setTimeout(() => setLocation("/"), 900);
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "error" in err
