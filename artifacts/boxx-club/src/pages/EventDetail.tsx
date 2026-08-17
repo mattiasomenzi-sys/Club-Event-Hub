@@ -19,6 +19,7 @@ function parsePricing(value: string | null | undefined): PricingRow[] | null {
 import boxxLogo from "@assets/boxx-logo.jpeg";
 import clubPhoto from "@assets/IMG_1665_1779270012804.jpg";
 import { useEventPoster } from "@/hooks/useEventPoster";
+import { nextOccurrence } from "@/lib/recurrence";
 import RotatingBackground from "@/components/RotatingBackground";
 
 const ITALIAN_DAYS: Record<string, string> = {
@@ -411,7 +412,8 @@ export default function EventDetail() {
     );
   }
 
-  const displayDate = occurrenceDate || event.date;
+  // Per gli eventi ricorrenti senza data nel link, usa la prossima serata in programma
+  const displayDate = occurrenceDate || (event.isRecurring ? nextOccurrence(event) ?? event.date : event.date);
   const { weekday, day, month, year } = formatFullDate(displayDate);
   const posterSrc = getEventPoster({ id: event.id, imageUrl: event.imageUrl });
   const hasCustomPoster = !!event.imageUrl;
