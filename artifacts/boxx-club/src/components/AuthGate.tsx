@@ -57,8 +57,12 @@ export function AuthMenuLink({
   if (!isLoaded) return null;
   if (!isSignedIn) {
     return (
-      <Link href="/sign-in" onClick={onNavigate} className={className}>
-        ACCEDI
+      <Link
+        href="/sign-in"
+        onClick={onNavigate}
+        className="inline-flex items-center justify-center gap-2 bg-[#FF006E] hover:bg-white text-white hover:text-black transition-colors px-4 py-2 text-[13px] font-black tracking-[0.25em] uppercase"
+      >
+        LOGIN
       </Link>
     );
   }
