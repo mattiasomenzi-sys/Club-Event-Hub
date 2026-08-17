@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, date } from "drizzle-orm/pg-core";
 import { eventsTable } from "./events";
 
 export const participationsTable = pgTable("participations", {
@@ -10,6 +10,7 @@ export const participationsTable = pgTable("participations", {
   inviteId: integer("invite_id"),
   inviteType: text("invite_type"), // "ospite" | "regolare" se arrivato tramite invito
   clerkUserId: text("clerk_user_id"), // chi si è iscritto (per "i miei eventi")
+  occurrenceDate: date("occurrence_date", { mode: "string" }), // data della serata (eventi ricorrenti)
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

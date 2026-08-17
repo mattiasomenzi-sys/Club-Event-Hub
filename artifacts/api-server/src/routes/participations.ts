@@ -16,6 +16,7 @@ router.get("/participations/mine", async (req: Request, res: Response): Promise<
       id: participationsTable.id,
       eventId: participationsTable.eventId,
       inviteType: participationsTable.inviteType,
+      occurrenceDate: participationsTable.occurrenceDate,
       createdAt: participationsTable.createdAt,
       eventTitle: eventsTable.title,
       eventDate: eventsTable.date,
@@ -51,9 +52,14 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
   }).from(eventsTable).where(eq(eventsTable.id, eventId));
   if (!event || event.isDraft) { res.status(404).json({ error: "Event not found" }); return; }
 
-  const { name, contact, photoUrl, inviteToken } = req.body as {
-    name?: unknown; contact?: unknown; photoUrl?: unknown; inviteToken?: unknown;
+  const { name, contact, photoUrl, inviteToken, occurrenceDate } = req.body as {
+    name?: unknown; contact?: unknown; photoUrl?: unknown; inviteToken?: unknown; occurrenceDate?: unknown;
   };
+  // Data della serata (per eventi ricorrenti); se assente/invalida si salva null
+  const normalizedOccurrence =
+    typeof occurrenceDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(occurrenceDate)
+      ? occurrenceDate
+      : null;
   if (typeof name !== "string" || !name.trim()) { res.status(400).json({ error: "Nome richiesto" }); return; }
   if (typeof contact !== "string" || !contact.trim()) { res.status(400).json({ error: "Contatto richiesto" }); return; }
 
@@ -93,6 +99,7 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     inviteId: invite?.id ?? null,
     inviteType: invite?.inviteType ?? null,
     clerkUserId: userId,
+    occurrenceDate: normalizedOccurrence,
   }).returning();
 
   res.status(201).json({
@@ -122,6 +129,7 @@ router.get("/events/:id/participations", requireAdmin, async (req: Request, res:
     contact: r.contact,
     photoUrl: r.photoUrl,
     inviteType: r.inviteType,
+    occurrenceDate: r.occurrenceDate,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
   })));
 });

@@ -1648,7 +1648,7 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
   );
 }
 
-interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; inviteType?: string | null; createdAt: string }
+interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; inviteType?: string | null; occurrenceDate?: string | null; createdAt: string }
 
 function CopyParticipateLink({ eventId }: { eventId: number }) {
   const [copied, setCopied] = useState(false);
@@ -1796,6 +1796,22 @@ function InvitesButton({ eventId, adminKey }: { eventId: number; adminKey: strin
   );
 }
 
+// Raggruppa le iscrizioni per data della serata (eventi ricorrenti), le più recenti prima
+function groupParticipations(list: ParticipationEntry[]): [string, ParticipationEntry[]][] {
+  const map = new Map<string, ParticipationEntry[]>();
+  for (const p of list) {
+    const key = p.occurrenceDate ?? "?";
+    const arr = map.get(key) ?? [];
+    arr.push(p);
+    map.set(key, arr);
+  }
+  return [...map.entries()].sort((a, b) => {
+    if (a[0] === "?") return 1;
+    if (b[0] === "?") return -1;
+    return b[0].localeCompare(a[0]);
+  });
+}
+
 function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { eventId: number; adminKey: string; initialPhotoRequirement: "none" | "optional" | "required" }) {
   const [open, setOpen] = useState(false);
   const [list, setList] = useState<ParticipationEntry[] | null>(null);
@@ -1869,26 +1885,34 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
             <p className="text-white/30 text-sm">Nessuna iscrizione</p>
           ) : (
             <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-              {list.map((p) => (
-                <div key={p.id} className="border-b border-white/5 pb-2 flex gap-2">
-                  {p.photoUrl && (
-                    <a href={getImageSrc(p.photoUrl)} target="_blank" rel="noreferrer" className="flex-shrink-0">
-                      <img src={getImageSrc(p.photoUrl)} alt={p.name}
-                        className="w-12 h-12 object-cover border border-white/10 hover:border-[#FF006E] transition-colors" />
-                    </a>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white font-medium">
-                      {p.name}
-                      {p.inviteType && (
-                        <span className={`ml-2 text-[10px] uppercase tracking-widest ${p.inviteType === "ospite" ? "text-green-400" : "text-[#FF1493]"}`}>
-                          {p.inviteType}
-                        </span>
+              {groupParticipations(list).map(([dateKey, entries]) => (
+                <div key={dateKey}>
+                  <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-[#FF006E]/80 border-b border-[#FF006E]/20 pb-1 mb-2 sticky top-0 bg-black">
+                    {dateKey === "?" ? "Data non indicata" : new Date(dateKey + "T00:00:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}
+                    {" "}({entries.length})
+                  </p>
+                  {entries.map((p) => (
+                    <div key={p.id} className="border-b border-white/5 pb-2 mb-2 flex gap-2">
+                      {p.photoUrl && (
+                        <a href={getImageSrc(p.photoUrl)} target="_blank" rel="noreferrer" className="flex-shrink-0">
+                          <img src={getImageSrc(p.photoUrl)} alt={p.name}
+                            className="w-12 h-12 object-cover border border-white/10 hover:border-[#FF006E] transition-colors" />
+                        </a>
                       )}
-                    </p>
-                    <p className="text-[13px] text-white/40 font-mono truncate">{p.contact}</p>
-                    <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
-                  </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white font-medium">
+                          {p.name}
+                          {p.inviteType && (
+                            <span className={`ml-2 text-[10px] uppercase tracking-widest ${p.inviteType === "ospite" ? "text-green-400" : "text-[#FF1493]"}`}>
+                              {p.inviteType}
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-[13px] text-white/40 font-mono truncate">{p.contact}</p>
+                        <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

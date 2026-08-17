@@ -144,7 +144,7 @@ function UnlockForm({ eventId, onUnlock, title, message }: { eventId: number; on
   );
 }
 
-function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: { eventId: number; photoRequirement: "none" | "optional" | "required"; autoOpen?: boolean; inviteToken?: string | null }) {
+function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occurrenceDate }: { eventId: number; photoRequirement: "none" | "optional" | "required"; autoOpen?: boolean; inviteToken?: string | null; occurrenceDate?: string }) {
   const gate = useProfileGate();
   const [, setLocation] = useLocation();
   const [open, setOpen] = useState(!!autoOpen);
@@ -252,6 +252,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
           contact: contact.trim(),
           ...(photoUrl ? { photoUrl } : {}),
           ...(inviteToken && inviteType ? { inviteToken } : {}),
+          ...(occurrenceDate ? { occurrenceDate } : {}),
         }),
       });
       if (!res.ok) {
@@ -569,7 +570,7 @@ export default function EventDetail() {
               )}
 
               {/* Partecipa */}
-              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} autoOpen={autoOpenParticipate} inviteToken={inviteToken} />
+              <ParticipateForm eventId={event.id} photoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} autoOpen={autoOpenParticipate} inviteToken={inviteToken} occurrenceDate={displayDate} />
             </div>
           </div>
         </div>
