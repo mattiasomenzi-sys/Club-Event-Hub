@@ -6,6 +6,27 @@ import { getAuth, clerkClient } from "@clerk/express";
 
 const router: IRouter = Router();
 
+// Al primo avvio (es. in produzione dopo il Publish) la tabella settings può
+// essere vuota: senza la lista email admin nessuno può accedere al pannello.
+// Seed idempotente: inserisce i valori di default solo se le righe mancano.
+const DEFAULT_ADMIN_EMAILS = "covenparty@gmail.com";
+export async function seedAdminSettings(): Promise<void> {
+  try {
+    await db
+      .insert(settingsTable)
+      .values({ key: ADMIN_EMAILS_SETTING, value: process.env.ADMIN_EMAILS ?? DEFAULT_ADMIN_EMAILS })
+      .onConflictDoNothing({ target: settingsTable.key });
+    if (process.env.ADMIN_KEY) {
+      await db
+        .insert(settingsTable)
+        .values({ key: ADMIN_KEY_SETTING, value: process.env.ADMIN_KEY })
+        .onConflictDoNothing({ target: settingsTable.key });
+    }
+  } catch (err) {
+    console.error("Errore seed impostazioni admin", err);
+  }
+}
+
 const ADMIN_KEY_SETTING = "admin_key";
 const ADMIN_EMAILS_SETTING = "admin_emails";
 
