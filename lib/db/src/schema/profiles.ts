@@ -1,10 +1,11 @@
-import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, date } from "drizzle-orm/pg-core";
 
 export const profilesTable = pgTable("profiles", {
   id: serial("id").primaryKey(),
   clerkUserId: text("clerk_user_id").notNull().unique(),
   nickname: text("nickname").notNull(),
-  age: integer("age").notNull(),
+  age: integer("age").notNull(), // calcolata dalla data di nascita al salvataggio
+  birthDate: date("birth_date", { mode: "string" }), // YYYY-MM-DD
   email: text("email").notNull(),
   telegram: text("telegram"), // @username — almeno uno tra telegram e whatsapp
   whatsapp: text("whatsapp"), // numero

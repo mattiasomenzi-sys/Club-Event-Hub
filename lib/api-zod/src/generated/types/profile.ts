@@ -12,6 +12,7 @@ export interface Profile {
   id: number;
   nickname: string;
   age: number;
+  birthDate?: string | null;
   email: string;
   telegram?: string | null;
   whatsapp?: string | null;

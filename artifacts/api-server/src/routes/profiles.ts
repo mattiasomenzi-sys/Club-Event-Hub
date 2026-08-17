@@ -20,11 +20,23 @@ function requireAdmin(req: Request, res: Response, next: NextFunction): void {
 const MEMBER_TYPES = ["singolo", "coppia", "singola", "trav"] as const;
 const INTERESTS = ["swinger", "sexpositive", "kinky", "gangbang"] as const;
 
+/** Calcola l'età compiuta a partire da una data YYYY-MM-DD; null se nel futuro/invalida */
+function computeAge(birthDate: string): number | null {
+  const d = new Date(birthDate + "T00:00:00");
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age < 0 ? null : age;
+}
+
 function serialize(r: typeof profilesTable.$inferSelect) {
   return {
     id: r.id,
     nickname: r.nickname,
     age: r.age,
+    birthDate: r.birthDate,
     email: r.email,
     telegram: r.telegram,
     whatsapp: r.whatsapp,
@@ -63,7 +75,7 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
   }
   const body = req.body as Record<string, unknown>;
   const nickname = typeof body.nickname === "string" ? body.nickname.trim() : "";
-  const age = typeof body.age === "number" && Number.isInteger(body.age) ? body.age : NaN;
+  const birthDate = typeof body.birthDate === "string" ? body.birthDate.trim() : "";
   const email = typeof body.email === "string" ? body.email.trim() : "";
   const telegram = typeof body.telegram === "string" ? body.telegram.trim() : "";
   const whatsapp = typeof body.whatsapp === "string" ? body.whatsapp.trim() : "";
@@ -71,7 +83,10 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
   const rawInterests = Array.isArray(body.interests) ? body.interests : null;
 
   if (!nickname) { res.status(400).json({ error: "Nickname richiesto" }); return; }
-  if (!Number.isInteger(age) || age < 18 || age > 120) { res.status(400).json({ error: "Età non valida (minimo 18)" }); return; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) { res.status(400).json({ error: "Data di nascita non valida" }); return; }
+  const age = computeAge(birthDate);
+  if (age === null || age > 120) { res.status(400).json({ error: "Data di nascita non valida" }); return; }
+  if (age < 18) { res.status(400).json({ error: "Devi avere almeno 18 anni" }); return; }
   if (!email || !email.includes("@")) { res.status(400).json({ error: "Email non valida" }); return; }
   if (!telegram && !whatsapp) { res.status(400).json({ error: "Inserisci almeno un contatto (Telegram o WhatsApp)" }); return; }
   if (!MEMBER_TYPES.includes(memberType as typeof MEMBER_TYPES[number])) { res.status(400).json({ error: "Tipologia non valida" }); return; }
@@ -104,6 +119,7 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     clerkUserId: userId,
     nickname,
     age,
+    birthDate,
     email,
     telegram: telegram || null,
     whatsapp: whatsapp || null,

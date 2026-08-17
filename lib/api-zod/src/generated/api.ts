@@ -300,6 +300,7 @@ export const GetMyProfileResponse = zod.object({
   "id": zod.number(),
   "nickname": zod.string(),
   "age": zod.number(),
+  "birthDate": zod.string().nullish(),
   "email": zod.string(),
   "telegram": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),
@@ -317,15 +318,13 @@ export const GetMyProfileResponse = zod.object({
  * @summary Create or update the current user's profile
  */
 
-export const upsertMyProfileBodyAgeMin = 18;
-
 export const upsertMyProfileBodyEmailMin = 3;
 
 
 
 export const UpsertMyProfileBody = zod.object({
   "nickname": zod.string().min(1),
-  "age": zod.number().min(upsertMyProfileBodyAgeMin),
+  "birthDate": zod.coerce.date(),
   "email": zod.string().min(upsertMyProfileBodyEmailMin),
   "telegram": zod.string().optional(),
   "whatsapp": zod.string().optional(),
@@ -340,6 +339,7 @@ export const UpsertMyProfileResponse = zod.object({
   "id": zod.number(),
   "nickname": zod.string(),
   "age": zod.number(),
+  "birthDate": zod.string().nullish(),
   "email": zod.string(),
   "telegram": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),
@@ -360,6 +360,7 @@ export const ListProfilesResponseItem = zod.object({
   "id": zod.number(),
   "nickname": zod.string(),
   "age": zod.number(),
+  "birthDate": zod.string().nullish(),
   "email": zod.string(),
   "telegram": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),

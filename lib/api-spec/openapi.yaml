@@ -759,6 +759,9 @@ components:
           type: string
         age:
           type: integer
+        birthDate:
+          type: string
+          nullable: true
         email:
           type: string
         telegram:
@@ -789,14 +792,14 @@ components:
 
     ProfileInput:
       type: object
-      required: [nickname, age, email, memberType, interests, consentEmail, consentMessages]
+      required: [nickname, birthDate, email, memberType, interests, consentEmail, consentMessages]
       properties:
         nickname:
           type: string
           minLength: 1
-        age:
-          type: integer
-          minimum: 18
+        birthDate:
+          type: string
+          format: date
         email:
           type: string
           minLength: 3

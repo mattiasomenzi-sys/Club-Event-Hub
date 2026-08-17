@@ -11,8 +11,7 @@ import type { ProfileInputMemberType } from './profileInputMemberType';
 export interface ProfileInput {
   /** @minLength 1 */
   nickname: string;
-  /** @minimum 18 */
-  age: number;
+  birthDate: Date;
   /** @minLength 3 */
   email: string;
   telegram?: string;

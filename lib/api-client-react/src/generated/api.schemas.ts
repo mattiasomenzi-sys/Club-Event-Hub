@@ -210,6 +210,7 @@ export interface Profile {
   id: number;
   nickname: string;
   age: number;
+  birthDate?: string | null;
   email: string;
   telegram?: string | null;
   whatsapp?: string | null;
@@ -245,8 +246,7 @@ export const ProfileInputInterestsItem = {
 export interface ProfileInput {
   /** @minLength 1 */
   nickname: string;
-  /** @minimum 18 */
-  age: number;
+  birthDate: string;
   /** @minLength 3 */
   email: string;
   telegram?: string;

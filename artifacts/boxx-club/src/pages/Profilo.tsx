@@ -34,7 +34,7 @@ export default function Profilo() {
   const upsert = useUpsertMyProfile();
 
   const [nickname, setNickname] = useState("");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
   const [telegram, setTelegram] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -47,6 +47,18 @@ export default function Profilo() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
+  // Età calcolata dalla data di nascita (null se vuota o invalida)
+  const computedAge = (() => {
+    if (!birthDate) return null;
+    const d = new Date(birthDate + "T00:00:00");
+    if (isNaN(d.getTime())) return null;
+    const now = new Date();
+    let a = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a--;
+    return a < 0 ? null : a;
+  })();
+
   useEffect(() => {
     if (isLoaded && !isSignedIn) setLocation("/sign-in");
   }, [isLoaded, isSignedIn, setLocation]);
@@ -55,7 +67,7 @@ export default function Profilo() {
     const p = profileQuery.data;
     if (p) {
       setNickname(p.nickname);
-      setAge(String(p.age));
+      setBirthDate(p.birthDate ?? "");
       setEmail(p.email);
       setTelegram(p.telegram ?? "");
       setWhatsapp(p.whatsapp ?? "");
@@ -79,9 +91,10 @@ export default function Profilo() {
     e.preventDefault();
     setError(null);
     setSaved(false);
-    const ageNum = parseInt(age, 10);
     if (!nickname.trim()) return setError("Inserisci un nickname");
-    if (!Number.isInteger(ageNum) || ageNum < 18) return setError("Devi avere almeno 18 anni");
+    if (!birthDate) return setError("Inserisci la data di nascita");
+    if (computedAge === null) return setError("Data di nascita non valida");
+    if (computedAge < 18) return setError("Devi avere almeno 18 anni");
     if (!email.trim() || !email.includes("@")) return setError("Inserisci una mail valida");
     if (!telegram.trim() && !whatsapp.trim())
       return setError("Inserisci almeno un contatto: Telegram o WhatsApp");
@@ -108,7 +121,7 @@ export default function Profilo() {
       await upsert.mutateAsync({
         data: {
           nickname: nickname.trim(),
-          age: ageNum,
+          birthDate,
           email: email.trim(),
           ...(telegram.trim() ? { telegram: telegram.trim() } : {}),
           ...(whatsapp.trim() ? { whatsapp: whatsapp.trim() } : {}),
@@ -164,8 +177,11 @@ export default function Profilo() {
             <input className={inputCls} value={nickname} onChange={(e) => setNickname(e.target.value)} maxLength={60} />
           </div>
           <div>
-            <label className="block text-sm text-gray-300 mb-1.5">Età *</label>
-            <input className={inputCls} type="number" min={18} max={120} value={age} onChange={(e) => setAge(e.target.value)} />
+            <label className="block text-sm text-gray-300 mb-1.5">Data di nascita *</label>
+            <input className={inputCls} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+            {computedAge !== null && (
+              <p className="text-xs text-gray-500 mt-1">Età: {computedAge} anni</p>
+            )}
           </div>
           <div>
             <label className="block text-sm text-gray-300 mb-1.5">Mail *</label>
