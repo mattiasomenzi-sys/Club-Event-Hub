@@ -30,6 +30,8 @@ function serialize(r: typeof profilesTable.$inferSelect) {
     whatsapp: r.whatsapp,
     memberType: r.memberType,
     interests: r.interests,
+    consentEmail: r.consentEmail,
+    consentMessages: r.consentMessages,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
     updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : r.updatedAt,
   };
@@ -77,6 +79,10 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     return;
   }
   const interests = [...new Set(rawInterests as string[])];
+  if (typeof body.consentEmail !== "boolean" || typeof body.consentMessages !== "boolean") {
+    res.status(400).json({ error: "Indica se autorizzi email e messaggi" });
+    return;
+  }
 
   const values = {
     clerkUserId: userId,
@@ -87,6 +93,8 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     whatsapp: whatsapp || null,
     memberType,
     interests,
+    consentEmail: body.consentEmail,
+    consentMessages: body.consentMessages,
     updatedAt: new Date(),
   };
   const [row] = await db

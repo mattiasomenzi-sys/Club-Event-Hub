@@ -747,7 +747,7 @@ components:
 
     Profile:
       type: object
-      required: [id, nickname, age, email, memberType, interests, createdAt, updatedAt]
+      required: [id, nickname, age, email, memberType, interests, consentEmail, consentMessages, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -771,6 +771,10 @@ components:
           items:
             type: string
             enum: [swinger, sexpositive, kinky, gangbang]
+        consentEmail:
+          type: boolean
+        consentMessages:
+          type: boolean
         createdAt:
           type: string
         updatedAt:
@@ -778,7 +782,7 @@ components:
 
     ProfileInput:
       type: object
-      required: [nickname, age, email, memberType, interests]
+      required: [nickname, age, email, memberType, interests, consentEmail, consentMessages]
       properties:
         nickname:
           type: string
@@ -801,6 +805,10 @@ components:
           items:
             type: string
             enum: [swinger, sexpositive, kinky, gangbang]
+        consentEmail:
+          type: boolean
+        consentMessages:
+          type: boolean
 
     UploadUrlRequest:
       type: object

@@ -1193,6 +1193,8 @@ type AdminProfile = {
   whatsapp: string | null;
   memberType: string;
   interests: string[];
+  consentEmail: boolean;
+  consentMessages: boolean;
   createdAt: string;
 };
 
@@ -1310,6 +1312,7 @@ function ProfilesSection({ adminKey }: { adminKey: string }) {
                 <th className="px-4 py-3">Contatto</th>
                 <th className="px-4 py-3">Tipologia</th>
                 <th className="px-4 py-3">Interessi</th>
+                <th className="px-4 py-3">Autorizzazioni</th>
                 <th className="px-4 py-3">Registrato</th>
               </tr>
             </thead>
@@ -1338,6 +1341,15 @@ function ProfilesSection({ adminKey }: { adminKey: string }) {
                     {p.interests.length > 0
                       ? p.interests.map((i) => INTEREST_LABELS[i] ?? i).join(", ")
                       : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-[11px] uppercase">
+                    <span className={p.consentEmail ? "text-green-400" : "text-white/30"}>
+                      Email {p.consentEmail ? "✓" : "✗"}
+                    </span>
+                    <span className="mx-1 text-white/20">·</span>
+                    <span className={p.consentMessages ? "text-green-400" : "text-white/30"}>
+                      Msg {p.consentMessages ? "✓" : "✗"}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-white/40">
                     {new Date(p.createdAt).toLocaleDateString("it-IT")}

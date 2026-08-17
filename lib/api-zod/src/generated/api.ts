@@ -303,6 +303,8 @@ export const GetMyProfileResponse = zod.object({
   "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "consentEmail": zod.boolean(),
+  "consentMessages": zod.boolean(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -325,7 +327,9 @@ export const UpsertMyProfileBody = zod.object({
   "telegram": zod.string().optional(),
   "whatsapp": zod.string().optional(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
-  "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang']))
+  "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "consentEmail": zod.boolean(),
+  "consentMessages": zod.boolean()
 })
 
 export const UpsertMyProfileResponse = zod.object({
@@ -337,6 +341,8 @@ export const UpsertMyProfileResponse = zod.object({
   "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "consentEmail": zod.boolean(),
+  "consentMessages": zod.boolean(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -354,6 +360,8 @@ export const ListProfilesResponseItem = zod.object({
   "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
+  "consentEmail": zod.boolean(),
+  "consentMessages": zod.boolean(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })

@@ -212,6 +212,8 @@ export interface Profile {
   whatsapp?: string | null;
   memberType: ProfileMemberType;
   interests: ProfileInterestsItem[];
+  consentEmail: boolean;
+  consentMessages: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -247,6 +249,8 @@ export interface ProfileInput {
   whatsapp?: string;
   memberType: ProfileInputMemberType;
   interests: ProfileInputInterestsItem[];
+  consentEmail: boolean;
+  consentMessages: boolean;
 }
 
 export interface UploadUrlRequest {

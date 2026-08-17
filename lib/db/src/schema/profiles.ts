@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const profilesTable = pgTable("profiles", {
   id: serial("id").primaryKey(),
@@ -10,6 +10,8 @@ export const profilesTable = pgTable("profiles", {
   whatsapp: text("whatsapp"), // numero
   memberType: text("member_type").notNull(), // "singolo" | "coppia" | "singola" | "trav"
   interests: text("interests").array().notNull().default([]), // "swinger" | "sexpositive" | "kinky"
+  consentEmail: boolean("consent_email").notNull().default(false), // autorizza email promo/info
+  consentMessages: boolean("consent_messages").notNull().default(false), // autorizza messaggi TG/WA
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

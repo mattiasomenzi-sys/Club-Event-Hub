@@ -40,6 +40,8 @@ export default function Profilo() {
   const [whatsapp, setWhatsapp] = useState("");
   const [memberType, setMemberType] = useState<string>("");
   const [interests, setInterests] = useState<string[]>([]);
+  const [consentEmail, setConsentEmail] = useState<boolean | null>(null);
+  const [consentMessages, setConsentMessages] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -57,6 +59,8 @@ export default function Profilo() {
       setWhatsapp(p.whatsapp ?? "");
       setMemberType(p.memberType);
       setInterests(p.interests);
+      setConsentEmail(p.consentEmail);
+      setConsentMessages(p.consentMessages);
     } else if (user?.primaryEmailAddress?.emailAddress && !email) {
       setEmail(user.primaryEmailAddress.emailAddress);
     }
@@ -79,6 +83,8 @@ export default function Profilo() {
     if (!telegram.trim() && !whatsapp.trim())
       return setError("Inserisci almeno un contatto: Telegram o WhatsApp");
     if (!memberType) return setError("Seleziona la tipologia");
+    if (consentEmail === null) return setError("Indica se autorizzi le email");
+    if (consentMessages === null) return setError("Indica se autorizzi i messaggi Telegram/WhatsApp");
 
     try {
       await upsert.mutateAsync({
@@ -90,6 +96,8 @@ export default function Profilo() {
           ...(whatsapp.trim() ? { whatsapp: whatsapp.trim() } : {}),
           memberType: memberType as "singolo" | "coppia" | "singola" | "trav",
           interests: interests as ("swinger" | "sexpositive" | "kinky" | "gangbang")[],
+          consentEmail,
+          consentMessages,
         },
       });
       await queryClient.invalidateQueries({ queryKey: getGetMyProfileQueryKey() });
@@ -201,6 +209,48 @@ export default function Profilo() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="space-y-4 border border-white/10 rounded-lg p-4">
+            <p className="text-sm text-gray-300 font-semibold">Autorizzazioni *</p>
+            {[
+              {
+                label: "Vuoi ricevere promo e info via email?",
+                value: consentEmail,
+                set: setConsentEmail,
+              },
+              {
+                label: "Possiamo scriverti su Telegram o WhatsApp?",
+                value: consentMessages,
+                set: setConsentMessages,
+              },
+            ].map((c) => (
+              <div key={c.label}>
+                <p className="text-sm text-gray-400 mb-1.5">{c.label}</p>
+                <div className="flex gap-2">
+                  {[
+                    { v: true, label: "Sì, autorizzo" },
+                    { v: false, label: "No" },
+                  ].map((opt) => (
+                    <button
+                      key={String(opt.v)}
+                      type="button"
+                      onClick={() => c.set(opt.v)}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                        c.value === opt.v
+                          ? "bg-[#FF006E] border-[#FF006E] text-white"
+                          : "border-white/20 text-gray-300 hover:border-white/40"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <p className="text-[11px] text-gray-500">
+              Puoi cambiare idea in qualsiasi momento da questa pagina. Senza autorizzazione non riceverai nulla.
+            </p>
           </div>
 
           {error && <p className="text-red-400 text-sm">{error}</p>}

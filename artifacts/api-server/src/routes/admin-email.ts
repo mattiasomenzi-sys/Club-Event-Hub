@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, profilesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { ReplitConnectors } from "@replit/connectors-sdk";
 import { requireAdmin } from "./admin-auth";
 
@@ -19,10 +20,14 @@ router.post("/admin/send-email", requireAdmin, async (req, res): Promise<void> =
     return;
   }
 
-  const rows = await db.select({ email: profilesTable.email }).from(profilesTable);
+  // Solo agli utenti che hanno autorizzato le email
+  const rows = await db
+    .select({ email: profilesTable.email })
+    .from(profilesTable)
+    .where(eq(profilesTable.consentEmail, true));
   const emails = [...new Set(rows.map((r) => r.email.trim().toLowerCase()).filter((e) => e.includes("@")))];
   if (emails.length === 0) {
-    res.status(400).json({ error: "Nessun utente iscritto a cui inviare" });
+    res.status(400).json({ error: "Nessun utente ha autorizzato l'invio di email" });
     return;
   }
 

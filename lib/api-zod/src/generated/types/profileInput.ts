@@ -19,4 +19,6 @@ export interface ProfileInput {
   whatsapp?: string;
   memberType: ProfileInputMemberType;
   interests: ProfileInputInterestsItem[];
+  consentEmail: boolean;
+  consentMessages: boolean;
 }
