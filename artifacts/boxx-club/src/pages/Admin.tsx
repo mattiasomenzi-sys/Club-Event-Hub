@@ -1171,6 +1171,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {/* Banner management */}
       <ProfilesSection adminKey={adminKey} />
 
+      <EmailSection adminKey={adminKey} />
+
       <BannerManager adminKey={adminKey} />
 
       {/* Gallery management */}
@@ -1200,6 +1202,80 @@ const INTEREST_LABELS: Record<string, string> = {
   kinky: "Kinky",
   gangbang: "Gang bang",
 };
+
+function EmailSection({ adminKey }: { adminKey: string }) {
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const send = async () => {
+    if (!subject.trim() || !message.trim()) {
+      setError("Compila oggetto e messaggio");
+      return;
+    }
+    if (!window.confirm("Inviare questa email a TUTTI gli utenti iscritti?")) return;
+    setSending(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/admin/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ subject: subject.trim(), message: message.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Errore invio");
+      setResult(`Inviate ${data.sent} email su ${data.total}${data.failed ? ` (${data.failed} non riuscite)` : ""}.`);
+      setSubject("");
+      setMessage("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Errore invio");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const inputCls =
+    "w-full bg-[#161616] border border-white/15 rounded px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#FF006E] transition-colors text-sm";
+
+  return (
+    <div className="mt-16">
+      <h2 className="text-xl font-black tracking-[0.2em] uppercase text-white mb-2">
+        EMAIL AGLI ISCRITTI
+      </h2>
+      <p className="text-white/40 text-sm mb-6">
+        Invia promo e novità via email a tutti gli utenti registrati.
+      </p>
+      <div className="space-y-3 max-w-xl">
+        <input
+          className={inputCls}
+          placeholder="Oggetto (es. Nuova serata il 30 agosto)"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          maxLength={150}
+        />
+        <textarea
+          className={`${inputCls} min-h-[140px]`}
+          placeholder="Testo del messaggio…"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          maxLength={5000}
+        />
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {result && <p className="text-green-400 text-sm">{result}</p>}
+        <button
+          onClick={send}
+          disabled={sending}
+          className="bg-[#FF006E] hover:bg-[#FF1493] disabled:opacity-50 text-white font-bold px-6 py-3 rounded text-sm tracking-widest uppercase transition-colors"
+        >
+          {sending ? "Invio in corso…" : "INVIA A TUTTI"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function ProfilesSection({ adminKey }: { adminKey: string }) {
   const { data: profiles = [], isLoading } = useQuery<AdminProfile[]>({

@@ -8,6 +8,7 @@ import galleryRouter from "./gallery";
 import bannersRouter from "./banners";
 import analyticsRouter from "./analytics";
 import profilesRouter from "./profiles";
+import adminEmailRouter from "./admin-email";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(galleryRouter);
 router.use(bannersRouter);
 router.use(analyticsRouter);
 router.use(profilesRouter);
+router.use(adminEmailRouter);
 
 export default router;
