@@ -152,11 +152,21 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
 
+  // Contatti dal profilo: si sceglie tra Telegram, WhatsApp e mail salvati
+  const contactOptions =
+    gate.status === "ready" && gate.profile
+      ? [
+          ...(gate.profile.telegram ? [{ value: gate.profile.telegram, label: `Telegram — ${gate.profile.telegram}` }] : []),
+          ...(gate.profile.whatsapp ? [{ value: gate.profile.whatsapp, label: `WhatsApp — ${gate.profile.whatsapp}` }] : []),
+          ...(gate.profile.email ? [{ value: gate.profile.email, label: `Email — ${gate.profile.email}` }] : []),
+        ]
+      : [];
+
   // Prefill dal profilo quando disponibile
   useEffect(() => {
     if (gate.status === "ready" && gate.profile) {
       setName((prev) => prev || gate.profile.nickname);
-      setContact((prev) => prev || gate.profile.telegram || gate.profile.whatsapp || "");
+      setContact((prev) => prev || gate.profile.telegram || gate.profile.whatsapp || gate.profile.email || "");
     }
   }, [gate.status, gate.status === "ready" ? gate.profile : null]);
 
@@ -313,14 +323,20 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken }: {
               />
             </div>
             <div>
-              <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">Telefono o Email</label>
-              <input
+              <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">Come ti ricontattiamo?</label>
+              <select
                 className={inputClass}
-                placeholder="Per essere ricontattato/a"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 required
-              />
+              >
+                <option value="" disabled className="bg-black">Scegli un contatto…</option>
+                {contactOptions.map((o) => (
+                  <option key={o.value} value={o.value} className="bg-black">
+                    {o.label}
+                  </option>
+                ))}
+              </select>
             </div>
             {photoVisible && (
               <div>
