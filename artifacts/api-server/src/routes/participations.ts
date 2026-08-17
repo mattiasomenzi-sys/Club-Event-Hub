@@ -7,6 +7,29 @@ import { requireAdmin, isAdminRequest } from "./admin-auth";
 
 const router = Router();
 
+// Gli eventi a cui l'utente loggato si è iscritto
+router.get("/participations/mine", async (req: Request, res: Response): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "Devi accedere" }); return; }
+  const rows = await db
+    .select({
+      id: participationsTable.id,
+      eventId: participationsTable.eventId,
+      inviteType: participationsTable.inviteType,
+      createdAt: participationsTable.createdAt,
+      eventTitle: eventsTable.title,
+      eventDate: eventsTable.date,
+      eventImageUrl: eventsTable.imageUrl,
+    })
+    .from(participationsTable)
+    .innerJoin(eventsTable, eq(participationsTable.eventId, eventsTable.id))
+    .where(eq(participationsTable.clerkUserId, userId));
+  res.json(rows.map((r) => ({
+    ...r,
+    createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+  })));
+});
+
 
 router.post("/events/:id/participate", async (req: Request, res: Response): Promise<void> => {
   const eventId = Number(req.params.id);
@@ -69,6 +92,7 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     photoUrl: normalizedPhoto,
     inviteId: invite?.id ?? null,
     inviteType: invite?.inviteType ?? null,
+    clerkUserId: userId,
   }).returning();
 
   res.status(201).json({

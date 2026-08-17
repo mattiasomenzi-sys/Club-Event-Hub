@@ -16,6 +16,7 @@ import Gallery from "@/pages/Gallery";
 import RecuperaAdmin from "@/pages/RecuperaAdmin";
 import Statistiche from "@/pages/Statistiche";
 import Profilo from "@/pages/Profilo";
+import IMieiEventi from "@/pages/IMieiEventi";
 import { useTracker } from "@/hooks/useTracker";
 
 const queryClient = new QueryClient();
@@ -135,6 +136,7 @@ function Router() {
       <Route path="/chi-siamo" component={ChiSiamo} />
       <Route path="/gallery" component={Gallery} />
       <Route path="/profilo" component={Profilo} />
+      <Route path="/i-miei-eventi" component={IMieiEventi} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
       <Route path="/admin" component={Admin} />

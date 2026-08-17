@@ -9,6 +9,7 @@ export const participationsTable = pgTable("participations", {
   photoUrl: text("photo_url"),
   inviteId: integer("invite_id"),
   inviteType: text("invite_type"), // "ospite" | "regolare" se arrivato tramite invito
+  clerkUserId: text("clerk_user_id"), // chi si è iscritto (per "i miei eventi")
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

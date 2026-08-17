@@ -23,8 +23,27 @@ export function useProfileGate() {
   return { status: "no-profile" as const };
 }
 
+/** L'utente loggato è admin? (chiede al server, che controlla l'email) */
+export function useIsAdmin(): boolean {
+  const { isSignedIn, isLoaded } = useUser();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  React.useEffect(() => {
+    if (!isLoaded || !isSignedIn) { setIsAdmin(false); return; }
+    let cancelled = false;
+    fetch("/api/admin/whoami")
+      .then((r) => (r.ok ? r.json() : { isAdmin: false }))
+      .then((d) => { if (!cancelled) setIsAdmin(!!d.isAdmin); })
+      .catch(() => { if (!cancelled) setIsAdmin(false); });
+    return () => { cancelled = true; };
+  }, [isLoaded, isSignedIn]);
+  return isAdmin;
+}
+
 /**
- * Voce di menu: "ACCEDI" se sloggato, "PROFILO" se loggato.
+ * Voci di menu legate al login:
+ * - sloggato: "ACCEDI"
+ * - loggato admin: "PANNELLO ADMIN" + "PROFILO"
+ * - loggato normale: "I MIEI EVENTI" + "PROFILO"
  */
 export function AuthMenuLink({
   className,
@@ -34,11 +53,30 @@ export function AuthMenuLink({
   onNavigate?: () => void;
 }) {
   const { isSignedIn, isLoaded } = useUser();
+  const isAdmin = useIsAdmin();
   if (!isLoaded) return null;
+  if (!isSignedIn) {
+    return (
+      <Link href="/sign-in" onClick={onNavigate} className={className}>
+        ACCEDI
+      </Link>
+    );
+  }
   return (
-    <Link href={isSignedIn ? "/profilo" : "/sign-in"} onClick={onNavigate} className={className}>
-      {isSignedIn ? "PROFILO" : "ACCEDI"}
-    </Link>
+    <>
+      {isAdmin ? (
+        <Link href="/admin" onClick={onNavigate} className={className}>
+          PANNELLO ADMIN
+        </Link>
+      ) : (
+        <Link href="/i-miei-eventi" onClick={onNavigate} className={className}>
+          I MIEI EVENTI
+        </Link>
+      )}
+      <Link href="/profilo" onClick={onNavigate} className={className}>
+        PROFILO
+      </Link>
+    </>
   );
 }
 
