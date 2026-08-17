@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { useUser } from "@clerk/react";
+import { useUser, useClerk } from "@clerk/react";
 import { useGetMyProfile, getGetMyProfileQueryKey } from "@workspace/api-client-react";
 
 /**
@@ -80,7 +80,24 @@ export function AuthMenuLink({
       <Link href="/profilo" onClick={onNavigate} className={className}>
         PROFILO
       </Link>
+      <SignOutButton className={className} onNavigate={onNavigate} />
     </>
+  );
+}
+
+function SignOutButton({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
+  const { signOut } = useClerk();
+  return (
+    <button
+      type="button"
+      className={`${className ?? ""} text-left`}
+      onClick={() => {
+        onNavigate?.();
+        void signOut({ redirectUrl: import.meta.env.BASE_URL });
+      }}
+    >
+      ESCI
+    </button>
   );
 }
 

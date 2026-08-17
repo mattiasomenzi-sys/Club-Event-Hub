@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
+import { useClerk } from "@clerk/react";
 import { useListEvents, useListGalleryPhotos, useListBanners } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -1905,6 +1906,7 @@ export default function Admin() {
   // Se l'utente è loggato con un account admin (es. email nella lista admin),
   // entra senza chiave: il server accetta il cookie di sessione.
   const [clerkAdmin, setClerkAdmin] = useState<boolean | null>(null);
+  const { signOut } = useClerk();
 
   useEffect(() => {
     let alive = true;
@@ -1924,6 +1926,8 @@ export default function Admin() {
     localStorage.removeItem("boxx_admin_key");
     setAdminKey(null);
     setClerkAdmin(false);
+    // Esce anche dall'account Clerk, altrimenti si resta loggati sul sito
+    void signOut({ redirectUrl: import.meta.env.BASE_URL });
   }
 
   if (adminKey) return <AdminDashboard adminKey={adminKey} onLogout={handleLogout} />;
