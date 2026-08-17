@@ -5,7 +5,7 @@ import type { PgColumn } from "drizzle-orm/pg-core";
 import { createHash } from "node:crypto";
 import geoip from "geoip-lite";
 import { UAParser } from "ua-parser-js";
-import { getAdminKey } from "./admin-auth";
+import { requireAdmin, isAdminRequest } from "./admin-auth";
 
 const router: IRouter = Router();
 
@@ -25,16 +25,6 @@ function safeHost(url: string | null | undefined): string | null {
   try { return new URL(url).hostname.toLowerCase(); } catch { return null; }
 }
 
-function requireAdminKey(req: Request, res: Response, next: NextFunction): void {
-  getAdminKey().then((adminKey) => {
-    const provided = req.headers["x-admin-key"];
-    if (provided !== adminKey) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-    next();
-  }).catch(() => res.status(500).json({ error: "Internal error" }));
-}
 
 router.post("/track", async (req, res): Promise<void> => {
   try {
@@ -97,7 +87,7 @@ router.post("/track", async (req, res): Promise<void> => {
   }
 });
 
-router.get("/admin/stats", requireAdminKey, async (req, res): Promise<void> => {
+router.get("/admin/stats", requireAdmin, async (req, res): Promise<void> => {
   const days = Math.max(1, Math.min(365, Number(req.query.days ?? 30) || 30));
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 

@@ -6,8 +6,8 @@ export const profilesTable = pgTable("profiles", {
   nickname: text("nickname").notNull(),
   age: integer("age").notNull(),
   email: text("email").notNull(),
-  contactMethod: text("contact_method").notNull(), // "telegram" | "whatsapp"
-  contactValue: text("contact_value").notNull(),
+  telegram: text("telegram"), // @username — almeno uno tra telegram e whatsapp
+  whatsapp: text("whatsapp"), // numero
   memberType: text("member_type").notNull(), // "singolo" | "coppia" | "singola" | "trav"
   interests: text("interests").array().notNull().default([]), // "swinger" | "sexpositive" | "kinky"
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

@@ -299,8 +299,8 @@ export const GetMyProfileResponse = zod.object({
   "nickname": zod.string(),
   "age": zod.number(),
   "email": zod.string(),
-  "contactMethod": zod.enum(['telegram', 'whatsapp']),
-  "contactValue": zod.string(),
+  "telegram": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
   "createdAt": zod.string(),
@@ -318,13 +318,12 @@ export const upsertMyProfileBodyEmailMin = 3;
 
 
 
-
 export const UpsertMyProfileBody = zod.object({
   "nickname": zod.string().min(1),
   "age": zod.number().min(upsertMyProfileBodyAgeMin),
   "email": zod.string().min(upsertMyProfileBodyEmailMin),
-  "contactMethod": zod.enum(['telegram', 'whatsapp']),
-  "contactValue": zod.string().min(1),
+  "telegram": zod.string().optional(),
+  "whatsapp": zod.string().optional(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang']))
 })
@@ -334,8 +333,8 @@ export const UpsertMyProfileResponse = zod.object({
   "nickname": zod.string(),
   "age": zod.number(),
   "email": zod.string(),
-  "contactMethod": zod.enum(['telegram', 'whatsapp']),
-  "contactValue": zod.string(),
+  "telegram": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
   "createdAt": zod.string(),
@@ -351,8 +350,8 @@ export const ListProfilesResponseItem = zod.object({
   "nickname": zod.string(),
   "age": zod.number(),
   "email": zod.string(),
-  "contactMethod": zod.enum(['telegram', 'whatsapp']),
-  "contactValue": zod.string(),
+  "telegram": zod.string().nullish(),
+  "whatsapp": zod.string().nullish(),
   "memberType": zod.enum(['singolo', 'coppia', 'singola', 'trav']),
   "interests": zod.array(zod.enum(['swinger', 'sexpositive', 'kinky', 'gangbang'])),
   "createdAt": zod.string(),

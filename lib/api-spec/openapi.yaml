@@ -747,7 +747,7 @@ components:
 
     Profile:
       type: object
-      required: [id, nickname, age, email, contactMethod, contactValue, memberType, interests, createdAt, updatedAt]
+      required: [id, nickname, age, email, memberType, interests, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -757,11 +757,12 @@ components:
           type: integer
         email:
           type: string
-        contactMethod:
+        telegram:
           type: string
-          enum: [telegram, whatsapp]
-        contactValue:
+          nullable: true
+        whatsapp:
           type: string
+          nullable: true
         memberType:
           type: string
           enum: [singolo, coppia, singola, trav]
@@ -777,7 +778,7 @@ components:
 
     ProfileInput:
       type: object
-      required: [nickname, age, email, contactMethod, contactValue, memberType, interests]
+      required: [nickname, age, email, memberType, interests]
       properties:
         nickname:
           type: string
@@ -788,12 +789,10 @@ components:
         email:
           type: string
           minLength: 3
-        contactMethod:
+        telegram:
           type: string
-          enum: [telegram, whatsapp]
-        contactValue:
+        whatsapp:
           type: string
-          minLength: 1
         memberType:
           type: string
           enum: [singolo, coppia, singola, trav]

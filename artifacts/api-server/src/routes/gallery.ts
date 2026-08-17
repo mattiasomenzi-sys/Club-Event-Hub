@@ -2,19 +2,10 @@ import { Router } from "express";
 import { eq, asc } from "drizzle-orm";
 import { db, galleryPhotosTable } from "@workspace/db";
 import type { Request, Response, NextFunction } from "express";
-import { getAdminKey } from "./admin-auth";
+import { requireAdmin, isAdminRequest } from "./admin-auth";
 
 const router = Router();
 
-function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  getAdminKey().then((adminKey) => {
-    if (req.headers["x-admin-key"] !== adminKey) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-    next();
-  }).catch(() => res.status(500).json({ error: "Internal error" }));
-}
 
 function serialize(r: typeof galleryPhotosTable.$inferSelect) {
   return {

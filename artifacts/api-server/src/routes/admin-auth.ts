@@ -1,10 +1,56 @@
 import { Router, type IRouter } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { db, settingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { getAuth, clerkClient } from "@clerk/express";
 
 const router: IRouter = Router();
 
 const ADMIN_KEY_SETTING = "admin_key";
+const ADMIN_EMAILS_SETTING = "admin_emails";
+
+// Email degli utenti (login Clerk) che hanno accesso admin.
+async function getAdminEmails(): Promise<string[]> {
+  try {
+    const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, ADMIN_EMAILS_SETTING));
+    if (row) {
+      return row.value.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+    }
+  } catch { /* fall through */ }
+  return [];
+}
+
+async function isClerkAdmin(req: Request): Promise<boolean> {
+  const { userId } = getAuth(req);
+  if (!userId) return false;
+  const emails = await getAdminEmails();
+  if (emails.length === 0) return false;
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    const userEmails = user.emailAddresses.map((e) => e.emailAddress.toLowerCase());
+    return userEmails.some((e) => emails.includes(e));
+  } catch {
+    return false;
+  }
+}
+
+// Vero se la richiesta ha la chiave admin (header X-Admin-Key)
+// oppure arriva da un utente loggato la cui email è nella lista admin.
+export async function isAdminRequest(req: Request): Promise<boolean> {
+  const headerKey = req.headers["x-admin-key"];
+  if (typeof headerKey === "string" && headerKey.length > 0) {
+    const adminKey = await getAdminKey();
+    if (adminKey !== null && headerKey === adminKey) return true;
+  }
+  return isClerkAdmin(req);
+}
+
+// Middleware condiviso per gli endpoint admin.
+export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  isAdminRequest(req)
+    .then((ok) => (ok ? next() : res.status(401).json({ error: "Unauthorized" })))
+    .catch(() => res.status(500).json({ error: "Internal error" }));
+}
 
 // Ritorna la chiave admin. Fail-closed: se non c'è né la riga nel DB né la
 // variabile d'ambiente ADMIN_KEY, ritorna null e ogni endpoint admin rifiuta.
@@ -17,6 +63,11 @@ async function getAdminKey(): Promise<string | null> {
 }
 
 export { getAdminKey };
+
+// L'utente loggato può chiedere se è admin (per saltare la richiesta di chiave).
+router.get("/admin/whoami", async (req, res): Promise<void> => {
+  res.json({ isAdmin: await isClerkAdmin(req) });
+});
 
 router.post("/admin/change-key", async (req, res): Promise<void> => {
   const { currentKey, newKey } = req.body as { currentKey?: string; newKey?: string };

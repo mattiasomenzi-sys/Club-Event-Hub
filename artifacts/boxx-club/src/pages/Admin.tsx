@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { useListEvents, useListGalleryPhotos, useListBanners } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
@@ -1187,8 +1187,8 @@ type AdminProfile = {
   nickname: string;
   age: number;
   email: string;
-  contactMethod: string;
-  contactValue: string;
+  telegram: string | null;
+  whatsapp: string | null;
   memberType: string;
   interests: string[];
   createdAt: string;
@@ -1198,6 +1198,7 @@ const INTEREST_LABELS: Record<string, string> = {
   swinger: "Swinger",
   sexpositive: "Sexpositive",
   kinky: "Kinky",
+  gangbang: "Gang bang",
 };
 
 function ProfilesSection({ adminKey }: { adminKey: string }) {
@@ -1243,10 +1244,18 @@ function ProfilesSection({ adminKey }: { adminKey: string }) {
                   <td className="px-4 py-3">{p.age}</td>
                   <td className="px-4 py-3">{p.email}</td>
                   <td className="px-4 py-3">
-                    <span className="text-white/40 uppercase text-[11px] mr-1.5">
-                      {p.contactMethod === "telegram" ? "TG" : "WA"}
-                    </span>
-                    {p.contactValue}
+                    {p.telegram && (
+                      <div>
+                        <span className="text-white/40 uppercase text-[11px] mr-1.5">TG</span>
+                        {p.telegram}
+                      </div>
+                    )}
+                    {p.whatsapp && (
+                      <div>
+                        <span className="text-white/40 uppercase text-[11px] mr-1.5">WA</span>
+                        {p.whatsapp}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 capitalize">{p.memberType}</td>
                   <td className="px-4 py-3">
@@ -1673,6 +1682,18 @@ export default function Admin() {
   const [adminKey, setAdminKey] = useState<string | null>(() =>
     typeof localStorage !== "undefined" ? localStorage.getItem("boxx_admin_key") : null
   );
+  // Se l'utente è loggato con un account admin (es. email nella lista admin),
+  // entra senza chiave: il server accetta il cookie di sessione.
+  const [clerkAdmin, setClerkAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API_BASE}/admin/whoami`)
+      .then((r) => (r.ok ? r.json() : { isAdmin: false }))
+      .then((d: { isAdmin?: boolean }) => alive && setClerkAdmin(!!d.isAdmin))
+      .catch(() => alive && setClerkAdmin(false));
+    return () => { alive = false; };
+  }, []);
 
   function handleLogin(key: string) {
     localStorage.setItem("boxx_admin_key", key);
@@ -1682,8 +1703,17 @@ export default function Admin() {
   function handleLogout() {
     localStorage.removeItem("boxx_admin_key");
     setAdminKey(null);
+    setClerkAdmin(false);
   }
 
-  if (!adminKey) return <AdminLogin onLogin={handleLogin} />;
-  return <AdminDashboard adminKey={adminKey} onLogout={handleLogout} />;
+  if (adminKey) return <AdminDashboard adminKey={adminKey} onLogout={handleLogout} />;
+  if (clerkAdmin === null) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/40 text-sm tracking-widest uppercase">Caricamento…</p>
+      </div>
+    );
+  }
+  if (clerkAdmin) return <AdminDashboard adminKey="" onLogout={handleLogout} />;
+  return <AdminLogin onLogin={handleLogin} />;
 }

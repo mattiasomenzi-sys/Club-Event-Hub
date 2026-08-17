@@ -5,7 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ProfileInputContactMethod } from './profileInputContactMethod';
 import type { ProfileInputInterestsItem } from './profileInputInterestsItem';
 import type { ProfileInputMemberType } from './profileInputMemberType';
 
@@ -16,9 +15,8 @@ export interface ProfileInput {
   age: number;
   /** @minLength 3 */
   email: string;
-  contactMethod: ProfileInputContactMethod;
-  /** @minLength 1 */
-  contactValue: string;
+  telegram?: string;
+  whatsapp?: string;
   memberType: ProfileInputMemberType;
   interests: ProfileInputInterestsItem[];
 }

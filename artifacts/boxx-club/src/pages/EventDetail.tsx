@@ -156,7 +156,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen }: { eventId: num
   useEffect(() => {
     if (gate.status === "ready" && gate.profile) {
       setName((prev) => prev || gate.profile.nickname);
-      setContact((prev) => prev || gate.profile.contactValue);
+      setContact((prev) => prev || gate.profile.telegram || gate.profile.whatsapp || "");
     }
   }, [gate.status, gate.status === "ready" ? gate.profile : null]);
 

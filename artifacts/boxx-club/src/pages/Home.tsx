@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import TelegramIcon from "@/components/TelegramIcon";
 import { GatedExternalLink, AuthMenuLink } from "@/components/AuthGate";
 import { Link } from "wouter";
+import { useUser } from "@clerk/react";
 import { useListEvents, useListBanners } from "@workspace/api-client-react";
 import type { Event } from "@workspace/api-client-react";
 
@@ -171,6 +172,20 @@ function EventRow({ event, usingRealEvents, past, posterSrc }: { event: Event; u
 function resolveBannerSrc(imageUrl: string): string {
   if (imageUrl.startsWith("/objects/")) return `/api/storage${imageUrl}`;
   return imageUrl;
+}
+
+// Banner mobile sotto l'header: invito a iscriversi (solo se non loggato)
+function SignupPromoBanner() {
+  const { isSignedIn, isLoaded } = useUser();
+  if (!isLoaded || isSignedIn) return null;
+  return (
+    <Link
+      href="/sign-up"
+      className="md:hidden flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#FF006E] to-[#FF1493] text-white text-[13px] font-bold tracking-wide uppercase"
+    >
+      Vuoi promo e info? Iscriviti →
+    </Link>
+  );
 }
 
 function HomeBanners() {
@@ -518,6 +533,8 @@ export default function Home() {
         className="relative z-10 w-full pt-16 md:pt-0"
         style={{ marginLeft: "0", paddingLeft: "0" }}
       >
+        {/* Banner iscrizione — solo mobile, solo se non loggato */}
+        <SignupPromoBanner />
         <div className="md:ml-[220px] min-h-screen">
           {/* Hero header */}
           <div className="px-6 md:px-12 pt-16 md:pt-20 pb-8 border-b border-white/10">

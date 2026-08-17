@@ -11,7 +11,7 @@ import {
   UpdateEventResponse,
   DeleteEventParams,
 } from "@workspace/api-zod";
-import { getAdminKey } from "./admin-auth";
+import { requireAdmin, isAdminRequest } from "./admin-auth";
 
 const router: IRouter = Router();
 
@@ -28,32 +28,10 @@ function serializeEvent(event: Record<string, unknown>) {
 
 import type { Request, Response, NextFunction } from "express";
 
-function requireAdminKey(req: Request, res: Response, next: NextFunction): void {
-  getAdminKey().then((adminKey) => {
-    const provided = req.headers["x-admin-key"];
-    if (provided !== adminKey) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-    next();
-  }).catch(() => {
-    res.status(500).json({ error: "Internal error" });
-  });
-}
 
-async function isAdmin(req: Request): Promise<boolean> {
-  const provided = req.headers["x-admin-key"];
-  if (!provided || typeof provided !== "string") return false;
-  try {
-    const key = await getAdminKey();
-    return provided === key;
-  } catch {
-    return false;
-  }
-}
 
 router.get("/events", async (req, res): Promise<void> => {
-  const admin = await isAdmin(req);
+  const admin = await isAdminRequest(req);
   const base = db.select().from(eventsTable);
   const events = admin
     ? await base.orderBy(asc(eventsTable.date))
@@ -68,7 +46,7 @@ router.get("/events/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const admin = await isAdmin(req);
+  const admin = await isAdminRequest(req);
   const whereExpr = admin
     ? eq(eventsTable.id, params.data.id)
     : and(eq(eventsTable.id, params.data.id), eq(eventsTable.isDraft, false));
@@ -83,7 +61,7 @@ router.get("/events/:id", async (req, res): Promise<void> => {
   res.json(GetEventResponse.parse(serializeEvent(event)));
 });
 
-router.post("/events", requireAdminKey, async (req, res): Promise<void> => {
+router.post("/events", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateEventBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -101,7 +79,7 @@ router.post("/events", requireAdminKey, async (req, res): Promise<void> => {
   res.status(201).json(GetEventResponse.parse(serializeEvent(event)));
 });
 
-router.patch("/events/:id", requireAdminKey, async (req, res): Promise<void> => {
+router.patch("/events/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateEventParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -156,7 +134,7 @@ router.post("/events/:id/verify-password", async (req, res): Promise<void> => {
   res.json({ ok: true });
 });
 
-router.delete("/events/:id", requireAdminKey, async (req, res): Promise<void> => {
+router.delete("/events/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteEventParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

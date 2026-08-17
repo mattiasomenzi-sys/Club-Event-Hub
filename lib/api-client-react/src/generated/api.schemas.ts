@@ -183,14 +183,6 @@ export interface BannerInput {
   sortOrder?: number;
 }
 
-export type ProfileContactMethod = typeof ProfileContactMethod[keyof typeof ProfileContactMethod];
-
-
-export const ProfileContactMethod = {
-  telegram: 'telegram',
-  whatsapp: 'whatsapp',
-} as const;
-
 export type ProfileMemberType = typeof ProfileMemberType[keyof typeof ProfileMemberType];
 
 
@@ -216,21 +208,13 @@ export interface Profile {
   nickname: string;
   age: number;
   email: string;
-  contactMethod: ProfileContactMethod;
-  contactValue: string;
+  telegram?: string | null;
+  whatsapp?: string | null;
   memberType: ProfileMemberType;
   interests: ProfileInterestsItem[];
   createdAt: string;
   updatedAt: string;
 }
-
-export type ProfileInputContactMethod = typeof ProfileInputContactMethod[keyof typeof ProfileInputContactMethod];
-
-
-export const ProfileInputContactMethod = {
-  telegram: 'telegram',
-  whatsapp: 'whatsapp',
-} as const;
 
 export type ProfileInputMemberType = typeof ProfileInputMemberType[keyof typeof ProfileInputMemberType];
 
@@ -259,9 +243,8 @@ export interface ProfileInput {
   age: number;
   /** @minLength 3 */
   email: string;
-  contactMethod: ProfileInputContactMethod;
-  /** @minLength 1 */
-  contactValue: string;
+  telegram?: string;
+  whatsapp?: string;
   memberType: ProfileInputMemberType;
   interests: ProfileInputInterestsItem[];
 }

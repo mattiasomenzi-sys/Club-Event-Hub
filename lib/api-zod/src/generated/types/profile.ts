@@ -5,7 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ProfileContactMethod } from './profileContactMethod';
 import type { ProfileInterestsItem } from './profileInterestsItem';
 import type { ProfileMemberType } from './profileMemberType';
 
@@ -14,8 +13,8 @@ export interface Profile {
   nickname: string;
   age: number;
   email: string;
-  contactMethod: ProfileContactMethod;
-  contactValue: string;
+  telegram?: string | null;
+  whatsapp?: string | null;
   memberType: ProfileMemberType;
   interests: ProfileInterestsItem[];
   createdAt: string;

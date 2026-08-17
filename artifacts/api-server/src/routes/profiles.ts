@@ -17,7 +17,6 @@ function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   }).catch(() => res.status(500).json({ error: "Internal error" }));
 }
 
-const CONTACT_METHODS = ["telegram", "whatsapp"] as const;
 const MEMBER_TYPES = ["singolo", "coppia", "singola", "trav"] as const;
 const INTERESTS = ["swinger", "sexpositive", "kinky", "gangbang"] as const;
 
@@ -27,8 +26,8 @@ function serialize(r: typeof profilesTable.$inferSelect) {
     nickname: r.nickname,
     age: r.age,
     email: r.email,
-    contactMethod: r.contactMethod,
-    contactValue: r.contactValue,
+    telegram: r.telegram,
+    whatsapp: r.whatsapp,
     memberType: r.memberType,
     interests: r.interests,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
@@ -63,16 +62,15 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
   const nickname = typeof body.nickname === "string" ? body.nickname.trim() : "";
   const age = typeof body.age === "number" && Number.isInteger(body.age) ? body.age : NaN;
   const email = typeof body.email === "string" ? body.email.trim() : "";
-  const contactMethod = body.contactMethod as string;
-  const contactValue = typeof body.contactValue === "string" ? body.contactValue.trim() : "";
+  const telegram = typeof body.telegram === "string" ? body.telegram.trim() : "";
+  const whatsapp = typeof body.whatsapp === "string" ? body.whatsapp.trim() : "";
   const memberType = body.memberType as string;
   const rawInterests = Array.isArray(body.interests) ? body.interests : null;
 
   if (!nickname) { res.status(400).json({ error: "Nickname richiesto" }); return; }
   if (!Number.isInteger(age) || age < 18 || age > 120) { res.status(400).json({ error: "Età non valida (minimo 18)" }); return; }
   if (!email || !email.includes("@")) { res.status(400).json({ error: "Email non valida" }); return; }
-  if (!CONTACT_METHODS.includes(contactMethod as typeof CONTACT_METHODS[number])) { res.status(400).json({ error: "Metodo di contatto non valido" }); return; }
-  if (!contactValue) { res.status(400).json({ error: "Contatto richiesto" }); return; }
+  if (!telegram && !whatsapp) { res.status(400).json({ error: "Inserisci almeno un contatto (Telegram o WhatsApp)" }); return; }
   if (!MEMBER_TYPES.includes(memberType as typeof MEMBER_TYPES[number])) { res.status(400).json({ error: "Tipologia non valida" }); return; }
   if (!rawInterests || rawInterests.some((i) => !INTERESTS.includes(i as typeof INTERESTS[number]))) {
     res.status(400).json({ error: "Interessi non validi" });
@@ -85,8 +83,8 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     nickname,
     age,
     email,
-    contactMethod,
-    contactValue,
+    telegram: telegram || null,
+    whatsapp: whatsapp || null,
     memberType,
     interests,
     updatedAt: new Date(),

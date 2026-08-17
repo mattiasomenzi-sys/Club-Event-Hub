@@ -36,8 +36,8 @@ export default function Profilo() {
   const [nickname, setNickname] = useState("");
   const [age, setAge] = useState("");
   const [email, setEmail] = useState("");
-  const [contactMethod, setContactMethod] = useState<"telegram" | "whatsapp">("telegram");
-  const [contactValue, setContactValue] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [memberType, setMemberType] = useState<string>("");
   const [interests, setInterests] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +53,8 @@ export default function Profilo() {
       setNickname(p.nickname);
       setAge(String(p.age));
       setEmail(p.email);
-      setContactMethod(p.contactMethod as "telegram" | "whatsapp");
-      setContactValue(p.contactValue);
+      setTelegram(p.telegram ?? "");
+      setWhatsapp(p.whatsapp ?? "");
       setMemberType(p.memberType);
       setInterests(p.interests);
     } else if (user?.primaryEmailAddress?.emailAddress && !email) {
@@ -76,7 +76,8 @@ export default function Profilo() {
     if (!nickname.trim()) return setError("Inserisci un nickname");
     if (!Number.isInteger(ageNum) || ageNum < 18) return setError("Devi avere almeno 18 anni");
     if (!email.trim() || !email.includes("@")) return setError("Inserisci una mail valida");
-    if (!contactValue.trim()) return setError("Inserisci il tuo contatto Telegram o WhatsApp");
+    if (!telegram.trim() && !whatsapp.trim())
+      return setError("Inserisci almeno un contatto: Telegram o WhatsApp");
     if (!memberType) return setError("Seleziona la tipologia");
 
     try {
@@ -85,8 +86,8 @@ export default function Profilo() {
           nickname: nickname.trim(),
           age: ageNum,
           email: email.trim(),
-          contactMethod,
-          contactValue: contactValue.trim(),
+          ...(telegram.trim() ? { telegram: telegram.trim() } : {}),
+          ...(whatsapp.trim() ? { whatsapp: whatsapp.trim() } : {}),
           memberType: memberType as "singolo" | "coppia" | "singola" | "trav",
           interests: interests as ("swinger" | "sexpositive" | "kinky" | "gangbang")[],
         },
@@ -142,30 +143,25 @@ export default function Profilo() {
             <input className={inputCls} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
-            <label className="block text-sm text-gray-300 mb-1.5">Telegram o WhatsApp *</label>
-            <div className="flex gap-2 mb-2">
-              {(["telegram", "whatsapp"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setContactMethod(m)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
-                    contactMethod === m
-                      ? "bg-[#FF006E] border-[#FF006E] text-white"
-                      : "border-white/20 text-gray-300 hover:border-white/40"
-                  }`}
-                >
-                  {m === "telegram" ? "Telegram" : "WhatsApp"}
-                </button>
-              ))}
+            <label className="block text-sm text-gray-300 mb-1.5">
+              Contatti — almeno uno tra Telegram e WhatsApp *
+            </label>
+            <div className="space-y-2">
+              <input
+                className={inputCls}
+                placeholder="Telegram: @iltuousername"
+                value={telegram}
+                onChange={(e) => setTelegram(e.target.value)}
+                maxLength={80}
+              />
+              <input
+                className={inputCls}
+                placeholder="WhatsApp: +39 …"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                maxLength={80}
+              />
             </div>
-            <input
-              className={inputCls}
-              placeholder={contactMethod === "telegram" ? "@iltuousername" : "+39 …"}
-              value={contactValue}
-              onChange={(e) => setContactValue(e.target.value)}
-              maxLength={80}
-            />
           </div>
           <div>
             <label className="block text-sm text-gray-300 mb-1.5">Tipologia *</label>

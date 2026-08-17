@@ -3,19 +3,10 @@ import { eq } from "drizzle-orm";
 import { db, eventsTable, participationsTable, profilesTable } from "@workspace/db";
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
-import { getAdminKey } from "./admin-auth";
+import { requireAdmin, isAdminRequest } from "./admin-auth";
 
 const router = Router();
 
-function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  getAdminKey().then((adminKey) => {
-    if (req.headers["x-admin-key"] !== adminKey) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-    next();
-  }).catch(() => res.status(500).json({ error: "Internal error" }));
-}
 
 router.post("/events/:id/participate", async (req: Request, res: Response): Promise<void> => {
   const eventId = Number(req.params.id);
