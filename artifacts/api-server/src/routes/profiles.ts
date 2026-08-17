@@ -3,19 +3,9 @@ import { desc, eq } from "drizzle-orm";
 import { db, profilesTable } from "@workspace/db";
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
-import { getAdminKey } from "./admin-auth";
+import { requireAdmin } from "./admin-auth";
 
 const router = Router();
-
-function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  getAdminKey().then((adminKey) => {
-    if (req.headers["x-admin-key"] !== adminKey) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-    next();
-  }).catch(() => res.status(500).json({ error: "Internal error" }));
-}
 
 const MEMBER_TYPES = ["singolo", "coppia", "singola", "trav"] as const;
 const INTERESTS = ["swinger", "sexpositive", "kinky", "gangbang"] as const;
