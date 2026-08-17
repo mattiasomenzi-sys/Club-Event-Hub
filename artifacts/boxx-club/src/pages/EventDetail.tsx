@@ -171,23 +171,16 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
     }
   }, [gate.status, gate.status === "ready" ? gate.profile : null]);
 
-  // Se il form è stato aperto automaticamente (?partecipa=1 o link di invito) ma l'utente
-  // non è loggato, NON reindirizzarlo subito al login: mostra il recap dell'evento con il
-  // bottone "Mettiti in lista" (più elegante). Se manca solo il profilo, portalo a completarlo.
+  // Anche da sloggati il form resta compilabile: l'accesso viene chiesto solo all'invio.
+  // Se manca solo il profilo (ma il form non è aperto con dati in corso), portalo a completarlo.
   useEffect(() => {
     if (!open) return;
-    if (gate.status === "signed-out") setOpen(false);
-    else if (gate.status === "no-profile") setLocation("/profilo");
+    if (gate.status === "no-profile") setLocation("/profilo");
   }, [open, gate.status, setLocation]);
 
   const handleParticipateClick = () => {
-    if (gate.status === "signed-out") {
-      // Dopo il login Clerk riporta qui (redirect_url), invito compreso
-      setLocation(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
-      return;
-    }
     if (gate.status === "no-profile") { setLocation("/profilo"); return; }
-    if (gate.status === "ready") setOpen(true);
+    setOpen(true);
   };
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   // Invito: verifica il token e mostra il tipo (ospite/regolare)
@@ -218,8 +211,42 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
     }
   }, [autoOpen]);
 
+  const PENDING_KEY = "boxx-pending-participation";
+
+  // Al ritorno dal login: se c'era una compilazione in sospeso per questo evento, ripristina e invia da solo
+  const autoSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (gate.status !== "ready" || autoSubmittedRef.current) return;
+    try {
+      const raw = sessionStorage.getItem(PENDING_KEY);
+      if (!raw) return;
+      const pending = JSON.parse(raw) as { eventId: number; name: string; contact: string };
+      if (pending.eventId !== eventId) return;
+      sessionStorage.removeItem(PENDING_KEY);
+      autoSubmittedRef.current = true;
+      setOpen(true);
+      setName(pending.name);
+      setContact(pending.contact);
+      void doSubmit(pending.name, pending.contact);
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gate.status, eventId]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (gate.status === "signed-out") {
+      // Salva la compilazione e chiedi l'accesso: al ritorno si completa da sola
+      try {
+        sessionStorage.setItem(PENDING_KEY, JSON.stringify({ eventId, name: name.trim(), contact: contact.trim() }));
+      } catch { /* ignore */ }
+      setLocation(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
+    if (gate.status === "no-profile") { setLocation("/profilo"); return; }
+    await doSubmit(name, contact);
+  }
+
+  async function doSubmit(nameVal: string, contactVal: string) {
     setError("");
     setLoading(true);
     try {
@@ -249,8 +276,8 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
-          contact: contact.trim(),
+          name: nameVal.trim(),
+          contact: contactVal.trim(),
           ...(photoUrl ? { photoUrl } : {}),
           ...(inviteToken && inviteType ? { inviteToken } : {}),
           ...(occurrenceDate ? { occurrenceDate } : {}),
@@ -329,19 +356,29 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
             </div>
             <div>
               <label className="text-[12px] tracking-[0.25em] uppercase text-white/30 block mb-1">Come ti ricontattiamo?</label>
-              <select
-                className={inputClass}
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                required
-              >
-                <option value="" disabled className="bg-black">Scegli un contatto…</option>
-                {contactOptions.map((o) => (
-                  <option key={o.value} value={o.value} className="bg-black">
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+              {gate.status === "ready" && contactOptions.length > 0 ? (
+                <select
+                  className={inputClass}
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  required
+                >
+                  <option value="" disabled className="bg-black">Scegli un contatto…</option>
+                  {contactOptions.map((o) => (
+                    <option key={o.value} value={o.value} className="bg-black">
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  className={inputClass}
+                  placeholder="Telegram, WhatsApp o email"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  required
+                />
+              )}
             </div>
             {photoVisible && (
               <div>
