@@ -290,7 +290,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
             onClick={handleParticipateClick}
             className="inline-flex items-center justify-center bg-[#FF006E] text-white text-sm font-black tracking-[0.35em] uppercase py-5 px-10 hover:bg-white hover:text-black transition-colors duration-200 self-start w-full lg:w-auto"
           >
-            METTITI IN LISTA →
+            RISERVA IL POSTO →
           </button>
           {gate.status === "signed-out" && (
             <p className="text-[12px] tracking-[0.2em] uppercase text-white/30">

@@ -17,6 +17,7 @@ router.get("/participations/mine", async (req: Request, res: Response): Promise<
       eventId: participationsTable.eventId,
       inviteType: participationsTable.inviteType,
       occurrenceDate: participationsTable.occurrenceDate,
+      qrToken: participationsTable.qrToken,
       createdAt: participationsTable.createdAt,
       eventTitle: eventsTable.title,
       eventDate: eventsTable.date,
@@ -133,6 +134,7 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     inviteType: invite?.inviteType ?? null,
     clerkUserId: userId,
     occurrenceDate: normalizedOccurrence,
+    qrToken: crypto.randomUUID(),
   }).returning();
 
   res.status(201).json({

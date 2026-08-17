@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser } from "@clerk/react";
+import { QRCodeSVG } from "qrcode.react";
 
 type MyParticipation = {
   id: number;
   eventId: number;
   inviteType: string | null;
   occurrenceDate: string | null;
+  qrToken: string | null;
   createdAt: string;
   eventTitle: string;
   eventDate: string;
@@ -24,6 +26,7 @@ export default function IMieiEventi() {
   const [list, setList] = useState<MyParticipation[] | null>(null);
   const [error, setError] = useState(false);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [qrFor, setQrFor] = useState<MyParticipation | null>(null);
 
   async function cancelParticipation(p: MyParticipation) {
     if (!window.confirm(`Vuoi annullare la tua iscrizione a "${p.eventTitle}"?`)) return;
@@ -85,49 +88,84 @@ export default function IMieiEventi() {
                 const displayDate = p.occurrenceDate ?? p.eventDate;
                 const past = displayDate < new Date().toISOString().slice(0, 10);
                 return (
-                  <Link
+                  <div
                     key={p.id}
-                    href={`/eventi/${p.eventId}${p.occurrenceDate ? `?d=${p.occurrenceDate}` : ""}`}
-                    className={`border border-white/10 hover:border-[#FF006E]/60 transition-colors flex gap-4 p-4 ${past ? "opacity-80" : ""}`}
+                    className={`border-2 ${past ? "border-white/25" : "border-[#FF006E]/60"} p-4 ${past ? "opacity-80" : ""}`}
                   >
-                    {img && (
-                      <img src={img} alt={p.eventTitle} className="w-20 h-20 object-cover border border-white/10 flex-shrink-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white font-bold uppercase tracking-wide truncate">{p.eventTitle}</p>
-                      <p className="text-white/40 text-sm mt-1">
-                        {new Date(displayDate + "T00:00:00").toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                      </p>
-                      <div className="flex gap-3 mt-2 text-[11px] tracking-[0.2em] uppercase">
-                        {past ? (
-                          <span className="text-white/30">Passato</span>
-                        ) : (
-                          <span className="text-green-400">In programma</span>
-                        )}
-                        {p.inviteType && (
-                          <span className="text-[#FF1493]">Invito: {p.inviteType}</span>
-                        )}
+                    <Link
+                      href={`/eventi/${p.eventId}${p.occurrenceDate ? `?d=${p.occurrenceDate}` : ""}`}
+                      className="flex gap-4 group"
+                    >
+                      {img && (
+                        <img src={img} alt={p.eventTitle} className="w-20 h-20 object-cover border border-white/10 flex-shrink-0" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white font-bold uppercase tracking-wide truncate group-hover:text-[#FF1493] transition-colors">{p.eventTitle}</p>
+                        <p className="text-white/40 text-sm mt-1">
+                          {new Date(displayDate + "T00:00:00").toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                        </p>
+                        <div className="flex gap-3 mt-2 text-[11px] tracking-[0.2em] uppercase">
+                          {past ? (
+                            <span className="text-white/30">Passato</span>
+                          ) : (
+                            <span className="text-green-400">In programma</span>
+                          )}
+                          {p.inviteType && (
+                            <span className="text-[#FF1493]">Invito: {p.inviteType}</span>
+                          )}
+                        </div>
                       </div>
+                    </Link>
+                    <div className="flex gap-3 mt-4 pt-3 border-t border-white/10">
+                      {p.qrToken && (
+                        <button
+                          onClick={() => setQrFor(p)}
+                          className="flex-1 bg-[#FF006E] text-white text-[11px] font-black tracking-[0.25em] uppercase py-2.5 px-4 hover:bg-white hover:text-black transition-colors"
+                        >
+                          Vedi QR
+                        </button>
+                      )}
                       {!past && (
                         <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            cancelParticipation(p);
-                          }}
+                          onClick={() => cancelParticipation(p)}
                           disabled={cancellingId === p.id}
-                          className="mt-3 text-[11px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] border-b border-transparent hover:border-[#FF006E]/50 transition-colors pb-0.5 disabled:opacity-50"
+                          className="flex-1 border border-white/30 text-white/70 text-[11px] font-bold tracking-[0.25em] uppercase py-2.5 px-4 hover:border-[#FF006E] hover:text-[#FF006E] transition-colors disabled:opacity-50"
                         >
-                          {cancellingId === p.id ? "Annullamento..." : "Annulla iscrizione"}
+                          {cancellingId === p.id ? "Annullamento..." : "Cancella prenotazione"}
                         </button>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
           </div>
         )}
       </div>
+
+      {qrFor && qrFor.qrToken && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6"
+          onClick={() => setQrFor(null)}
+        >
+          <div
+            className="bg-black border-2 border-[#FF006E] p-6 max-w-xs w-full text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-[12px] font-bold tracking-[0.3em] uppercase text-[#FF006E] mb-1">La tua prenotazione</p>
+            <p className="text-white font-bold uppercase tracking-wide mb-4">{qrFor.eventTitle}</p>
+            <div className="bg-white p-4 inline-block">
+              <QRCodeSVG value={qrFor.qrToken} size={200} />
+            </div>
+            <p className="text-white/40 text-[11px] mt-4 tracking-wide">Mostra questo codice all'ingresso.</p>
+            <button
+              onClick={() => setQrFor(null)}
+              className="mt-4 w-full border border-white/30 text-white/70 text-[11px] font-bold tracking-[0.25em] uppercase py-2.5 hover:border-white hover:text-white transition-colors"
+            >
+              Chiudi
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

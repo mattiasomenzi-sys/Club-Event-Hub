@@ -11,6 +11,7 @@ export const participationsTable = pgTable("participations", {
   inviteType: text("invite_type"), // "ospite" | "regolare" se arrivato tramite invito
   clerkUserId: text("clerk_user_id"), // chi si è iscritto (per "i miei eventi")
   occurrenceDate: date("occurrence_date", { mode: "string" }), // data della serata (eventi ricorrenti)
+  qrToken: text("qr_token"), // codice univoco per il QR della prenotazione
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
