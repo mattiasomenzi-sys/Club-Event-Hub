@@ -84,6 +84,10 @@ router.put("/profile/me", async (req: Request, res: Response): Promise<void> => 
     res.status(400).json({ error: "Indica se autorizzi email e messaggi" });
     return;
   }
+  if (!body.consentEmail && !body.consentMessages) {
+    res.status(400).json({ error: "Devi autorizzare almeno un canale: email oppure Telegram/WhatsApp" });
+    return;
+  }
   // Foto: se non viene inviata, conserva quella già salvata (non cancellarla)
   const [existing] = await db
     .select({ photoUrl: profilesTable.photoUrl })

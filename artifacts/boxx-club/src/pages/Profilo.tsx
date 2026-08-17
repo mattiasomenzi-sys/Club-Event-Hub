@@ -88,6 +88,8 @@ export default function Profilo() {
     if (!memberType) return setError("Seleziona la tipologia");
     if (consentEmail === null) return setError("Indica se autorizzi le email");
     if (consentMessages === null) return setError("Indica se autorizzi i messaggi Telegram/WhatsApp");
+    if (!consentEmail && !consentMessages)
+      return setError("Devi autorizzare almeno un canale: email oppure Telegram/WhatsApp");
 
     try {
       let newPhotoUrl = photoUrl;
@@ -287,7 +289,7 @@ export default function Profilo() {
               </div>
             ))}
             <p className="text-[11px] text-gray-500">
-              Puoi cambiare idea in qualsiasi momento da questa pagina. Senza autorizzazione non riceverai nulla.
+              Almeno un canale deve essere autorizzato (email oppure Telegram/WhatsApp). Puoi cambiare idea in qualsiasi momento da questa pagina.
             </p>
           </div>
 
