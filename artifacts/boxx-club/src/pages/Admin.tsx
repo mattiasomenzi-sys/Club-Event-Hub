@@ -1905,6 +1905,20 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
     } catch { /* ignore */ }
   }
 
+  async function changeType(id: number, value: string) {
+    const inviteType = value === "" ? null : value;
+    try {
+      const res = await fetch(`${API_BASE}/admin/participations/${id}/invite-type`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ inviteType }),
+      });
+      if (res.ok) {
+        setList((prev) => (prev ? prev.map((p) => (p.id === id ? { ...p, inviteType } : p)) : prev));
+      }
+    } catch { /* ignore */ }
+  }
+
   async function updatePhotoReq(value: "none" | "optional" | "required") {
     const prev = photoReq;
     setPhotoReq(value);
@@ -1974,13 +1988,16 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-white font-medium">
                           {p.name}
-                          {p.inviteType ? (
-                            <span className={`ml-2 text-[10px] uppercase tracking-widest ${p.inviteType === "ospite" ? "text-green-400" : "text-[#FF1493]"}`}>
-                              {p.inviteType}
-                            </span>
-                          ) : (
-                            <span className="ml-2 text-[10px] uppercase tracking-widest text-white/40">dal sito</span>
-                          )}
+                          <select
+                            value={p.inviteType ?? ""}
+                            onChange={(e) => changeType(p.id, e.target.value)}
+                            title="Tipo iscritto (modificabile)"
+                            className={`ml-2 bg-transparent border border-white/10 rounded px-1 py-0.5 text-[10px] uppercase tracking-widest cursor-pointer focus:outline-none focus:border-[#FF006E] ${p.inviteType === "ospite" ? "text-green-400" : p.inviteType === "regolare" ? "text-[#FF1493]" : "text-white/40"}`}
+                          >
+                            <option value="" className="bg-[#111] text-white">dal sito</option>
+                            <option value="ospite" className="bg-[#111] text-green-400">ospite</option>
+                            <option value="regolare" className="bg-[#111] text-[#FF1493]">regolare</option>
+                          </select>
                           {p.status === "in_attesa" && (
                             <span className="ml-2 text-[10px] uppercase tracking-widest text-yellow-400">in attesa</span>
                           )}

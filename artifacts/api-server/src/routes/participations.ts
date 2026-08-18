@@ -197,6 +197,23 @@ router.patch("/admin/participations/:id/status", requireAdmin, async (req: Reque
   res.json({ ok: true, status: row.status });
 });
 
+// Admin: corregge il tipo di un iscritto (ospite / regolare / dal sito)
+router.patch("/admin/participations/:id/invite-type", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  const { inviteType } = req.body as { inviteType?: unknown };
+  if (isNaN(id) || (inviteType !== "ospite" && inviteType !== "regolare" && inviteType !== null)) {
+    res.status(400).json({ error: "Richiesta non valida" });
+    return;
+  }
+  const [row] = await db
+    .update(participationsTable)
+    .set({ inviteType })
+    .where(eq(participationsTable.id, id))
+    .returning();
+  if (!row) { res.status(404).json({ error: "Iscrizione non trovata" }); return; }
+  res.json({ ok: true, inviteType: row.inviteType });
+});
+
 // Admin: rifiuta/rimuove un'iscrizione
 router.delete("/admin/participations/:id", requireAdmin, async (req: Request, res: Response): Promise<void> => {
   const id = Number(req.params.id);
