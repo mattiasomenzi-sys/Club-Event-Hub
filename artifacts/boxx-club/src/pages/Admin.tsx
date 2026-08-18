@@ -1180,8 +1180,73 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
       {/* Gallery management */}
       <GalleryManager adminKey={adminKey} />
 
+      {/* Chiave API per il gestionale */}
+      <ApiKeySection adminKey={adminKey} />
+
       {/* Cambia chiave */}
       <ChangeKeySection adminKey={adminKey} onKeyChanged={(newKey) => { localStorage.setItem("boxx_admin_key", newKey); onLogout(); }} />
+    </div>
+  );
+}
+
+// Mostra (su richiesta) la chiave API da copiare nel gestionale esterno
+function ApiKeySection({ adminKey }: { adminKey: string }) {
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  async function reveal() {
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE}/admin/api-key`, { headers: { "X-Admin-Key": adminKey } });
+      if (!res.ok) {
+        setError("Impossibile recuperare la chiave.");
+        return;
+      }
+      const d = (await res.json()) as { key: string };
+      setApiKey(d.key);
+    } catch {
+      setError("Errore di rete.");
+    }
+  }
+
+  async function copy() {
+    if (!apiKey) return;
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* ignore */ }
+  }
+
+  return (
+    <div className="border border-white/10 p-5 mt-8">
+      <p className="text-[11px] tracking-[0.2em] uppercase text-white/40 mb-2">Chiave API per il gestionale</p>
+      <p className="text-xs text-white/40 mb-3">
+        Serve per collegare il gestionale esterno alle liste iscritti. Non condividerla con nessuno.
+      </p>
+      {apiKey === null ? (
+        <button
+          onClick={reveal}
+          className="border border-[#FF006E] text-[#FF006E] hover:bg-[#FF006E]/10 text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded"
+        >
+          Mostra chiave
+        </button>
+      ) : (
+        <div className="flex items-center gap-3 flex-wrap">
+          <code className="bg-[#1a1a1a] border border-white/15 px-3 py-2 text-xs text-white font-mono break-all">{apiKey}</code>
+          <button
+            onClick={copy}
+            className="bg-[#FF006E] hover:bg-[#FF1493] text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded"
+          >
+            {copied ? "Copiata ✓" : "Copia"}
+          </button>
+          <button onClick={() => setApiKey(null)} className="text-white/30 hover:text-white text-[11px] uppercase tracking-widest">
+            Nascondi
+          </button>
+        </div>
+      )}
+      {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
     </div>
   );
 }
