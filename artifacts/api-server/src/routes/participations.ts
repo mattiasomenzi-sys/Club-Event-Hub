@@ -184,7 +184,7 @@ router.get("/events/:id/participations", requireAdmin, async (req: Request, res:
 router.patch("/admin/participations/:id/status", requireAdmin, async (req: Request, res: Response): Promise<void> => {
   const id = Number(req.params.id);
   const { status } = req.body as { status?: unknown };
-  if (isNaN(id) || (status !== "confermata" && status !== "in_attesa")) {
+  if (isNaN(id) || (status !== "confermata" && status !== "in_attesa" && status !== "rifiutata")) {
     res.status(400).json({ error: "Richiesta non valida" });
     return;
   }

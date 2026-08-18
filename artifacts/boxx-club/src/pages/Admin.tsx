@@ -1827,26 +1827,15 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
   }
 
   async function decide(id: number, action: "conferma" | "rifiuta") {
-    if (action === "rifiuta" && !window.confirm("Rifiutare questa richiesta? Verrà rimossa dalla lista.")) return;
+    const newStatus = action === "conferma" ? "confermata" : "rifiutata";
     try {
-      const res = action === "conferma"
-        ? await fetch(`${API_BASE}/admin/participations/${id}/status`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
-            body: JSON.stringify({ status: "confermata" }),
-          })
-        : await fetch(`${API_BASE}/admin/participations/${id}`, {
-            method: "DELETE",
-            headers: { "X-Admin-Key": adminKey },
-          });
+      const res = await fetch(`${API_BASE}/admin/participations/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+        body: JSON.stringify({ status: newStatus }),
+      });
       if (res.ok) {
-        setList((prev) =>
-          prev
-            ? action === "conferma"
-              ? prev.map((p) => (p.id === id ? { ...p, status: "confermata" } : p))
-              : prev.filter((p) => p.id !== id)
-            : prev
-        );
+        setList((prev) => (prev ? prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p)) : prev));
       }
     } catch { /* ignore */ }
   }
@@ -1930,6 +1919,9 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
                           {p.status === "in_attesa" && (
                             <span className="ml-2 text-[10px] uppercase tracking-widest text-yellow-400">in attesa</span>
                           )}
+                          {p.status === "rifiutata" && (
+                            <span className="ml-2 text-[10px] uppercase tracking-widest text-red-400">rifiutata</span>
+                          )}
                         </p>
                         <p className="text-[13px] text-white/40 font-mono truncate">{p.contact}</p>
                         <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
@@ -1946,6 +1938,16 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
                               className="text-[10px] font-bold uppercase tracking-widest text-red-400/80 hover:text-red-400"
                             >
                               Rifiuta ✕
+                            </button>
+                          </div>
+                        )}
+                        {p.status === "rifiutata" && (
+                          <div className="flex gap-3 mt-1">
+                            <button
+                              onClick={() => decide(p.id, "conferma")}
+                              className="text-[10px] font-bold uppercase tracking-widest text-green-400 hover:text-green-300"
+                            >
+                              Riammetti ✓
                             </button>
                           </div>
                         )}
