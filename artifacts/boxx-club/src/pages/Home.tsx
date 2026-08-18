@@ -183,7 +183,7 @@ function SignupPromoBanner() {
       href="/sign-up"
       className="md:hidden flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#FF006E] to-[#FF1493] text-white text-[13px] font-bold tracking-wide uppercase"
     >
-      Vuoi promo e info? Iscriviti →
+      Iscriviti per eventi riservati →
     </Link>
   );
 }
