@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, date } from "drizzle-orm/pg-core";
 import { eventsTable } from "./events";
 
 // Link di invito a un evento, creati dall'admin.
@@ -9,6 +9,7 @@ export const invitesTable = pgTable("invites", {
   token: text("token").notNull().unique(),
   inviteType: text("invite_type").notNull(), // "ospite" | "regolare"
   note: text("note"),
+  occurrenceDate: date("occurrence_date", { mode: "string" }), // serata a cui è legato l'invito (scade il giorno dopo)
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

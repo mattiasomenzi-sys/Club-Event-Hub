@@ -9,6 +9,7 @@ type MyParticipation = {
   inviteType: string | null;
   occurrenceDate: string | null;
   qrToken: string | null;
+  status: string;
   createdAt: string;
   eventTitle: string;
   eventDate: string;
@@ -104,7 +105,7 @@ export default function IMieiEventi() {
                         <p className="text-white/40 text-sm mt-1">
                           {new Date(displayDate + "T00:00:00").toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         </p>
-                        <div className="flex gap-3 mt-2 text-[11px] tracking-[0.2em] uppercase">
+                        <div className="flex gap-3 mt-2 text-[11px] tracking-[0.2em] uppercase flex-wrap">
                           {past ? (
                             <span className="text-white/30">Passato</span>
                           ) : (
@@ -113,11 +114,16 @@ export default function IMieiEventi() {
                           {p.inviteType && (
                             <span className="text-[#FF1493]">Invito: {p.inviteType}</span>
                           )}
+                          {!past && (p.status === "in_attesa" ? (
+                            <span className="text-yellow-400">In attesa di conferma</span>
+                          ) : (
+                            <span className="text-green-400">Confermata</span>
+                          ))}
                         </div>
                       </div>
                     </Link>
                     <div className="flex gap-3 mt-4 pt-3 border-t border-white/10">
-                      {p.qrToken && (
+                      {p.qrToken && p.status !== "in_attesa" && (
                         <button
                           onClick={() => setQrFor(p)}
                           className="flex-1 bg-[#FF006E] text-white text-[11px] font-black tracking-[0.25em] uppercase py-2.5 px-4 hover:bg-white hover:text-black transition-colors"

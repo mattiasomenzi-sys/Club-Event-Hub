@@ -4,6 +4,7 @@ import { db, eventsTable, participationsTable, profilesTable, invitesTable } fro
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { requireAdmin, isAdminRequest } from "./admin-auth";
+import { todayRome } from "./invites";
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.get("/participations/mine", async (req: Request, res: Response): Promise<
       inviteType: participationsTable.inviteType,
       occurrenceDate: participationsTable.occurrenceDate,
       qrToken: participationsTable.qrToken,
+      status: participationsTable.status,
       createdAt: participationsTable.createdAt,
       eventTitle: eventsTable.title,
       eventDate: eventsTable.date,
@@ -56,7 +58,7 @@ router.delete("/participations/:id", async (req: Request, res: Response): Promis
     return;
   }
   const effectiveDate = row.occurrenceDate ?? row.eventDate;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayRome();
   if (effectiveDate < today) {
     res.status(400).json({ error: "Non puoi annullare l'iscrizione a un evento passato" });
     return;
@@ -111,18 +113,23 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     return;
   }
 
-  // Invito (opzionale): deve esistere ed essere di questo evento
-  let invite: { id: number; inviteType: string } | null = null;
+  // Invito (opzionale): deve esistere, essere di questo evento e non essere scaduto
+  let invite: { id: number; inviteType: string; occurrenceDate: string | null } | null = null;
   if (typeof inviteToken === "string" && inviteToken.trim()) {
     const [inv] = await db
-      .select({ id: invitesTable.id, eventId: invitesTable.eventId, inviteType: invitesTable.inviteType })
+      .select({ id: invitesTable.id, eventId: invitesTable.eventId, inviteType: invitesTable.inviteType, occurrenceDate: invitesTable.occurrenceDate })
       .from(invitesTable)
       .where(eq(invitesTable.token, inviteToken.trim()));
     if (!inv || inv.eventId !== eventId) {
       res.status(400).json({ error: "Invito non valido per questo evento" });
       return;
     }
-    invite = { id: inv.id, inviteType: inv.inviteType };
+    const today = todayRome();
+    if (inv.occurrenceDate && inv.occurrenceDate < today) {
+      res.status(400).json({ error: "Invito scaduto" });
+      return;
+    }
+    invite = { id: inv.id, inviteType: inv.inviteType, occurrenceDate: inv.occurrenceDate };
   }
 
   const [row] = await db.insert(participationsTable).values({
@@ -133,8 +140,11 @@ router.post("/events/:id/participate", async (req: Request, res: Response): Prom
     inviteId: invite?.id ?? null,
     inviteType: invite?.inviteType ?? null,
     clerkUserId: userId,
-    occurrenceDate: normalizedOccurrence,
+    // La serata dell'invito ha priorità: la lista resta coerente
+    occurrenceDate: invite?.occurrenceDate ?? normalizedOccurrence,
     qrToken: crypto.randomUUID(),
+    // Iscrizione autonoma = in attesa di conferma admin; con invito = confermata
+    status: invite ? "confermata" : "in_attesa",
   }).returning();
 
   res.status(201).json({
@@ -165,8 +175,34 @@ router.get("/events/:id/participations", requireAdmin, async (req: Request, res:
     photoUrl: r.photoUrl,
     inviteType: r.inviteType,
     occurrenceDate: r.occurrenceDate,
+    status: r.status,
     createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
   })));
+});
+
+// Admin: conferma un'iscrizione in attesa
+router.patch("/admin/participations/:id/status", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  const { status } = req.body as { status?: unknown };
+  if (isNaN(id) || (status !== "confermata" && status !== "in_attesa")) {
+    res.status(400).json({ error: "Richiesta non valida" });
+    return;
+  }
+  const [row] = await db
+    .update(participationsTable)
+    .set({ status })
+    .where(eq(participationsTable.id, id))
+    .returning();
+  if (!row) { res.status(404).json({ error: "Iscrizione non trovata" }); return; }
+  res.json({ ok: true, status: row.status });
+});
+
+// Admin: rifiuta/rimuove un'iscrizione
+router.delete("/admin/participations/:id", requireAdmin, async (req: Request, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  await db.delete(participationsTable).where(eq(participationsTable.id, id));
+  res.status(204).end();
 });
 
 export default router;

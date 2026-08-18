@@ -185,14 +185,22 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   // Invito: verifica il token e mostra il tipo (ospite/regolare)
   const [inviteType, setInviteType] = useState<string | null>(null);
+  const [inviteOccurrence, setInviteOccurrence] = useState<string | null>(null);
   const [inviteInvalid, setInviteInvalid] = useState(false);
+  const [inviteExpired, setInviteExpired] = useState(false);
   useEffect(() => {
     if (!inviteToken) return;
     fetch(`/api/invites/${encodeURIComponent(inviteToken)}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d: { eventId: number; inviteType: string }) => {
-        if (d.eventId === eventId) setInviteType(d.inviteType);
-        else setInviteInvalid(true);
+      .then(async (r) => {
+        if (r.ok) {
+          const d = (await r.json()) as { eventId: number; inviteType: string; occurrenceDate: string | null };
+          if (d.eventId === eventId) {
+            setInviteType(d.inviteType);
+            setInviteOccurrence(d.occurrenceDate);
+          } else setInviteInvalid(true);
+        } else if (r.status === 410) {
+          setInviteExpired(true);
+        } else setInviteInvalid(true);
       })
       .catch(() => setInviteInvalid(true));
   }, [inviteToken, eventId]);
@@ -217,6 +225,9 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
   const autoSubmittedRef = useRef(false);
   useEffect(() => {
     if (gate.status !== "ready" || autoSubmittedRef.current) return;
+    // Con un invito nel link, aspetta che la verifica dell'invito sia conclusa
+    // (altrimenti l'invio partirebbe senza token e la prenotazione finirebbe "in attesa")
+    if (inviteToken && !inviteType && !inviteInvalid && !inviteExpired) return;
     try {
       const raw = sessionStorage.getItem(PENDING_KEY);
       if (!raw) return;
@@ -230,7 +241,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
       void doSubmit(pending.name, pending.contact);
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gate.status, eventId]);
+  }, [gate.status, eventId, inviteToken, inviteType, inviteInvalid, inviteExpired]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -279,7 +290,7 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
           name: nameVal.trim(),
           contact: contactVal.trim(),
           ...(photoUrl ? { photoUrl } : {}),
-          ...(inviteToken && inviteType ? { inviteToken } : {}),
+          ...(inviteToken && inviteType && !inviteExpired ? { inviteToken } : {}),
           ...(occurrenceDate ? { occurrenceDate } : {}),
         }),
       });
@@ -297,10 +308,17 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
   }
 
   if (done) {
+    const wasInvited = !!(inviteType && !inviteExpired);
     return (
       <div className="border border-[#FF006E]/30 px-6 py-5 self-start w-full lg:w-auto">
-        <p className="text-[#FF006E] text-sm font-bold tracking-[0.3em] uppercase mb-1">Iscrizione ricevuta</p>
-        <p className="text-white/50 text-sm">Ti contatteremo per i dettagli. Ci vediamo presto.</p>
+        <p className="text-[#FF006E] text-sm font-bold tracking-[0.3em] uppercase mb-1">
+          {wasInvited ? "Iscrizione confermata" : "Richiesta ricevuta"}
+        </p>
+        <p className="text-white/50 text-sm">
+          {wasInvited
+            ? "Ti contatteremo per i dettagli. Ci vediamo presto."
+            : "La tua richiesta è in attesa di conferma: la trovi in \"I miei eventi\"."}
+        </p>
       </div>
     );
   }
@@ -312,6 +330,12 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
           {inviteType && (
             <p className="text-[12px] tracking-[0.25em] uppercase text-[#FF006E] border border-[#FF006E]/40 px-3 py-2 self-start">
               Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza quota sociale)" : "REGOLARE (quota sociale all'ingresso)"}
+              {inviteOccurrence && ` — serata del ${new Date(inviteOccurrence + "T00:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long" })}`}
+            </p>
+          )}
+          {inviteExpired && (
+            <p className="text-[12px] tracking-[0.25em] uppercase text-white/40 border border-white/15 px-3 py-2 self-start">
+              Questo invito è scaduto — puoi comunque richiedere di partecipare
             </p>
           )}
           <button
@@ -338,10 +362,14 @@ function ParticipateForm({ eventId, photoRequirement, autoOpen, inviteToken, occ
           {inviteType && (
             <p className="text-[12px] tracking-[0.25em] uppercase text-[#FF006E] border border-[#FF006E]/40 px-3 py-2">
               Sei stato invitato come {inviteType === "ospite" ? "OSPITE (ingresso senza quota sociale)" : "REGOLARE (quota sociale all'ingresso)"}
+              {inviteOccurrence && ` — serata del ${new Date(inviteOccurrence + "T00:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long" })}`}
             </p>
           )}
           {inviteInvalid && (
             <p className="text-[12px] tracking-[0.25em] uppercase text-white/40">Link di invito non valido — puoi comunque iscriverti normalmente.</p>
+          )}
+          {inviteExpired && (
+            <p className="text-[12px] tracking-[0.25em] uppercase text-white/40">Questo invito è scaduto — la tua richiesta dovrà essere confermata.</p>
           )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div>

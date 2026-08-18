@@ -8,6 +8,7 @@ import { getListEventsQueryKey, getListGalleryPhotosQueryKey, getListBannersQuer
 import { Upload, X, Loader2, RefreshCw, Pencil, Check } from "lucide-react";
 
 import boxxLogo from "@assets/boxx-logo.jpeg";
+import { nextOccurrence } from "@/lib/recurrence";
 
 const API_BASE = "/api";
 
@@ -1144,9 +1145,8 @@ function AdminDashboard({ adminKey, onLogout }: { adminKey: string; onLogout: ()
               </div>
 
               <div className="flex gap-3 items-center flex-shrink-0">
-                <CopyParticipateLink eventId={event.id} />
                 <ParticipationsButton eventId={event.id} adminKey={adminKey} initialPhotoRequirement={(event.photoRequirement ?? "none") as "none" | "optional" | "required"} />
-                <InvitesButton eventId={event.id} adminKey={adminKey} />
+                <InvitesButton eventId={event.id} adminKey={adminKey} defaultDate={(event.isRecurring ? nextOccurrence(event) : null) ?? event.date} />
                 <button
                   onClick={() => {
                     setEditingEvent(event);
@@ -1648,43 +1648,23 @@ function ChangeKeySection({ adminKey, onKeyChanged }: { adminKey: string; onKeyC
   );
 }
 
-interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; inviteType?: string | null; occurrenceDate?: string | null; createdAt: string }
-
-function CopyParticipateLink({ eventId }: { eventId: number }) {
-  const [copied, setCopied] = useState(false);
-  function copy() {
-    const url = `${window.location.origin}/eventi/${eventId}?partecipa=1`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
-      window.prompt("Copia il link:", url);
-    });
-  }
-  return (
-    <button
-      onClick={copy}
-      title="Copia il link al modulo di partecipazione"
-      className="text-[12px] tracking-[0.25em] uppercase text-white/30 hover:text-[#FF006E] border-b border-transparent hover:border-[#FF006E]/30 transition-colors pb-0.5"
-    >
-      {copied ? "COPIATO ✓" : "LINK PARTECIPA"}
-    </button>
-  );
-}
+interface ParticipationEntry { id: number; name: string; contact: string; photoUrl?: string | null; inviteType?: string | null; occurrenceDate?: string | null; status?: string; createdAt: string }
 
 type AdminInvite = {
   id: number;
   token: string;
   inviteType: string;
   note: string | null;
+  occurrenceDate: string | null;
   uses: number;
   createdAt: string;
 };
 
-function InvitesButton({ eventId, adminKey }: { eventId: number; adminKey: string }) {
+function InvitesButton({ eventId, adminKey, defaultDate }: { eventId: number; adminKey: string; defaultDate: string }) {
   const [open, setOpen] = useState(false);
   const [invites, setInvites] = useState<AdminInvite[] | null>(null);
   const [note, setNote] = useState("");
+  const [occDate, setOccDate] = useState(defaultDate);
   const [creating, setCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
@@ -1705,7 +1685,7 @@ function InvitesButton({ eventId, adminKey }: { eventId: number; adminKey: strin
       const res = await fetch(`${API_BASE}/admin/events/${eventId}/invites`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
-        body: JSON.stringify({ inviteType, ...(note.trim() ? { note: note.trim() } : {}) }),
+        body: JSON.stringify({ inviteType, ...(note.trim() ? { note: note.trim() } : {}), ...(occDate ? { occurrenceDate: occDate } : {}) }),
       });
       if (res.ok) {
         setNote("");
@@ -1740,6 +1720,13 @@ function InvitesButton({ eventId, adminKey }: { eventId: number; adminKey: strin
       {open && (
         <div className="absolute right-0 z-30 mt-2 w-80 bg-[#111] border border-white/15 p-4 shadow-xl text-left">
           <p className="text-[11px] tracking-[0.2em] uppercase text-white/40 mb-3">Link di invito</p>
+          <label className="text-[10px] tracking-[0.2em] uppercase text-white/40 block mb-1">Per la serata del</label>
+          <input
+            type="date"
+            className="w-full bg-[#1a1a1a] border border-white/15 rounded px-3 py-2 text-white text-xs focus:outline-none focus:border-[#FF006E] mb-2"
+            value={occDate}
+            onChange={(e) => setOccDate(e.target.value)}
+          />
           <input
             className="w-full bg-[#1a1a1a] border border-white/15 rounded px-3 py-2 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-[#FF006E] mb-2"
             placeholder="Nota (es. amici di Marco) — opzionale"
@@ -1777,6 +1764,12 @@ function InvitesButton({ eventId, adminKey }: { eventId: number; adminKey: strin
                     </span>
                     <span className="text-white/40">{inv.uses} iscritti</span>
                   </div>
+                  {inv.occurrenceDate && (
+                    <p className={`mt-1 ${inv.occurrenceDate < new Date().toISOString().slice(0, 10) ? "text-red-400/80" : "text-white/50"}`}>
+                      Serata: {new Date(inv.occurrenceDate + "T00:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" })}
+                      {inv.occurrenceDate < new Date().toISOString().slice(0, 10) && " — SCADUTO"}
+                    </p>
+                  )}
                   {inv.note && <p className="text-white/50 mt-1">{inv.note}</p>}
                   <div className="flex gap-3 mt-1.5">
                     <button onClick={() => copy(inv)} className="text-white/60 hover:text-white uppercase tracking-widest text-[10px]">
@@ -1831,6 +1824,31 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
     } catch { /* ignore */ }
     setLoading(false);
     setOpen(true);
+  }
+
+  async function decide(id: number, action: "conferma" | "rifiuta") {
+    if (action === "rifiuta" && !window.confirm("Rifiutare questa richiesta? Verrà rimossa dalla lista.")) return;
+    try {
+      const res = action === "conferma"
+        ? await fetch(`${API_BASE}/admin/participations/${id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
+            body: JSON.stringify({ status: "confermata" }),
+          })
+        : await fetch(`${API_BASE}/admin/participations/${id}`, {
+            method: "DELETE",
+            headers: { "X-Admin-Key": adminKey },
+          });
+      if (res.ok) {
+        setList((prev) =>
+          prev
+            ? action === "conferma"
+              ? prev.map((p) => (p.id === id ? { ...p, status: "confermata" } : p))
+              : prev.filter((p) => p.id !== id)
+            : prev
+        );
+      }
+    } catch { /* ignore */ }
   }
 
   async function updatePhotoReq(value: "none" | "optional" | "required") {
@@ -1902,14 +1920,35 @@ function ParticipationsButton({ eventId, adminKey, initialPhotoRequirement }: { 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-white font-medium">
                           {p.name}
-                          {p.inviteType && (
+                          {p.inviteType ? (
                             <span className={`ml-2 text-[10px] uppercase tracking-widest ${p.inviteType === "ospite" ? "text-green-400" : "text-[#FF1493]"}`}>
                               {p.inviteType}
                             </span>
+                          ) : (
+                            <span className="ml-2 text-[10px] uppercase tracking-widest text-white/40">dal sito</span>
+                          )}
+                          {p.status === "in_attesa" && (
+                            <span className="ml-2 text-[10px] uppercase tracking-widest text-yellow-400">in attesa</span>
                           )}
                         </p>
                         <p className="text-[13px] text-white/40 font-mono truncate">{p.contact}</p>
                         <p className="text-[13px] text-white/20">{new Date(p.createdAt).toLocaleString("it-IT")}</p>
+                        {p.status === "in_attesa" && (
+                          <div className="flex gap-3 mt-1">
+                            <button
+                              onClick={() => decide(p.id, "conferma")}
+                              className="text-[10px] font-bold uppercase tracking-widest text-green-400 hover:text-green-300"
+                            >
+                              Conferma ✓
+                            </button>
+                            <button
+                              onClick={() => decide(p.id, "rifiuta")}
+                              className="text-[10px] font-bold uppercase tracking-widest text-red-400/80 hover:text-red-400"
+                            >
+                              Rifiuta ✕
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
