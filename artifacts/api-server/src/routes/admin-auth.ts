@@ -93,10 +93,17 @@ router.get("/admin/whoami", async (req, res): Promise<void> => {
 // Un admin autenticato (chiave o account Clerk admin) può leggere la chiave API,
 // ad es. per configurarla nel gestionale esterno.
 router.get("/admin/api-key", requireAdmin, async (_req, res): Promise<void> => {
-  const key = await getAdminKey();
+  let key = await getAdminKey();
   if (key === null) {
-    res.status(404).json({ error: "Nessuna chiave configurata." });
-    return;
+    // Nessuna chiave ancora configurata (es. in produzione si entra solo con
+    // l'account admin): ne genera una e la salva, così può essere usata dal
+    // gestionale esterno.
+    key = crypto.randomUUID().replace(/-/g, "");
+    await db
+      .insert(settingsTable)
+      .values({ key: ADMIN_KEY_SETTING, value: key })
+      .onConflictDoNothing({ target: settingsTable.key });
+    key = (await getAdminKey()) ?? key;
   }
   res.json({ key });
 });
